@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core'; // Import ChangeDetectorRef
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { SlidePotentiometerComponent } from './slide-potentiometer/slide-potentiometer';
@@ -45,6 +45,8 @@ export class App implements OnInit, OnDestroy {
   isAnimating: boolean = false;
   animationInterval: any = null;
 
+  constructor(private cdr: ChangeDetectorRef) {} // Inject ChangeDetectorRef
+
   ngOnInit(): void {
     this.calculateCombinedOutputs();
   }
@@ -55,7 +57,6 @@ export class App implements OnInit, OnDestroy {
     }
   }
 
-  // Helper to parse hex color string to RGB object
   private hexToRgb(hex: string): { r: number; g: number; b: number } | null {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result ? {
@@ -65,7 +66,6 @@ export class App implements OnInit, OnDestroy {
     } : null;
   }
 
-  // Helper to convert RGB object back to hex color string
   private rgbToHex(r: number, g: number, b: number): string {
     return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).padStart(6, '0');
   }
@@ -83,12 +83,11 @@ export class App implements OnInit, OnDestroy {
         console.warn(`Mismatch in channel data at index ${index}. Using data from row1States for description.`);
       }
 
-      const crossfadeRatio = this.crossfaderValue / 100; // 0 = full row2, 1 = full row1
+      const crossfadeRatio = this.crossfaderValue / 100;
       const invCrossfadeRatio = 1 - crossfadeRatio;
-
       const combinedValue = (row1State.value * crossfadeRatio) + (row2State.value * invCrossfadeRatio);
 
-      let blendedColorHex = '#ffffff'; // Default to white if colors are invalid
+      let blendedColorHex = '#ffffff';
       const rgb1 = this.hexToRgb(row1State.color);
       const rgb2 = this.hexToRgb(row2State.color);
 
@@ -99,7 +98,6 @@ export class App implements OnInit, OnDestroy {
         blendedColorHex = this.rgbToHex(blendedR, blendedG, blendedB);
       } else {
         console.warn(`Invalid color format for blending at index ${index}. Defaulting color.`);
-        // Potentially use row1State.color or row2State.color if one is valid and other is not
         if(rgb1) blendedColorHex = row1State.color;
         else if(rgb2) blendedColorHex = row2State.color;
       }
@@ -151,6 +149,7 @@ export class App implements OnInit, OnDestroy {
       }
       this.crossfaderValue = Math.max(0, Math.min(100, this.crossfaderValue));
       this.onPotentiometerChange();
+      this.cdr.detectChanges(); // Manually trigger change detection
     }, intervalDuration);
   }
 }

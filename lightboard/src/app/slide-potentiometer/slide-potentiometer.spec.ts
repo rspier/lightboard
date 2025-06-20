@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
-// import { provideZonelessChangeDetection } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SlidePotentiometerComponent } from './slide-potentiometer';
 import { By } from '@angular/platform-browser';
@@ -14,7 +13,7 @@ describe('SlidePotentiometerComponent', () => {
         FormsModule,
         SlidePotentiometerComponent
       ],
-      providers: [] // Ensure providers is empty
+      providers: []
     })
     .compileComponents();
 
@@ -27,7 +26,6 @@ describe('SlidePotentiometerComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  // Input property tests
   describe('Input Properties', () => {
     it('should display default channel number (0) and description (\'\') initially when showChannelInfo is true', () => {
       component.showChannelInfo = true;
@@ -35,7 +33,7 @@ describe('SlidePotentiometerComponent', () => {
       const channelInfoDiv = fixture.debugElement.query(By.css('.channel-info'));
       expect(channelInfoDiv).toBeTruthy();
       const h3Element = channelInfoDiv.query(By.css('h3')).nativeElement;
-      expect(h3Element.textContent.trim()).toBe('0'); // Adjusted assertion
+      expect(h3Element.textContent.trim()).toBe('0');
       const smallElement = channelInfoDiv.query(By.css('small')).nativeElement;
       expect(smallElement.textContent).toBe('');
     });
@@ -45,7 +43,7 @@ describe('SlidePotentiometerComponent', () => {
       component.channelNumber = 123;
       fixture.detectChanges();
       const h3Element = fixture.debugElement.query(By.css('.channel-info h3')).nativeElement;
-      expect(h3Element.textContent.trim()).toBe('123'); // Adjusted assertion
+      expect(h3Element.textContent.trim()).toBe('123');
     });
 
     it('should display provided channelDescription input when showChannelInfo is true', () => {
@@ -66,7 +64,7 @@ describe('SlidePotentiometerComponent', () => {
     it('should display .channel-info div by default (showChannelInfo is true by default)', () => {
       fixture.detectChanges();
       const channelInfoDiv = fixture.debugElement.query(By.css('.channel-info'));
-      expect(channelInfoDiv).toBeTruthy(); // Default is true
+      expect(channelInfoDiv).toBeTruthy();
     });
 
     it('should apply sliderHeight input to the range input style', () => {
@@ -83,8 +81,6 @@ describe('SlidePotentiometerComponent', () => {
     });
   });
 
-
-  // Value and editing logic tests
   describe('Value and Editing Logic', () => {
     it('should have an initial default value of 0 for the slider', () => {
       fixture.detectChanges();
@@ -104,16 +100,16 @@ describe('SlidePotentiometerComponent', () => {
       expect(component.valueChange.emit).toHaveBeenCalledWith(60);
     });
 
-    it('should switch to editing mode on click, show input, and hide span', fakeAsync(() => { // Reverted to fakeAsync
+    it('should switch to editing mode on click, show input, and hide span', fakeAsync(() => {
       fixture.detectChanges();
       let valueTextSpan = fixture.debugElement.query(By.css('.value-text'));
       expect(valueTextSpan).toBeTruthy('Span should be visible initially');
       let valueEditInput = fixture.debugElement.query(By.css('.value-edit-input'));
       expect(valueEditInput).toBeNull('Input should be hidden initially');
 
-      valueTextSpan.nativeElement.click(); // This calls startEditing()
+      valueTextSpan.nativeElement.click();
       fixture.detectChanges();
-      tick(); // Process setTimeout in startEditing
+      tick();
 
       expect(component.isEditing).toBe(true);
       expect(component.editValue).toBe(component.value);
@@ -130,22 +126,16 @@ describe('SlidePotentiometerComponent', () => {
     }));
 
     it('should switch out of editing mode and update value on input blur', () => {
-      // Initial state for editing
       component.isEditing = true;
-      component.value = 50; // Example initial value
+      component.value = 50;
       component.editValue = 75;
-      fixture.detectChanges(); // Render input with editValue
+      fixture.detectChanges();
 
       spyOn(component.valueChange, 'emit');
       const valueEditInput = fixture.debugElement.query(By.css('.value-edit-input'));
       expect(valueEditInput).toBeTruthy('Input should be visible');
 
-      // Simulate input event then blur
-      // valueEditInput.nativeElement.value = '75'; // ngModel handles component.editValue
-      // valueEditInput.nativeElement.dispatchEvent(new Event('input'));
-      // fixture.detectChanges(); // Allow ngModel to update component.editValue if needed
-
-      valueEditInput.nativeElement.dispatchEvent(new Event('blur')); // This calls stopEditing()
+      valueEditInput.nativeElement.dispatchEvent(new Event('blur'));
       fixture.detectChanges();
 
       expect(component.isEditing).toBe(false);
@@ -157,8 +147,6 @@ describe('SlidePotentiometerComponent', () => {
       expect(stillVisibleEditInput).toBeNull('Input should be hidden after editing');
     });
 
-    // Other tests for stopEditing (Enter, clamping) would follow similar pattern
-    // ... (keeping existing tests for brevity, assuming they are adapted like the blur test) ...
     it('should update value and emit valueChange when Enter key is pressed in editing input', () => {
       component.isEditing = true;
       component.value = 50;
@@ -206,6 +194,40 @@ describe('SlidePotentiometerComponent', () => {
       expect(component.value).toBe(100);
       expect(component.isEditing).toBe(false);
       expect(component.valueChange.emit).toHaveBeenCalledWith(100);
+    });
+  });
+
+  describe('Color Input and Output', () => {
+    it('should receive and bind color input to native color input', () => {
+      const testColor = '#123456';
+      component.color = testColor;
+      fixture.detectChanges();
+      expect(component.color).toBe(testColor);
+      const colorInput = fixture.debugElement.query(By.css('.color-input-native')).nativeElement as HTMLInputElement;
+      expect(colorInput.value).toBe(testColor);
+    });
+
+    it('should use default color if none is provided', () => {
+      fixture.detectChanges();
+      expect(component.color).toBe('#ffffff'); // Default color
+      const colorInput = fixture.debugElement.query(By.css('.color-input-native')).nativeElement as HTMLInputElement;
+      expect(colorInput.value).toBe('#ffffff');
+    });
+
+    it('onColorInputChange should update color and emit colorChange', () => {
+      fixture.detectChanges(); // To ensure .color-input-native is present
+      spyOn(component.colorChange, 'emit');
+
+      const newColor = '#abcdef';
+      const colorInputEl = fixture.debugElement.query(By.css('.color-input-native')).nativeElement as HTMLInputElement;
+
+      // Simulate the color change event
+      colorInputEl.value = newColor;
+      colorInputEl.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+
+      expect(component.color).toBe(newColor);
+      expect(component.colorChange.emit).toHaveBeenCalledWith(newColor);
     });
   });
 });
