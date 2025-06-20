@@ -1,4 +1,4 @@
-import { TestBed, ComponentFixture, fakeAsync, tick } from '@angular/core/testing';
+import { TestBed, ComponentFixture } from '@angular/core/testing'; // Removed fakeAsync, tick
 import { App } from './app';
 import { By } from '@angular/platform-browser';
 // CommonModule is imported by App component itself (standalone)
@@ -30,6 +30,13 @@ describe('App', () => {
       clearInterval(app.animationInterval);
       app.animationInterval = null;
     }
+    // Ensure Jasmine clock is uninstalled if a test installed it
+    // Check if jasmine.clock is installed before trying to uninstall
+    // This check might be specific to Jasmine versions or how it's exposed.
+    // A simple uninstall is usually fine.
+    if ((jasmine.clock() as any).isInstalled && (jasmine.clock() as any).isInstalled()) {
+         jasmine.clock().uninstall();
+    }
   });
 
   it('should create the app', () => {
@@ -47,12 +54,12 @@ describe('App', () => {
     expect(app.row1States.length).toBe(4);
     expect(app.row1States[0].channelDescription).toBe('Apple');
     expect(app.row1States[0].value).toBe(0);
-    expect(app.row1States[0].color).toBe('#ff0000'); // Check initial color
+    expect(app.row1States[0].color).toBe('#ff0000');
 
     expect(app.row2States.length).toBe(4);
     expect(app.row2States[0].channelDescription).toBe('Apple');
     expect(app.row2States[0].value).toBe(100);
-    expect(app.row2States[0].color).toBe('#00ffff'); // Check initial color
+    expect(app.row2States[0].color).toBe('#00ffff');
 
     expect(app.crossfaderValue).toBe(50);
   });
@@ -61,27 +68,10 @@ describe('App', () => {
     fixture.detectChanges();
     expect(app.combinedOutputStates.length).toBe(4);
 
-    // row1[0]: value=0, color='#ff0000' (Red)
-    // row2[0]: value=100, color='#00ffff' (Cyan)
-    // crossfaderValue = 50 (ratio 0.5 for row1, 0.5 for row2 in current formula)
-    // value: (0 * 0.5) + (100 * 0.5) = 50
-    // color: Red(255,0,0), Cyan(0,255,255)
-    // R: (255 * 0.5) + (0 * 0.5) = 127.5 -> 128
-    // G: (0 * 0.5) + (255 * 0.5) = 127.5 -> 128
-    // B: (0 * 0.5) + (255 * 0.5) = 127.5 -> 128
-    // Expected color: #808080 (Gray)
     expect(app.combinedOutputStates[0].value).toBe(50);
     expect(app.combinedOutputStates[0].channelDescription).toBe('Apple');
     expect(app.combinedOutputStates[0].color).toBe('#808080');
 
-    // row1[1]: value=25, color='#00ff00' (Green)
-    // row2[1]: value=75, color='#ff00ff' (Magenta)
-    // value: (25 * 0.5) + (75 * 0.5) = 12.5 + 37.5 = 50
-    // color: Green(0,255,0), Magenta(255,0,255)
-    // R: (0 * 0.5) + (255 * 0.5) = 127.5 -> 128
-    // G: (255 * 0.5) + (0 * 0.5) = 127.5 -> 128
-    // B: (0 * 0.5) + (255 * 0.5) = 127.5 -> 128
-    // Expected color: #808080 (Gray)
     expect(app.combinedOutputStates[1].value).toBe(50);
     expect(app.combinedOutputStates[1].color).toBe('#808080');
   });
@@ -89,12 +79,12 @@ describe('App', () => {
   describe('calculateCombinedOutputs with colors', () => {
     beforeEach(() => {
       app.row1States = [
-        { channelNumber: 1, channelDescription: "Ch1", value: 10, color: '#ff0000' }, // Red
-        { channelNumber: 2, channelDescription: "Ch2", value: 80, color: '#0000ff' }  // Blue
+        { channelNumber: 1, channelDescription: "Ch1", value: 10, color: '#ff0000' },
+        { channelNumber: 2, channelDescription: "Ch2", value: 80, color: '#0000ff' }
       ];
       app.row2States = [
-        { channelNumber: 1, channelDescription: "Ch1", value: 90, color: '#00ff00' }, // Green
-        { channelNumber: 2, channelDescription: "Ch2", value: 20, color: '#ffff00' }  // Yellow
+        { channelNumber: 1, channelDescription: "Ch1", value: 90, color: '#00ff00' },
+        { channelNumber: 2, channelDescription: "Ch2", value: 20, color: '#ffff00' }
       ];
     });
 
@@ -103,25 +93,23 @@ describe('App', () => {
       app.calculateCombinedOutputs();
       expect(app.combinedOutputStates.length).toBe(2);
       expect(app.combinedOutputStates[0].value).toBe(90);
-      expect(app.combinedOutputStates[0].color).toBe('#00ff00'); // Green (row2State[0].color)
+      expect(app.combinedOutputStates[0].color).toBe('#00ff00');
       expect(app.combinedOutputStates[1].value).toBe(20);
-      expect(app.combinedOutputStates[1].color).toBe('#ffff00'); // Yellow (row2State[1].color)
+      expect(app.combinedOutputStates[1].color).toBe('#ffff00');
     });
 
     it('should correctly blend values and colors with crossfader at 100 (full row1States)', () => {
       app.crossfaderValue = 100;
       app.calculateCombinedOutputs();
       expect(app.combinedOutputStates[0].value).toBe(10);
-      expect(app.combinedOutputStates[0].color).toBe('#ff0000'); // Red (row1State[0].color)
+      expect(app.combinedOutputStates[0].color).toBe('#ff0000');
       expect(app.combinedOutputStates[1].value).toBe(80);
-      expect(app.combinedOutputStates[1].color).toBe('#0000ff'); // Blue (row1State[1].color)
+      expect(app.combinedOutputStates[1].color).toBe('#0000ff');
     });
 
     it('should correctly blend values and colors with crossfader at 50 (midpoint)', () => {
       app.crossfaderValue = 50;
       app.calculateCombinedOutputs();
-      // Ch1: Red '#ff0000' (255,0,0) and Green '#00ff00' (0,255,0) -> Midpoint should be (128,128,0) -> #808000
-      // Ch2: Blue '#0000ff' (0,0,255) and Yellow '#ffff00' (255,255,0) -> Midpoint should be (128,128,128) -> #808080
       expect(app.combinedOutputStates[0].value).toBe(50);
       expect(app.combinedOutputStates[0].color).toBe('#808000');
       expect(app.combinedOutputStates[1].value).toBe(50);
@@ -136,7 +124,21 @@ describe('App', () => {
   });
 
   describe('Go Button and Crossfader Animation', () => {
-    // ... (existing animation tests remain unchanged as they focus on value, not color) ...
+    afterEach(() => {
+      // Ensure Jasmine clock is uninstalled after each test in this describe block
+      // Check if installed, as installing an already installed clock throws an error.
+      // Similarly, uninstalling a not installed clock can also throw an error.
+      // A more robust check might be needed depending on Jasmine version nuances.
+      // For now, assume it's safe or that a double uninstall is benign.
+      if (typeof (jasmine.clock() as any).uninstall === 'function') {
+        try {
+          jasmine.clock().uninstall(); // Attempt to uninstall
+        } catch (e) {
+          // Catch potential errors if clock wasn't installed or already uninstalled
+        }
+      }
+    });
+
     it('onGoButtonClick should call animateCrossfader with 0 if crossfaderValue >= 50', () => {
       spyOn(app, 'animateCrossfader');
       app.crossfaderValue = 70;
@@ -158,49 +160,54 @@ describe('App', () => {
       expect(app.animateCrossfader).not.toHaveBeenCalled();
     });
 
-    it('animateCrossfader should animate crossfader value from 0 to 100', fakeAsync(() => {
+    it('animateCrossfader should animate crossfader value from 0 to 100', () => {
+      jasmine.clock().install();
       spyOn(app, 'onPotentiometerChange').and.callThrough();
       app.crossfaderValue = 0;
       const target = 100;
-      const duration = 500;
-      const steps = 25;
-      const interval = duration / steps;
+      const duration = 500; // ms
+      const steps = 25; // Number of steps for the animation
+      const intervalDuration = duration / steps; // 20ms
 
       app.animateCrossfader(target);
       expect(app.isAnimating).toBeTrue();
 
       for (let i = 0; i < steps; i++) {
-        tick(interval);
+        jasmine.clock().tick(intervalDuration);
       }
 
       expect(app.crossfaderValue).toBe(target);
       expect(app.isAnimating).toBeFalse();
       expect(app.animationInterval).toBeNull();
       expect(app.onPotentiometerChange).toHaveBeenCalledTimes(steps);
-    }));
+      jasmine.clock().uninstall();
+    });
 
-    it('animateCrossfader should animate crossfader value from 100 to 0', fakeAsync(() => {
+    it('animateCrossfader should animate crossfader value from 100 to 0', () => {
+      jasmine.clock().install();
       spyOn(app, 'onPotentiometerChange').and.callThrough();
       app.crossfaderValue = 100;
       const target = 0;
-      const duration = 500;
-      const steps = 25;
-      const interval = duration / steps;
+      const duration = 500; // ms
+      const steps = 25; // Number of steps for the animation
+      const intervalDuration = duration / steps; // 20ms
 
       app.animateCrossfader(target);
       expect(app.isAnimating).toBeTrue();
 
-      tick(duration);
+      jasmine.clock().tick(duration);
 
       expect(app.crossfaderValue).toBe(target);
       expect(app.isAnimating).toBeFalse();
       expect(app.animationInterval).toBeNull();
       expect(app.onPotentiometerChange).toHaveBeenCalledTimes(steps);
-    }));
+      jasmine.clock().uninstall();
+    });
 
     it('Go button should call onGoButtonClick and be disabled when isAnimating is true', () => {
       fixture.detectChanges();
-      spyOn(app, 'onGoButtonClick');
+      spyOn(app, 'onGoButtonClick').and.callThrough(); // Allow call through to test disabled state
+      spyOn(app, 'animateCrossfader'); // But spy on animateCrossfader to prevent actual animation
 
       const goButton = fixture.debugElement.query(By.css('.go-button')).nativeElement;
       expect(goButton.disabled).toBeFalse();
@@ -208,9 +215,18 @@ describe('App', () => {
       goButton.click();
       expect(app.onGoButtonClick).toHaveBeenCalled();
 
-      app.isAnimating = true;
+      // Manually set isAnimating to true after onGoButtonClick (which calls animateCrossfader)
+      // because animateCrossfader itself sets isAnimating to true.
+      // If we only spy on animateCrossfader, isAnimating won't be set by the spy.
+      // So, we either let animateCrossfader run (and use jasmine clock) or set manually for this specific check.
+      // For simplicity here, let's assume onGoButtonClick leads to isAnimating being true.
+      app.isAnimating = true; // Simulate start of animation
       fixture.detectChanges();
       expect(goButton.disabled).toBeTrue();
+
+      app.isAnimating = false; // Reset for other tests
+      fixture.detectChanges();
+      expect(goButton.disabled).toBeFalse();
     });
   });
 });

@@ -100,7 +100,7 @@ describe('SlidePotentiometerComponent', () => {
       expect(component.valueChange.emit).toHaveBeenCalledWith(60);
     });
 
-    it('should switch to editing mode on click, show input, and hide span', fakeAsync(() => {
+    it('should switch to editing mode on click, show input, and hide span', async () => {
       fixture.detectChanges();
       let valueTextSpan = fixture.debugElement.query(By.css('.value-text'));
       expect(valueTextSpan).toBeTruthy('Span should be visible initially');
@@ -108,8 +108,11 @@ describe('SlidePotentiometerComponent', () => {
       expect(valueEditInput).toBeNull('Input should be hidden initially');
 
       valueTextSpan.nativeElement.click();
-      fixture.detectChanges();
-      tick();
+      fixture.detectChanges(); // isEditing is now true, *ngIf will show input
+
+      // Wait for setTimeout in startEditing and potential async operations to complete
+      await fixture.whenStable();
+      fixture.detectChanges(); // Ensure DOM is updated after whenStable
 
       expect(component.isEditing).toBe(true);
       expect(component.editValue).toBe(component.value);
@@ -123,7 +126,7 @@ describe('SlidePotentiometerComponent', () => {
       if (component.valueInputRef) {
            expect(component.valueInputRef.nativeElement).toEqual(valueEditInput.nativeElement);
       }
-    }));
+    });
 
     it('should switch out of editing mode and update value on input blur', () => {
       component.isEditing = true;

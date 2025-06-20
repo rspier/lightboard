@@ -89,54 +89,46 @@ describe('ChannelValuesTableComponent', () => {
   });
 
   describe('getDynamicRowStyles()', () => {
-    const defaultColor = '#ffffff'; // Default color if parsing fails, or a test color.
-
     it('should return black background and white text for value 0 with red base', () => {
       const styles = component.getDynamicRowStyles(0, '#ff0000');
-      expect(styles.backgroundColor).toBe('#000000'); // 0% intensity of red = black
-      expect(styles.color).toBe('#ffffff'); // White text on black - corrected case
+      expect(styles.backgroundColor).toBe('#000000');
+      expect(styles.color).toBe('#ffffff');
     });
 
     it('should return red background and white text for value 100 with red base', () => {
-      // Luminance of #ff0000 (Red) is approx 0.2126. If < 0.5, text is white.
       const styles = component.getDynamicRowStyles(100, '#ff0000');
-      expect(styles.backgroundColor).toBe('#ff0000'); // Full intensity red
-      expect(styles.color).toBe('#ffffff'); // White text on red - corrected case
+      expect(styles.backgroundColor).toBe('#ff0000');
+      expect(styles.color).toBe('#ffffff');
     });
 
     it('should return 50% intensity red background and white text for value 50 with red base', () => {
-      // Red (255,0,0) at 50% intensity: (128,0,0) -> #800000
-      // Luminance of #800000 is approx 0.1063. If < 0.5, text is white.
       const styles = component.getDynamicRowStyles(50, '#ff0000');
       expect(styles.backgroundColor).toBe('#800000');
-      expect(styles.color).toBe('#ffffff'); // White text on red - corrected case
+      expect(styles.color).toBe('#ffffff');
     });
 
     it('should return 100% intensity yellow background and black text for value 100 with yellow base', () => {
-      // Luminance of #ffff00 (Yellow) is approx 0.9278. If >= 0.5, text is black.
       const styles = component.getDynamicRowStyles(100, '#ffff00');
-      expect(styles.backgroundColor).toBe('#ffff00'); // Full intensity yellow
-      expect(styles.color).toBe('#000000'); // Black text on yellow
+      expect(styles.backgroundColor).toBe('#ffff00');
+      expect(styles.color).toBe('#000000');
     });
 
     it('should handle invalid itemColor by defaulting (e.g., to white base), value 50 should give gray', () => {
-      // Default base is white {r:255,g:255,b:255}. Intensity 0.5 -> (128,128,128) -> #808080
-      // Luminance of #808080 is 0.5. If >=0.5, text is black.
       const styles = component.getDynamicRowStyles(50, 'invalid-color');
-      expect(styles.backgroundColor).toBe('#808080'); // Mid-gray
-      expect(styles.color).toBe('#000000'); // Black text on mid-gray
+      expect(styles.backgroundColor).toBe('#808080');
+      expect(styles.color).toBe('#000000');
     });
 
     it('should clamp values below 0 for styling (e.g. with red base)', () => {
       const styles = component.getDynamicRowStyles(-10, '#ff0000');
-      expect(styles.backgroundColor).toBe('#000000'); // Same as value 0
-      expect(styles.color).toBe('#ffffff'); // corrected case
+      expect(styles.backgroundColor).toBe('#000000');
+      expect(styles.color).toBe('#ffffff');
     });
 
     it('should clamp values above 100 for styling (e.g. with red base)', () => {
       const styles = component.getDynamicRowStyles(110, '#ff0000');
-      expect(styles.backgroundColor).toBe('#ff0000'); // Same as value 100
-      expect(styles.color).toBe('#ffffff'); // corrected case
+      expect(styles.backgroundColor).toBe('#ff0000');
+      expect(styles.color).toBe('#ffffff');
     });
   });
 });

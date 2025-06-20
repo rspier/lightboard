@@ -28,7 +28,7 @@ export class ChannelValuesTableComponent {
   }
 
   private rgbToHex(r: number, g: number, b: number): string {
-    return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).padStart(6, '0');
+    return ("#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).padStart(6, '0')).toLowerCase();
   }
 
   public getDynamicRowStyles(value: number, itemColor: string): { backgroundColor: string; color: string } {
@@ -52,7 +52,7 @@ export class ChannelValuesTableComponent {
     const luminance = (0.2126 * lumR + 0.7152 * lumG + 0.0722 * lumB);
 
     // Threshold can be adjusted, 0.5 is common
-    const textColor = luminance < 0.5 ? '#FFFFFF' : '#000000';
+    const textColor = luminance < 0.5 ? '#ffffff' : '#000000'; // Ensure lowercase
 
     return { backgroundColor: bgColor, color: textColor };
   }
