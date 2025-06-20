@@ -39,8 +39,8 @@
 .page-content {
   display: flex;
   flex-direction: row;
-  align-items: flex-start;
-  gap: 20px;
+  align-items: flex-start; /* Keep this as flex-start if crossfader shouldn't vertically stretch/center with potentially taller channel-slider-rows */
+  gap: 20px; /* This is the gap between sliders-area and where table-column was, can be adjusted if needed */
   width: 100%;
   max-width: 1200px;
   justify-content: center;
@@ -48,52 +48,49 @@
 
 .sliders-area {
   display: flex;
-  gap: 30px;
-  align-items: flex-start; /* This will align the top of .channel-slider-rows and .crossfader-column */
+  gap: 20px; /* Reduced from 30px - Space between channel sliders area and crossfader */
+  align-items: center; /* Vertically center channel-slider-rows and crossfader-column relative to each other */
   box-sizing: border-box;
 }
 
 .channel-slider-rows {
   display: flex;
   flex-direction: column;
-  gap: 15px; /* Increased gap to accommodate labels and rows */
+  gap: 8px; /* Reduced from 15px - Space between Scene 1, Combined Output, Scene 2 rows */
 }
 
 .scene-label {
   text-align: center;
-  /* margin-top: 10px; /* Adjusted by parent gap */
-  margin-bottom: 5px;
+  margin-bottom: 4px; /* Slightly reduced from 5px */
   font-size: 1.2em;
   font-weight: bold;
   color: var(--app-text-color);
+  /* margin-top is handled by parent gap or :first-child rule */
 }
 
-/* First scene label in .channel-slider-rows might not need top margin if gap handles it */
 .channel-slider-rows > .scene-label:first-child {
   margin-top: 0;
 }
 
 .slider-row {
   display: flex;
-  gap: 0; /* Potentiometers are packed */
-  justify-content: center; /* Center the group of potentiometers if they don't fill width */
+  gap: 0;
+  justify-content: center;
 }
 
 .combined-output-row {
   display: flex;
-  flex-wrap: nowrap; /* Should stay in one line */
-  gap: 0; /* Packed display components */
-  justify-content: center; /* Center the group of display components */
-  /* margin-bottom: 10px; /* Handled by parent .channel-slider-rows gap */
-  /* width: 100%; /* Let the parent dictate width, or set based on content */
+  flex-wrap: nowrap;
+  gap: 0;
+  justify-content: center;
+  /* margin-bottom will be controlled by parent .channel-slider-rows gap */
 }
 
 .crossfader-column {
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* margin-top might need adjustment if vertical alignment with rows is off */
-  /* Consider adding a label for crossfader if desired, then align with other labels */
+  /* align-self: center; /* If .sliders-area is align-items: flex-start, this can center the column itself */
 }
 
 .go-button {
@@ -119,5 +116,3 @@
   color: var(--button-disabled-text-color);
   cursor: not-allowed;
 }
-
-/* Removed .table-column styles */
