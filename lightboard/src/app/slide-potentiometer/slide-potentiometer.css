@@ -1,0 +1,38 @@
+:host {
+  display: inline-flex; /* Changed from inline-block to inline-flex for easier centering */
+  flex-direction: column;
+  align-items: center; /* Center items horizontally */
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-family: sans-serif;
+}
+
+input[type="range"][orient="vertical"] {
+  writing-mode: bt-lr; /* IE */
+  -webkit-appearance: slider-vertical; /* WebKit */
+  width: 20px; /* Adjust width for better visual */
+  height: 150px; /* Default height */
+  padding: 0 5px; /* Add some padding */
+  margin-bottom: 10px; /* Space between slider and value */
+}
+
+div {
+  cursor: pointer;
+  padding: 5px;
+  border: 1px dashed transparent; /* Visual cue for clickability */
+  min-width: 30px; /* Ensure it has some width */
+  text-align: center; /* Center the text */
+}
+
+div:hover {
+  border-color: #eee; /* Subtle hover effect */
+}
+
+input[type="number"] {
+  width: 50px; /* Adjust width as needed */
+  text-align: center;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  padding: 5px;
+}
