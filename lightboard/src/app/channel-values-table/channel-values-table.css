@@ -1,38 +1,34 @@
 :host {
-  display: block; /* Ensure it takes block-level space */
-  margin-top: 20px; /* Space above the table */
-  font-family: sans-serif;
+  display: block;
+  margin-top: 20px;
+  /* font-family is inherited */
+  background-color: var(--table-bg-color); /* Set background for the host */
 }
 
 table {
   width: 100%;
-  border-collapse: collapse; /* Clean borders */
+  border-collapse: collapse;
 }
 
 th, td {
-  border: 1px solid #ddd; /* Light grey borders */
-  padding: 8px; /* Cell padding */
-  text-align: left; /* Align text to the left */
-  /* Ensure no direct background or color is set here if it should be purely dynamic for td */
+  border: 1px solid var(--table-border-color); /* Use variable */
+  padding: 8px;
+  text-align: left;
+  /* Dynamic row styles will set td color and tr background */
 }
 
 th {
-  background-color: #f2f2f2; /* Light grey background for headers */
+  background-color: var(--table-header-bg-color); /* Use variable */
   font-weight: bold;
-  color: #333; /* Explicit text color for headers for contrast */
+  color: var(--table-header-text-color); /* Use variable */
 }
 
-/* tbody tr:nth-child(even) {
-  background-color: #f9f9f9; /* Zebra striping for rows - COMMENTED OUT */
-/* } */
-
-/* tbody tr:hover {
-  background-color: #eaeaea; /* Hover effect for rows - COMMENTED OUT */
-/* } */
+/* tbody tr:nth-child(even) - commented out, dynamic styles handle this */
+/* tbody tr:hover - commented out, dynamic styles handle this */
 
 td[colspan="3"] { /* For "No data available" row */
   text-align: center;
   font-style: italic;
-  background-color: #fff; /* Ensure it has a plain background */
-  color: #555; /* And normal text color */
+  background-color: var(--table-bg-color); /* Use variable, or a specific empty state bg */
+  color: var(--app-text-color); /* Use variable, or a specific empty state text color */
 }

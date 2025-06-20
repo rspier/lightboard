@@ -3,17 +3,18 @@
   flex-direction: column;
   align-items: center;
   padding: 10px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--slider-host-border-color); /* Use variable */
   border-radius: 4px;
-  font-family: sans-serif;
+  /* font-family is inherited */
   min-width: 60px;
+  background-color: var(--slider-host-bg-color); /* Use variable */
 }
 
 .channel-info {
   text-align: center;
   margin-bottom: 10px;
   padding: 5px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--slider-channel-info-border-color); /* Use variable */
   width: 100%;
 }
 
@@ -21,11 +22,13 @@
   margin: 0 0 5px 0;
   font-size: 1em;
   font-weight: bold;
+  color: var(--slider-text-color); /* Use variable */
 }
 
 .channel-info small {
   font-size: 0.8em;
-  color: #555;
+  color: var(--slider-text-color); /* Use variable */
+  opacity: 0.8; /* Keep opacity for dimmer effect */
 }
 
 input[type="range"][orient="vertical"] {
@@ -34,6 +37,7 @@ input[type="range"][orient="vertical"] {
   width: 20px;
   padding: 0 5px;
   margin-bottom: 10px;
+  /* Consider theming for track/thumb if needed later */
 }
 
 .value-display-container {
@@ -55,15 +59,16 @@ input[type="range"][orient="vertical"] {
   height: 100%;
   box-sizing: border-box;
   border-radius: 3px;
+  color: var(--slider-text-color); /* Use variable */
 }
 
 .value-edit-input {
-  border: 1px solid #ccc;
-  background-color: white;
+  border: 1px solid var(--slider-value-edit-border-color); /* Use variable */
+  background-color: var(--app-bg-color); /* Use app background for input field */
   padding: 4px;
   font-family: inherit;
   font-size: inherit;
-  color: inherit;
+  color: var(--app-text-color); /* Use app text color for input text */
   text-align: center;
   width: 100%;
   height: 100%;
@@ -84,7 +89,6 @@ input[type="range"][orient="vertical"] {
   -moz-appearance: textfield;
 }
 
-/* New styles for color input */
 .color-display-area {
   margin-top: 10px;
   display: flex;
@@ -92,9 +96,9 @@ input[type="range"][orient="vertical"] {
 }
 
 .color-input-native {
-  width: 40px;  /* Adjusted size */
-  height: 20px; /* Adjusted size */
-  border: 1px solid #ccc;
+  width: 40px;
+  height: 20px;
+  border: 1px solid var(--slider-color-swatch-border-color); /* Use variable */
   padding: 0;
   cursor: pointer;
   background-color: transparent;

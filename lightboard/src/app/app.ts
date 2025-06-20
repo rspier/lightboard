@@ -1,12 +1,12 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, Renderer2, Inject } from '@angular/core'; // Import Renderer2, Inject
+import { DOCUMENT, CommonModule } from '@angular/common'; // Import DOCUMENT
 import { RouterOutlet } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { SlidePotentiometerComponent } from './slide-potentiometer/slide-potentiometer';
 import { ChannelValuesTableComponent } from './channel-values-table/channel-values-table';
 import { SettingsModalComponent } from './settings-modal/settings-modal.component';
-import { ChannelSettingsService, AppSettings } from './channel-settings.service'; // Import AppSettings
-import { HttpDataService, CombinedOutputData } from './http-data.service'; // Import HttpDataService
+import { ChannelSettingsService, AppSettings } from './channel-settings.service';
+import { HttpDataService, CombinedOutputData } from './http-data.service';
 
 interface PotentiometerState {
   channelNumber: number;
@@ -30,42 +30,44 @@ interface PotentiometerState {
 export class App implements OnInit, OnDestroy {
   protected title = 'lightboard';
 
-  row1States: PotentiometerState[] = []; // Initialize as empty, will be populated
-  row2States: PotentiometerState[] = []; // Initialize as empty, will be populated
+  row1States: PotentiometerState[] = [];
+  row2States: PotentiometerState[] = [];
 
   crossfaderValue: number = 50;
-  combinedOutputStates: PotentiometerState[] = []; // Type will be PotentiometerState as it includes color
+  combinedOutputStates: PotentiometerState[] = [];
 
   isAnimating: boolean = false;
   animationInterval: any = null;
 
   showSettingsModal: boolean = false;
-  private settingsSubscription: Subscription | undefined; // Renamed from descriptionsSubscription
+  private settingsSubscription: Subscription | undefined;
 
-  // Local copies of settings
   private currentNumChannels: number;
   private currentBackendUrl: string;
   private currentCrossfadeDurationMs: number;
+  private currentDarkMode: boolean; // Store current dark mode state
 
-  // Default colors for initialization if not provided by a more complex system
   private defaultColorsScene1: string[] = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ffa500', '#800080', '#a52a2a', '#808000', '#008080', '#800000'];
   private defaultColorsScene2: string[] = ['#00ffff', '#ff00ff', '#ffff00', '#0000ff', '#00ff00', '#ff0000', '#800080', '#ffa500', '#808000', '#a52a2a', '#800000', '#008080'];
-
 
   constructor(
     private cdr: ChangeDetectorRef,
     private channelSettingsService: ChannelSettingsService,
-    private httpDataService: HttpDataService // Inject HttpDataService
+    private httpDataService: HttpDataService,
+    private renderer: Renderer2, // Add Renderer2
+    @Inject(DOCUMENT) private document: Document // Add Document
   ) {
     const initialSettings = this.channelSettingsService.getCurrentAppSettings();
     this.currentNumChannels = initialSettings.numChannels;
     this.currentBackendUrl = initialSettings.backendUrl;
     this.currentCrossfadeDurationMs = initialSettings.crossfadeDurationSeconds * 1000;
+    this.currentDarkMode = initialSettings.darkMode; // Initialize dark mode state
     this.initializeChannelStates(this.currentNumChannels);
+    this.applyTheme(this.currentDarkMode); // Apply initial theme
   }
 
   initializeChannelStates(numChannels: number): void {
-    const currentDescriptions = this.channelSettingsService.getCurrentChannelDescriptions(); // These should match numChannels due to service logic
+    const currentDescriptions = this.channelSettingsService.getCurrentChannelDescriptions();
 
     this.row1States = [];
     this.row2States = [];
@@ -73,56 +75,57 @@ export class App implements OnInit, OnDestroy {
       this.row1States.push({
         channelNumber: i + 1,
         channelDescription: currentDescriptions[i] || `Channel ${i + 1}`,
-        value: 0, // Default value
+        value: 0,
         color: this.defaultColorsScene1[i] || '#ffffff'
       });
       this.row2States.push({
         channelNumber: i + 1,
         channelDescription: currentDescriptions[i] || `Channel ${i + 1}`,
-        value: 100, // Default value
+        value: 100,
         color: this.defaultColorsScene2[i] || '#ffffff'
       });
     }
-    // Ensure combinedOutputStates is also resized/reinitialized if numChannels changes
-    // calculateCombinedOutputs will handle its structure based on row1States.
     this.calculateCombinedOutputs();
-    // this.cdr.detectChanges(); // Let Angular's scheduler handle this or call it specifically in test/event handler
   }
 
   ngOnInit(): void {
     this.settingsSubscription = this.channelSettingsService.getAppSettings().subscribe(settings => {
-      let channelsChanged = false;
+      let channelsOrDescriptionsChanged = false;
       if (this.currentNumChannels !== settings.numChannels) {
         this.currentNumChannels = settings.numChannels;
-        // Descriptions are part of settings.channelDescriptions, no need to call service again
-        this.initializeChannelStates(settings.numChannels); // This will also call calculateCombinedOutputs
-        channelsChanged = true; // initializeChannelStates calls calculateCombinedOutputs
-      }
-
-      // Update descriptions for existing states if numChannels didn't change
-      // initializeChannelStates already handles setting descriptions based on service's current state
-      // So, if numChannels changed, descriptions are set. If not, they're still current.
-      // However, if only descriptions changed in the service, not numChannels:
-      if (!channelsChanged) {
-         this.row1States = this.row1States.map((state, index) => ({
-           ...state,
-           channelDescription: settings.channelDescriptions[index] || `Channel ${index + 1}`
-         }));
-         this.row2States = this.row2States.map((state, index) => ({
-           ...state,
-           channelDescription: settings.channelDescriptions[index] || `Channel ${index + 1}`
-         }));
+        this.initializeChannelStates(settings.numChannels);
+        channelsOrDescriptionsChanged = true;
+      } else {
+        // Check if descriptions themselves changed, even if numChannels didn't
+        const newDescriptions = settings.channelDescriptions;
+        if (!this.row1States.every((state, index) => state.channelDescription === newDescriptions[index])) {
+            this.row1States = this.row1States.map((state, index) => ({
+                ...state,
+                channelDescription: newDescriptions[index] || `Channel ${index + 1}`
+              }));
+            this.row2States = this.row2States.map((state, index) => ({
+            ...state,
+            channelDescription: newDescriptions[index] || `Channel ${index + 1}`
+            }));
+            channelsOrDescriptionsChanged = true;
+        }
       }
 
       this.currentBackendUrl = settings.backendUrl;
       this.currentCrossfadeDurationMs = settings.crossfadeDurationSeconds * 1000;
 
-      if (!channelsChanged) { // Avoid double calculation if initializeChannelStates was called
+      if (this.currentDarkMode !== settings.darkMode) {
+        this.currentDarkMode = settings.darkMode;
+        this.applyTheme(this.currentDarkMode);
+      }
+
+      if (channelsOrDescriptionsChanged) {
         this.calculateCombinedOutputs();
       }
-      this.cdr.detectChanges(); // Call after all updates from settings subscription
+      this.cdr.detectChanges();
     });
-    // Initial calculation is done by initializeChannelStates in constructor which calls calculateCombinedOutputs
+    // Initial calculation is done by initializeChannelStates in constructor
+    // Initial theme application is done in constructor
   }
 
   ngOnDestroy(): void {
@@ -131,6 +134,14 @@ export class App implements OnInit, OnDestroy {
     }
     if (this.settingsSubscription) {
       this.settingsSubscription.unsubscribe();
+    }
+  }
+
+  private applyTheme(isDarkMode: boolean): void {
+    if (isDarkMode) {
+      this.renderer.addClass(this.document.body, 'dark-theme');
+    } else {
+      this.renderer.removeClass(this.document.body, 'dark-theme');
     }
   }
 
@@ -144,9 +155,7 @@ export class App implements OnInit, OnDestroy {
   }
 
   calculateCombinedOutputs(): void {
-    // Ensure row1States and row2States are defined and have the same length
     if (!this.row1States || !this.row2States || this.row1States.length !== this.row2States.length || this.row1States.length !== this.currentNumChannels) {
-      // console.warn("Channel states not ready or mismatched for calculation.");
       this.combinedOutputStates = Array.from({length: this.currentNumChannels}, (_, i) => ({
         channelNumber: i + 1,
         channelDescription: this.channelSettingsService.getCurrentChannelDescriptions()[i] || `Channel ${i+1}`,
@@ -155,18 +164,14 @@ export class App implements OnInit, OnDestroy {
       }));
       return;
     }
-
     this.combinedOutputStates = this.row1States.map((row1State, index) => {
       const row2State = this.row2States[index];
-
       const crossfadeRatio = this.crossfaderValue / 100;
       const invCrossfadeRatio = 1 - crossfadeRatio;
       const combinedValue = (row1State.value * crossfadeRatio) + (row2State.value * invCrossfadeRatio);
-
       let blendedColorHex = '#ffffff';
       const rgb1 = this.hexToRgb(row1State.color);
       const rgb2 = this.hexToRgb(row2State.color);
-
       if (rgb1 && rgb2) {
         const blendedR = Math.round(rgb1.r * crossfadeRatio + rgb2.r * invCrossfadeRatio);
         const blendedG = Math.round(rgb1.g * crossfadeRatio + rgb2.g * invCrossfadeRatio);
@@ -205,10 +210,9 @@ export class App implements OnInit, OnDestroy {
   animateCrossfader(targetValue: number): void {
     this.isAnimating = true;
     if (this.animationInterval) clearInterval(this.animationInterval);
-
-    const totalDuration = this.currentCrossfadeDurationMs; // Use dynamic duration
+    const totalDuration = this.currentCrossfadeDurationMs;
     const steps = 25;
-    const intervalDuration = totalDuration / steps;
+    const intervalDuration = Math.max(1, totalDuration / steps); // Ensure interval is at least 1ms
     const initialValue = this.crossfaderValue;
     const stepSize = (targetValue - initialValue) / steps;
     let currentStep = 0;
