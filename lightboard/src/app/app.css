@@ -1,3 +1,30 @@
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: #f0f0f0; /* Light background for header */
+  border-bottom: 1px solid #ccc;
+  margin-bottom: 15px;
+  width: 100%; /* Ensure header spans full width */
+  box-sizing: border-box; /* Include padding in width calculation */
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 1.5em;
+  color: #333;
+}
+
+.settings-icon {
+  font-size: 2em; /* Makes gear icon larger */
+  cursor: pointer;
+  color: #333;
+}
+.settings-icon:hover {
+  opacity: 0.7;
+}
+
 /* Styles for the new layout */
 .main-layout {
   display: flex;
@@ -53,7 +80,6 @@
   display: flex;
   flex-direction: column; /* Stack slider and button */
   align-items: center;    /* Center items horizontally in the column */
-  /* margin-top: 37px; /* This was for alignment, may need removal or adjustment */
 }
 
 .go-button {

@@ -1,7 +1,9 @@
 import { TestBed, ComponentFixture } from '@angular/core/testing'; // Removed fakeAsync, tick
 import { App } from './app';
 import { By } from '@angular/platform-browser';
-// CommonModule is imported by App component itself (standalone)
+import { ChannelSettingsService } from './channel-settings.service'; // Import service
+import { SettingsModalComponent } from './settings-modal/settings-modal.component'; // Import modal
+import { BehaviorSubject, Subscription } from 'rxjs';
 
 // Define the interface for consistent typing in tests
 interface PotentiometerState {
@@ -14,11 +16,25 @@ interface PotentiometerState {
 describe('App', () => {
   let fixture: ComponentFixture<App>;
   let app: App;
+  let mockChannelSettingsService: jasmine.SpyObj<ChannelSettingsService>;
+  let descriptionsSubject: BehaviorSubject<string[]>;
+  const initialMockDescriptions = ['Apple', 'Banana', 'Cherry', 'Date'];
+
 
   beforeEach(async () => {
+    descriptionsSubject = new BehaviorSubject<string[]>([...initialMockDescriptions]);
+    mockChannelSettingsService = jasmine.createSpyObj(
+        'ChannelSettingsService',
+        ['getCurrentDescriptions', 'updateDescription', 'updateAllDescriptions', 'resetToDefaults', 'getDescriptions'] // Added getDescriptions to methods
+    );
+    mockChannelSettingsService.getCurrentDescriptions.and.returnValue([...initialMockDescriptions]);
+    mockChannelSettingsService.getDescriptions.and.returnValue(descriptionsSubject.asObservable()); // Mock its return value
+
     await TestBed.configureTestingModule({
-      imports: [App],
-      providers: []
+      imports: [App], // App is standalone and imports SettingsModalComponent itself
+      providers: [
+        { provide: ChannelSettingsService, useValue: mockChannelSettingsService }
+      ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(App);
@@ -30,10 +46,6 @@ describe('App', () => {
       clearInterval(app.animationInterval);
       app.animationInterval = null;
     }
-    // Ensure Jasmine clock is uninstalled if a test installed it
-    // Check if jasmine.clock is installed before trying to uninstall
-    // This check might be specific to Jasmine versions or how it's exposed.
-    // A simple uninstall is usually fine.
     if ((jasmine.clock() as any).isInstalled && (jasmine.clock() as any).isInstalled()) {
          jasmine.clock().uninstall();
     }
@@ -49,15 +61,18 @@ describe('App', () => {
     expect(compiled.query(By.css('.sliders-area'))).toBeTruthy();
   });
 
-  it('should have initial states including colors', () => {
+  it('should have initial states including colors based on service', () => {
+    // Constructor now uses service, ngOnInit subscribes and then calls calculateCombinedOutputs.
+    // So, detectChanges will trigger ngOnInit.
     fixture.detectChanges();
+    expect(mockChannelSettingsService.getCurrentDescriptions).toHaveBeenCalled();
     expect(app.row1States.length).toBe(4);
-    expect(app.row1States[0].channelDescription).toBe('Apple');
-    expect(app.row1States[0].value).toBe(0);
+    expect(app.row1States[0].channelDescription).toBe(initialMockDescriptions[0]);
+    expect(app.row1States[0].value).toBe(0); // Default value from component
     expect(app.row1States[0].color).toBe('#ff0000');
 
     expect(app.row2States.length).toBe(4);
-    expect(app.row2States[0].channelDescription).toBe('Apple');
+    expect(app.row2States[0].channelDescription).toBe(initialMockDescriptions[0]);
     expect(app.row2States[0].value).toBe(100);
     expect(app.row2States[0].color).toBe('#00ffff');
 
@@ -69,15 +84,69 @@ describe('App', () => {
     expect(app.combinedOutputStates.length).toBe(4);
 
     expect(app.combinedOutputStates[0].value).toBe(50);
-    expect(app.combinedOutputStates[0].channelDescription).toBe('Apple');
+    expect(app.combinedOutputStates[0].channelDescription).toBe(initialMockDescriptions[0]);
     expect(app.combinedOutputStates[0].color).toBe('#808080');
 
     expect(app.combinedOutputStates[1].value).toBe(50);
+    expect(app.combinedOutputStates[1].channelDescription).toBe(initialMockDescriptions[1]);
     expect(app.combinedOutputStates[1].color).toBe('#808080');
   });
 
+  describe('ChannelSettingsService Interaction', () => {
+    it('should subscribe to description changes and update states', () => {
+      fixture.detectChanges(); // ngOnInit called, subscription made
+      spyOn(app, 'calculateCombinedOutputs').and.callThrough();
+      spyOn(app['cdr'], 'detectChanges').and.callThrough();
+
+
+      const newDescriptions = ['NewApple', 'NewBanana', 'NewCherry', 'NewDate'];
+      descriptionsSubject.next(newDescriptions);
+      fixture.detectChanges(); // Process the emission and subsequent updates
+
+      expect(app.row1States[0].channelDescription).toBe('NewApple');
+      expect(app.row2States[0].channelDescription).toBe('NewApple');
+      expect(app.calculateCombinedOutputs).toHaveBeenCalled();
+      expect(app['cdr'].detectChanges).toHaveBeenCalled(); // Check if cdr.detectChanges was called
+    });
+  });
+
+  describe('Settings Modal Toggling', () => {
+    it('should toggle showSettingsModal flag', () => {
+      expect(app.showSettingsModal).toBeFalse();
+      app.toggleSettingsModal();
+      expect(app.showSettingsModal).toBeTrue();
+      app.toggleSettingsModal();
+      expect(app.showSettingsModal).toBeFalse();
+    });
+
+    it('should show settings modal when settings icon is clicked', () => {
+      fixture.detectChanges();
+      const settingsIcon = fixture.debugElement.query(By.css('.settings-icon')).nativeElement;
+      settingsIcon.click();
+      fixture.detectChanges();
+      expect(app.showSettingsModal).toBeTrue();
+      const modalElement = fixture.debugElement.query(By.css('app-settings-modal'));
+      expect(modalElement).toBeTruthy();
+    });
+
+    it('should hide settings modal on (close) event', () => {
+      app.showSettingsModal = true;
+      fixture.detectChanges();
+
+      const modalComponentDebugElement = fixture.debugElement.query(By.css('app-settings-modal'));
+      expect(modalComponentDebugElement).toBeTruthy();
+
+      // Emit the 'close' event from the modal component instance
+      modalComponentDebugElement.componentInstance.close.emit();
+      fixture.detectChanges();
+      expect(app.showSettingsModal).toBeFalse();
+    });
+  });
+
+  // calculateCombinedOutputs tests remain the same as they test pure logic
   describe('calculateCombinedOutputs with colors', () => {
     beforeEach(() => {
+      // Reset states for predictable tests, using the PotentiometerState interface
       app.row1States = [
         { channelNumber: 1, channelDescription: "Ch1", value: 10, color: '#ff0000' },
         { channelNumber: 2, channelDescription: "Ch2", value: 80, color: '#0000ff' }
@@ -125,20 +194,11 @@ describe('App', () => {
 
   describe('Go Button and Crossfader Animation', () => {
     afterEach(() => {
-      // Ensure Jasmine clock is uninstalled after each test in this describe block
-      // Check if installed, as installing an already installed clock throws an error.
-      // Similarly, uninstalling a not installed clock can also throw an error.
-      // A more robust check might be needed depending on Jasmine version nuances.
-      // For now, assume it's safe or that a double uninstall is benign.
       if (typeof (jasmine.clock() as any).uninstall === 'function') {
-        try {
-          jasmine.clock().uninstall(); // Attempt to uninstall
-        } catch (e) {
-          // Catch potential errors if clock wasn't installed or already uninstalled
-        }
+        try { jasmine.clock().uninstall(); } catch (e) {}
       }
     });
-
+    // ... (existing onGoButtonClick tests) ...
     it('onGoButtonClick should call animateCrossfader with 0 if crossfaderValue >= 50', () => {
       spyOn(app, 'animateCrossfader');
       app.crossfaderValue = 70;
@@ -160,14 +220,15 @@ describe('App', () => {
       expect(app.animateCrossfader).not.toHaveBeenCalled();
     });
 
+    // Animation tests using Jasmine Clock (previously commented out)
     it('animateCrossfader should animate crossfader value from 0 to 100', () => {
       jasmine.clock().install();
       spyOn(app, 'onPotentiometerChange').and.callThrough();
       app.crossfaderValue = 0;
       const target = 100;
-      const duration = 500; // ms
-      const steps = 25; // Number of steps for the animation
-      const intervalDuration = duration / steps; // 20ms
+      const duration = 500;
+      const steps = 25;
+      const intervalDuration = duration / steps;
 
       app.animateCrossfader(target);
       expect(app.isAnimating).toBeTrue();
@@ -188,9 +249,9 @@ describe('App', () => {
       spyOn(app, 'onPotentiometerChange').and.callThrough();
       app.crossfaderValue = 100;
       const target = 0;
-      const duration = 500; // ms
-      const steps = 25; // Number of steps for the animation
-      const intervalDuration = duration / steps; // 20ms
+      const duration = 500;
+      const steps = 25;
+      const intervalDuration = duration / steps;
 
       app.animateCrossfader(target);
       expect(app.isAnimating).toBeTrue();
@@ -206,8 +267,8 @@ describe('App', () => {
 
     it('Go button should call onGoButtonClick and be disabled when isAnimating is true', () => {
       fixture.detectChanges();
-      spyOn(app, 'onGoButtonClick').and.callThrough(); // Allow call through to test disabled state
-      spyOn(app, 'animateCrossfader'); // But spy on animateCrossfader to prevent actual animation
+      spyOn(app, 'onGoButtonClick').and.callThrough();
+      spyOn(app, 'animateCrossfader');
 
       const goButton = fixture.debugElement.query(By.css('.go-button')).nativeElement;
       expect(goButton.disabled).toBeFalse();
@@ -215,16 +276,11 @@ describe('App', () => {
       goButton.click();
       expect(app.onGoButtonClick).toHaveBeenCalled();
 
-      // Manually set isAnimating to true after onGoButtonClick (which calls animateCrossfader)
-      // because animateCrossfader itself sets isAnimating to true.
-      // If we only spy on animateCrossfader, isAnimating won't be set by the spy.
-      // So, we either let animateCrossfader run (and use jasmine clock) or set manually for this specific check.
-      // For simplicity here, let's assume onGoButtonClick leads to isAnimating being true.
-      app.isAnimating = true; // Simulate start of animation
+      app.isAnimating = true;
       fixture.detectChanges();
       expect(goButton.disabled).toBeTrue();
 
-      app.isAnimating = false; // Reset for other tests
+      app.isAnimating = false;
       fixture.detectChanges();
       expect(goButton.disabled).toBeFalse();
     });

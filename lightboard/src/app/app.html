@@ -1,3 +1,8 @@
+<div class="app-header">
+  <h1>Lightboard Control</h1>
+  <span class="settings-icon" (click)="toggleSettingsModal()" title="Settings">&#9881;</span>
+</div>
+
 <main class="main">
   <div class="main-layout">
     <div class="page-content">
@@ -49,5 +54,7 @@
     </div>
   </div>
 </main>
+
+<app-settings-modal *ngIf="showSettingsModal" (close)="toggleSettingsModal()"></app-settings-modal>
 
 <router-outlet />

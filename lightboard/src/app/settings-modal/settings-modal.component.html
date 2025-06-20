@@ -1,0 +1,16 @@
+<div class="modal-overlay" (click)="cancel()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <h2>Settings - Channel Names</h2>
+    <form (ngSubmit)="saveSettings()">
+      <div class="form-group" *ngFor="let description of descriptions; let i = index; trackBy: trackByIndex">
+        <label for="channel-name-{{i}}">Channel {{ i + 1 }}:</label>
+        <input type="text" id="channel-name-{{i}}" [(ngModel)]="descriptions[i]" name="channel-name-{{i}}" required>
+      </div>
+      <div class="modal-actions">
+        <button type="button" (click)="resetToDefaults()" class="button-secondary">Reset to Defaults</button>
+        <button type="button" (click)="cancel()" class="button-secondary">Cancel</button>
+        <button type="submit" class="button-primary">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
