@@ -21,6 +21,17 @@
               [showChannelInfo]="true">
             </app-slide-potentiometer>
           </div>
+
+          <h2 class="scene-label">Combined Output</h2>
+          <div class="combined-output-row">
+            <app-combined-output-display
+              *ngFor="let state of combinedOutputStates; trackBy: trackByCombinedState"
+              [description]="state.channelDescription"
+              [value]="state.value"
+              [color]="state.color">
+            </app-combined-output-display>
+          </div>
+
           <h2 class="scene-label">Scene 2</h2>
           <div class="slider-row" id="row2">
             <app-slide-potentiometer
@@ -48,9 +59,7 @@
           <button (click)="onGoButtonClick()" class="go-button" [disabled]="isAnimating">Go</button>
         </div>
       </div>
-      <div class="table-column">
-        <app-channel-values-table [channelData]="combinedOutputStates"></app-channel-values-table>
-      </div>
+      <!-- Old table column removed -->
     </div>
   </div>
 </main>

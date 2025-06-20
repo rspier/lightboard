@@ -1,9 +1,10 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, Renderer2, Inject } from '@angular/core'; // Import Renderer2, Inject
-import { DOCUMENT, CommonModule } from '@angular/common'; // Import DOCUMENT
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, Renderer2, Inject } from '@angular/core';
+import { DOCUMENT, CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { SlidePotentiometerComponent } from './slide-potentiometer/slide-potentiometer';
-import { ChannelValuesTableComponent } from './channel-values-table/channel-values-table';
+// Removed: import { ChannelValuesTableComponent } from './channel-values-table/channel-values-table';
+import { CombinedOutputDisplayComponent } from './combined-output-display/combined-output-display.component'; // Import new component
 import { SettingsModalComponent } from './settings-modal/settings-modal.component';
 import { ChannelSettingsService, AppSettings } from './channel-settings.service';
 import { HttpDataService, CombinedOutputData } from './http-data.service';
@@ -21,7 +22,8 @@ interface PotentiometerState {
     CommonModule,
     RouterOutlet,
     SlidePotentiometerComponent,
-    ChannelValuesTableComponent,
+    // ChannelValuesTableComponent, // Removed
+    CombinedOutputDisplayComponent, // Added
     SettingsModalComponent
   ],
   templateUrl: './app.html',
@@ -45,7 +47,7 @@ export class App implements OnInit, OnDestroy {
   private currentNumChannels: number;
   private currentBackendUrl: string;
   private currentCrossfadeDurationMs: number;
-  private currentDarkMode: boolean; // Store current dark mode state
+  private currentDarkMode: boolean;
 
   private defaultColorsScene1: string[] = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ffa500', '#800080', '#a52a2a', '#808000', '#008080', '#800000'];
   private defaultColorsScene2: string[] = ['#00ffff', '#ff00ff', '#ffff00', '#0000ff', '#00ff00', '#ff0000', '#800080', '#ffa500', '#808000', '#a52a2a', '#800000', '#008080'];
@@ -54,16 +56,16 @@ export class App implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private channelSettingsService: ChannelSettingsService,
     private httpDataService: HttpDataService,
-    private renderer: Renderer2, // Add Renderer2
-    @Inject(DOCUMENT) private document: Document // Add Document
+    private renderer: Renderer2,
+    @Inject(DOCUMENT) private document: Document
   ) {
     const initialSettings = this.channelSettingsService.getCurrentAppSettings();
     this.currentNumChannels = initialSettings.numChannels;
     this.currentBackendUrl = initialSettings.backendUrl;
     this.currentCrossfadeDurationMs = initialSettings.crossfadeDurationSeconds * 1000;
-    this.currentDarkMode = initialSettings.darkMode; // Initialize dark mode state
+    this.currentDarkMode = initialSettings.darkMode;
     this.initializeChannelStates(this.currentNumChannels);
-    this.applyTheme(this.currentDarkMode); // Apply initial theme
+    this.applyTheme(this.currentDarkMode);
   }
 
   initializeChannelStates(numChannels: number): void {
@@ -96,19 +98,28 @@ export class App implements OnInit, OnDestroy {
         this.initializeChannelStates(settings.numChannels);
         channelsOrDescriptionsChanged = true;
       } else {
-        // Check if descriptions themselves changed, even if numChannels didn't
         const newDescriptions = settings.channelDescriptions;
-        if (!this.row1States.every((state, index) => state.channelDescription === newDescriptions[index])) {
-            this.row1States = this.row1States.map((state, index) => ({
-                ...state,
-                channelDescription: newDescriptions[index] || `Channel ${index + 1}`
-              }));
-            this.row2States = this.row2States.map((state, index) => ({
+        let descriptionsActuallyChanged = false;
+        this.row1States = this.row1States.map((state, index) => {
+          if(state.channelDescription !== (newDescriptions[index] || `Channel ${index + 1}`)) {
+            descriptionsActuallyChanged = true;
+          }
+          return {
             ...state,
             channelDescription: newDescriptions[index] || `Channel ${index + 1}`
-            }));
-            channelsOrDescriptionsChanged = true;
-        }
+          };
+        });
+        this.row2States = this.row2States.map((state, index) => {
+          // Assuming row2States descriptions are kept in sync or derived similarly
+          if(state.channelDescription !== (newDescriptions[index] || `Channel ${index + 1}`)) {
+            descriptionsActuallyChanged = true;
+          }
+          return {
+            ...state,
+            channelDescription: newDescriptions[index] || `Channel ${index + 1}`
+          };
+        });
+        if(descriptionsActuallyChanged) channelsOrDescriptionsChanged = true;
       }
 
       this.currentBackendUrl = settings.backendUrl;
@@ -124,8 +135,6 @@ export class App implements OnInit, OnDestroy {
       }
       this.cdr.detectChanges();
     });
-    // Initial calculation is done by initializeChannelStates in constructor
-    // Initial theme application is done in constructor
   }
 
   ngOnDestroy(): void {
@@ -155,15 +164,20 @@ export class App implements OnInit, OnDestroy {
   }
 
   calculateCombinedOutputs(): void {
-    if (!this.row1States || !this.row2States || this.row1States.length !== this.row2States.length || this.row1States.length !== this.currentNumChannels) {
-      this.combinedOutputStates = Array.from({length: this.currentNumChannels}, (_, i) => ({
-        channelNumber: i + 1,
-        channelDescription: this.channelSettingsService.getCurrentChannelDescriptions()[i] || `Channel ${i+1}`,
-        value: 0,
-        color: '#000000'
-      }));
+    if (!this.row1States || !this.row2States || this.row1States.length !== this.row2States.length || this.row1States.length === 0 || this.row1States.length !== this.currentNumChannels ) {
+      // If currentNumChannels is 0 (or states are not aligned), create empty combined states or based on numChannels
+      this.combinedOutputStates = Array.from({length: this.currentNumChannels || 0}, (_, i) => {
+        const desc = this.channelSettingsService.getCurrentChannelDescriptions();
+        return {
+          channelNumber: i + 1,
+          channelDescription: (desc && desc[i]) || `Channel ${i+1}`,
+          value: 0,
+          color: '#000000'
+        };
+      });
       return;
     }
+
     this.combinedOutputStates = this.row1States.map((row1State, index) => {
       const row2State = this.row2States[index];
       const crossfadeRatio = this.crossfaderValue / 100;
@@ -212,7 +226,7 @@ export class App implements OnInit, OnDestroy {
     if (this.animationInterval) clearInterval(this.animationInterval);
     const totalDuration = this.currentCrossfadeDurationMs;
     const steps = 25;
-    const intervalDuration = Math.max(1, totalDuration / steps); // Ensure interval is at least 1ms
+    const intervalDuration = Math.max(1, totalDuration / steps);
     const initialValue = this.crossfaderValue;
     const stepSize = (targetValue - initialValue) / steps;
     let currentStep = 0;
@@ -234,5 +248,10 @@ export class App implements OnInit, OnDestroy {
 
   toggleSettingsModal(): void {
     this.showSettingsModal = !this.showSettingsModal;
+  }
+
+  // Added for *ngFor trackBy in app.html for combinedOutputStates
+  public trackByCombinedState(index: number, item: PotentiometerState): number {
+    return item.channelNumber;
   }
 }
