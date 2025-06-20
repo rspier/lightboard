@@ -1,94 +1,213 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { map } from 'rxjs/operators'; // Explicit import for map
+
+// Interface for all settings
+export interface AppSettings {
+  numChannels: number;
+  channelDescriptions: string[];
+  backendUrl: string;
+  crossfadeDurationSeconds: number;
+}
+
+// Interface for channel-specific data (used internally by components)
+// Not directly used by the service's storage but defines a structure for consumers
+export interface ChannelConfig {
+  description: string;
+  color: string;
+}
+
 
 @Injectable({
   providedIn: 'root'
 })
 export class ChannelSettingsService {
-  private localStorageKey = 'channelDescriptions';
-  private defaultDescriptions: string[] = ['Apple', 'Banana', 'Cherry', 'Date'];
+  // localStorage Keys
+  private settingsKey = 'appSettings_v1';
 
-  // Initialize with default or loaded values.
-  // Private BehaviorSubject to hold and emit the current descriptions.
-  private channelDescriptionsSubject: BehaviorSubject<string[]>;
+  // Default values
+  private readonly defaultNumChannels = 4;
+  private readonly defaultBackendUrl = '';
+  private readonly defaultCrossfadeDurationSeconds = 0.5;
+
+  private getDefaultDescriptions(count: number): string[] {
+    return Array.from({ length: count }, (_, i) => `Channel ${i + 1}`);
+  }
+
+  private appSettingsSubject: BehaviorSubject<AppSettings>;
 
   constructor() {
-    const loadedDescriptions = this.loadDescriptions();
-    this.channelDescriptionsSubject = new BehaviorSubject<string[]>(loadedDescriptions);
+    const loadedSettings = this.loadSettings();
+    this.appSettingsSubject = new BehaviorSubject<AppSettings>(loadedSettings);
   }
 
-  // Public observable for components to subscribe to description changes.
-  public getDescriptions(): Observable<string[]> {
-    return this.channelDescriptionsSubject.asObservable();
-  }
-
-  // Get the current value synchronously.
-  public getCurrentDescriptions(): string[] {
-    return this.channelDescriptionsSubject.getValue();
-  }
-
-  // Update a specific description.
-  public updateDescription(index: number, newDescription: string): void {
-    const currentDescriptions = [...this.channelDescriptionsSubject.getValue()]; // Create a new array
-    if (index >= 0 && index < currentDescriptions.length) {
-      currentDescriptions[index] = newDescription;
-      this.saveDescriptions(currentDescriptions);
-      this.channelDescriptionsSubject.next(currentDescriptions);
-    } else {
-      console.error(`ChannelSettingsService: Index ${index} out of bounds.`);
-    }
-  }
-
-  // Update all descriptions at once (e.g., from a settings panel save).
-  public updateAllDescriptions(newDescriptions: string[]): void {
-    if (newDescriptions && newDescriptions.length === this.defaultDescriptions.length) {
-      const descriptionsToSave = [...newDescriptions]; // Create a new array
-      this.saveDescriptions(descriptionsToSave);
-      this.channelDescriptionsSubject.next(descriptionsToSave);
-    } else {
-      console.error('ChannelSettingsService: Invalid descriptions array provided for updateAll.');
-    }
-  }
-
-  // Helper to load descriptions from localStorage.
-  private loadDescriptions(): string[] {
+  private loadSettings(): AppSettings {
     try {
-      const storedDescriptions = localStorage.getItem(this.localStorageKey);
-      if (storedDescriptions) {
-        const parsed = JSON.parse(storedDescriptions);
-        // Basic validation: ensure it's an array of 4 strings
-        if (Array.isArray(parsed) && parsed.length === this.defaultDescriptions.length && parsed.every(item => typeof item === 'string')) {
-          return parsed;
-        } else {
-          // console.warn('ChannelSettingsService: Stored descriptions format is invalid. Using defaults.');
-          // Fallback to default if format is wrong
+      const storedSettingsJson = localStorage.getItem(this.settingsKey);
+      if (storedSettingsJson) {
+        const storedSettings = JSON.parse(storedSettingsJson) as Partial<AppSettings>;
+
+        let numChannels = storedSettings.numChannels ?? this.defaultNumChannels;
+        if (typeof numChannels !== 'number' || numChannels < 1 || numChannels > 12) {
+          numChannels = this.defaultNumChannels;
         }
+
+        let descriptions = storedSettings.channelDescriptions ?? this.getDefaultDescriptions(numChannels);
+        if (!Array.isArray(descriptions) || !descriptions.every(d => typeof d === 'string')) {
+            descriptions = this.getDefaultDescriptions(numChannels);
+        }
+
+        if (descriptions.length !== numChannels) {
+            const newDescriptions = this.getDefaultDescriptions(numChannels);
+            descriptions.forEach((desc, i) => {
+                if (i < numChannels && i < newDescriptions.length) newDescriptions[i] = desc;
+            });
+            descriptions = newDescriptions;
+        }
+
+        let backendUrl = storedSettings.backendUrl ?? this.defaultBackendUrl;
+        if (typeof backendUrl !== 'string' ) { // Allow empty string, but not other types
+            backendUrl = this.defaultBackendUrl;
+        } else if (backendUrl && !/^https?:\/\//.test(backendUrl) && !/^wss?:\/\//.test(backendUrl)) { // Allow ws/wss for websockets
+            backendUrl = this.defaultBackendUrl;
+        }
+
+        let crossfadeDurationSeconds = storedSettings.crossfadeDurationSeconds ?? this.defaultCrossfadeDurationSeconds;
+        if (typeof crossfadeDurationSeconds !== 'number' || crossfadeDurationSeconds <= 0 || crossfadeDurationSeconds > 300) {
+            crossfadeDurationSeconds = this.defaultCrossfadeDurationSeconds;
+        }
+
+        return {
+          numChannels,
+          channelDescriptions: descriptions,
+          backendUrl,
+          crossfadeDurationSeconds
+        };
       }
     } catch (error) {
-      // console.error('ChannelSettingsService: Error loading descriptions from localStorage', error);
-      // Fallback to default on error
+      // console.error('ChannelSettingsService: Error loading settings from localStorage', error);
     }
-    // If nothing stored, or error, or invalid format, use defaults and save them.
-    // Ensure defaultDescriptions itself is not modified if saveDescriptions mutates its input.
-    const defaultsCopy = [...this.defaultDescriptions];
-    this.saveDescriptions(defaultsCopy);
-    return defaultsCopy;
+
+    const defaultSettings: AppSettings = {
+      numChannels: this.defaultNumChannels,
+      channelDescriptions: this.getDefaultDescriptions(this.defaultNumChannels),
+      backendUrl: this.defaultBackendUrl,
+      crossfadeDurationSeconds: this.defaultCrossfadeDurationSeconds,
+    };
+    this.saveSettings(defaultSettings); // Save defaults if first time or error
+    return defaultSettings;
   }
 
-  // Helper to save descriptions to localStorage.
-  private saveDescriptions(descriptions: string[]): void {
+  private saveSettings(settings: AppSettings): void {
     try {
-      localStorage.setItem(this.localStorageKey, JSON.stringify(descriptions));
+      localStorage.setItem(this.settingsKey, JSON.stringify(settings));
     } catch (error) {
-      console.error('ChannelSettingsService: Error saving descriptions to localStorage', error);
+      // console.error('ChannelSettingsService: Error saving settings to localStorage', error);
     }
   }
 
-  // Method to reset to default descriptions
+  public getAppSettings(): Observable<AppSettings> {
+    return this.appSettingsSubject.asObservable();
+  }
+
+  public getCurrentAppSettings(): AppSettings {
+    return this.appSettingsSubject.getValue();
+  }
+
+  public getNumChannels(): Observable<number> {
+    return this.appSettingsSubject.pipe(map(settings => settings.numChannels));
+  }
+  public getCurrentNumChannels(): number {
+    return this.appSettingsSubject.getValue().numChannels;
+  }
+
+  public getChannelDescriptions(): Observable<string[]> {
+    return this.appSettingsSubject.pipe(map(settings => settings.channelDescriptions));
+  }
+  public getCurrentChannelDescriptions(): string[] {
+    return this.appSettingsSubject.getValue().channelDescriptions;
+  }
+
+  public getBackendUrl(): Observable<string> {
+    return this.appSettingsSubject.pipe(map(settings => settings.backendUrl));
+  }
+  public getCurrentBackendUrl(): string {
+    return this.appSettingsSubject.getValue().backendUrl;
+  }
+
+  public getCrossfadeDurationSeconds(): Observable<number> {
+    return this.appSettingsSubject.pipe(map(settings => settings.crossfadeDurationSeconds));
+  }
+  public getCurrentCrossfadeDurationSeconds(): number {
+    return this.appSettingsSubject.getValue().crossfadeDurationSeconds;
+  }
+
+  public updateNumChannels(newCount: number): void {
+    if (typeof newCount !== 'number' || newCount < 1 || newCount > 12) {
+      return;
+    }
+    const currentSettings = this.appSettingsSubject.getValue();
+    const oldDescriptions = currentSettings.channelDescriptions;
+    const newDescriptions = this.getDefaultDescriptions(newCount);
+
+    for (let i = 0; i < Math.min(oldDescriptions.length, newCount); i++) {
+      newDescriptions[i] = oldDescriptions[i];
+    }
+
+    const newSettings = { ...currentSettings, numChannels: newCount, channelDescriptions: newDescriptions };
+    this.saveSettings(newSettings);
+    this.appSettingsSubject.next(newSettings);
+  }
+
+  public updateChannelDescriptions(newDescriptions: string[]): void {
+    const currentSettings = this.appSettingsSubject.getValue();
+    if (!Array.isArray(newDescriptions) || newDescriptions.length !== currentSettings.numChannels || !newDescriptions.every(d => typeof d === 'string')) {
+        return;
+    }
+    const newSettings = { ...currentSettings, channelDescriptions: [...newDescriptions] };
+    this.saveSettings(newSettings);
+    this.appSettingsSubject.next(newSettings);
+  }
+
+  public updateSingleChannelDescription(index: number, description: string): void {
+    const currentSettings = this.appSettingsSubject.getValue();
+    if (index >= 0 && index < currentSettings.numChannels && typeof description === 'string') {
+      const newDescriptions = [...currentSettings.channelDescriptions];
+      newDescriptions[index] = description;
+      // Use updateChannelDescriptions to ensure validation and consistent update path
+      this.updateChannelDescriptions(newDescriptions);
+    }
+  }
+
+  public updateBackendUrl(newUrl: string): void {
+    if (typeof newUrl !== 'string') return; // Basic type check
+    if (newUrl && !/^https?:\/\//.test(newUrl) && !/^wss?:\/\//.test(newUrl)) {
+      return;
+    }
+    const currentSettings = this.appSettingsSubject.getValue();
+    const newSettings = { ...currentSettings, backendUrl: newUrl };
+    this.saveSettings(newSettings);
+    this.appSettingsSubject.next(newSettings);
+  }
+
+  public updateCrossfadeDurationSeconds(newDuration: number): void {
+    if (typeof newDuration !== 'number' || newDuration <= 0 || newDuration > 300) {
+      return;
+    }
+    const currentSettings = this.appSettingsSubject.getValue();
+    const newSettings = { ...currentSettings, crossfadeDurationSeconds: newDuration };
+    this.saveSettings(newSettings);
+    this.appSettingsSubject.next(newSettings);
+  }
+
   public resetToDefaults(): void {
-    // Ensure defaultDescriptions itself is not modified if saveDescriptions mutates its input.
-    const defaultsCopy = [...this.defaultDescriptions];
-    this.saveDescriptions(defaultsCopy);
-    this.channelDescriptionsSubject.next(defaultsCopy);
+    const defaultSettings: AppSettings = {
+      numChannels: this.defaultNumChannels,
+      channelDescriptions: this.getDefaultDescriptions(this.defaultNumChannels),
+      backendUrl: this.defaultBackendUrl,
+      crossfadeDurationSeconds: this.defaultCrossfadeDurationSeconds,
+    };
+    this.saveSettings(defaultSettings);
+    this.appSettingsSubject.next(defaultSettings);
   }
 }
