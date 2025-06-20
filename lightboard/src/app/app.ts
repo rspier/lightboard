@@ -86,7 +86,7 @@ export class App implements OnInit, OnDestroy {
     // Ensure combinedOutputStates is also resized/reinitialized if numChannels changes
     // calculateCombinedOutputs will handle its structure based on row1States.
     this.calculateCombinedOutputs();
-    this.cdr.detectChanges(); // Trigger change detection if states are rebuilt
+    // this.cdr.detectChanges(); // Let Angular's scheduler handle this or call it specifically in test/event handler
   }
 
   ngOnInit(): void {
@@ -120,9 +120,9 @@ export class App implements OnInit, OnDestroy {
       if (!channelsChanged) { // Avoid double calculation if initializeChannelStates was called
         this.calculateCombinedOutputs();
       }
-      this.cdr.detectChanges();
+      this.cdr.detectChanges(); // Call after all updates from settings subscription
     });
-    // Initial calculation is done by initializeChannelStates in constructor
+    // Initial calculation is done by initializeChannelStates in constructor which calls calculateCombinedOutputs
   }
 
   ngOnDestroy(): void {
