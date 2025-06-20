@@ -1,12 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideZonelessChangeDetection } from '@angular/core'; // Import for zoneless
+import { provideZonelessChangeDetection } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ChannelValuesTableComponent } from './channel-values-table';
 import { By } from '@angular/platform-browser';
 
-describe('ChannelValuesTableComponent', () => { // Renamed
-  let component: ChannelValuesTableComponent; // Renamed
-  let fixture: ComponentFixture<ChannelValuesTableComponent>; // Renamed
+describe('ChannelValuesTableComponent', () => {
+  let component: ChannelValuesTableComponent;
+  let fixture: ComponentFixture<ChannelValuesTableComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -14,13 +14,12 @@ describe('ChannelValuesTableComponent', () => { // Renamed
         CommonModule,
         ChannelValuesTableComponent
       ],
-      providers: [provideZonelessChangeDetection()] // Add for zoneless
+      providers: [provideZonelessChangeDetection()]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(ChannelValuesTableComponent); // Renamed
+    fixture = TestBed.createComponent(ChannelValuesTableComponent);
     component = fixture.componentInstance;
-    // fixture.detectChanges() will be called in individual tests
   });
 
   it('should create', () => {
@@ -50,7 +49,6 @@ describe('ChannelValuesTableComponent', () => { // Renamed
   });
 
   it('should display "No data available." when channelData is null', () => {
-    // Type gymnastics as component.channelData cannot be null by default
     (component as any).channelData = null;
     fixture.detectChanges();
 
@@ -67,23 +65,62 @@ describe('ChannelValuesTableComponent', () => { // Renamed
     fixture.detectChanges();
 
     const dataRows = fixture.debugElement.queryAll(By.css('tbody tr'));
-    // Expect 2 data rows, no "No data available" row.
-    // The "No data available" row has a td with colspan=3, data rows don't.
     const actualDataRows = dataRows.filter(row => !row.query(By.css('td[colspan="3"]')));
     expect(actualDataRows.length).toBe(2);
 
-    // Check content of the first data row
     const firstRowCells = actualDataRows[0].queryAll(By.css('td'));
     expect(firstRowCells.length).toBe(3);
     expect(firstRowCells[0].nativeElement.textContent).toBe('1');
     expect(firstRowCells[1].nativeElement.textContent).toBe('Desc 1');
     expect(firstRowCells[2].nativeElement.textContent).toBe('10');
 
-    // Check content of the second data row
     const secondRowCells = actualDataRows[1].queryAll(By.css('td'));
     expect(secondRowCells.length).toBe(3);
     expect(secondRowCells[0].nativeElement.textContent).toBe('2');
     expect(secondRowCells[1].nativeElement.textContent).toBe('Desc 2');
     expect(secondRowCells[2].nativeElement.textContent).toBe('20');
+  });
+
+  // Tests for getDynamicRowStyles method
+  describe('getDynamicRowStyles()', () => {
+    it('should return black background and white text for value 0', () => {
+      const styles = component.getDynamicRowStyles(0);
+      expect(styles.backgroundColor).toBe('#000000');
+      expect(styles.color).toBe('#FFFFFF');
+    });
+
+    it('should return white background and black text for value 100', () => {
+      const styles = component.getDynamicRowStyles(100);
+      expect(styles.backgroundColor).toBe('#ffffff');
+      expect(styles.color).toBe('#000000');
+    });
+
+    it('should return mid-gray background and black text for value 50', () => {
+      // gray = Math.round((50/100)*255) = Math.round(127.5) = 128. hex = '80'.
+      // textColor = (128 < 128) is false, so #000000.
+      const styles = component.getDynamicRowStyles(50);
+      expect(styles.backgroundColor).toBe('#808080');
+      expect(styles.color).toBe('#000000');
+    });
+
+    it('should return dark gray background and white text for value 25', () => {
+      // gray = Math.round((25/100)*255) = Math.round(63.75) = 64. hex = '40'.
+      // textColor = (64 < 128) is true, so #FFFFFF.
+      const styles = component.getDynamicRowStyles(25);
+      expect(styles.backgroundColor).toBe('#404040');
+      expect(styles.color).toBe('#FFFFFF');
+    });
+
+    it('should clamp values below 0 to 0 for styling', () => {
+      const styles = component.getDynamicRowStyles(-10);
+      expect(styles.backgroundColor).toBe('#000000');
+      expect(styles.color).toBe('#FFFFFF');
+    });
+
+    it('should clamp values above 100 to 100 for styling', () => {
+      const styles = component.getDynamicRowStyles(110);
+      expect(styles.backgroundColor).toBe('#ffffff');
+      expect(styles.color).toBe('#000000');
+    });
   });
 });

@@ -13,22 +13,26 @@ th, td {
   border: 1px solid #ddd; /* Light grey borders */
   padding: 8px; /* Cell padding */
   text-align: left; /* Align text to the left */
+  /* Ensure no direct background or color is set here if it should be purely dynamic for td */
 }
 
 th {
   background-color: #f2f2f2; /* Light grey background for headers */
   font-weight: bold;
+  color: #333; /* Explicit text color for headers for contrast */
 }
 
-tbody tr:nth-child(even) {
-  background-color: #f9f9f9; /* Zebra striping for rows */
-}
+/* tbody tr:nth-child(even) {
+  background-color: #f9f9f9; /* Zebra striping for rows - COMMENTED OUT */
+/* } */
 
-tbody tr:hover {
-  background-color: #eaeaea; /* Hover effect for rows */
-}
+/* tbody tr:hover {
+  background-color: #eaeaea; /* Hover effect for rows - COMMENTED OUT */
+/* } */
 
-td[colspan="3"] {
+td[colspan="3"] { /* For "No data available" row */
   text-align: center;
   font-style: italic;
+  background-color: #fff; /* Ensure it has a plain background */
+  color: #555; /* And normal text color */
 }
