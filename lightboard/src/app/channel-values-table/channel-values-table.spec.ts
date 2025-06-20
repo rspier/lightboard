@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { CommonModule } from '@angular/common'; // Import CommonModule
-import { ChannelValuesTableComponent } from './channel-values-table'; // Ensure correct component name
+import { provideZonelessChangeDetection } from '@angular/core'; // Import for zoneless
+import { CommonModule } from '@angular/common';
+import { ChannelValuesTableComponent } from './channel-values-table';
 import { By } from '@angular/platform-browser';
 
 describe('ChannelValuesTableComponent', () => { // Renamed
@@ -10,9 +11,10 @@ describe('ChannelValuesTableComponent', () => { // Renamed
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        CommonModule, // Add CommonModule
-        ChannelValuesTableComponent // Import the standalone component
-      ]
+        CommonModule,
+        ChannelValuesTableComponent
+      ],
+      providers: [provideZonelessChangeDetection()] // Add for zoneless
     })
     .compileComponents();
 

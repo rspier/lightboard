@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ViewChild, ElementRef } from '@angular/core'; // Added ViewChild, ElementRef
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -12,10 +12,13 @@ import { FormsModule } from '@angular/forms';
 export class SlidePotentiometerComponent {
   @Input() channelNumber: number = 0;
   @Input() channelDescription: string = '';
-  @Input() sliderHeight: string = '150px'; // Default height
+  @Input() sliderHeight: string = '150px';
+  @Input() showChannelInfo: boolean = true;
 
   @Input() value: number = 0;
   @Output() valueChange = new EventEmitter<number>();
+
+  @ViewChild('valueInput') valueInputRef!: ElementRef<HTMLInputElement>; // Added ! for definite assignment
 
   isEditing: boolean = false;
   editValue: number = 0;
@@ -23,6 +26,13 @@ export class SlidePotentiometerComponent {
   startEditing(): void {
     this.isEditing = true;
     this.editValue = this.value;
+    // Use setTimeout to allow the input to be rendered before focusing
+    setTimeout(() => {
+      if (this.valueInputRef?.nativeElement) {
+        this.valueInputRef.nativeElement.focus();
+        this.valueInputRef.nativeElement.select(); // Optional: select text
+      }
+    }, 0);
   }
 
   stopEditing(): void {

@@ -1,7 +1,7 @@
 // First, import Angular's Zone.js polyfill.
-import 'zone.js'; // Uncommented
+// import 'zone.js'; // Commented out for zoneless
 // Then, import Zone.js testing utilities.
-import 'zone.js/testing'; // Uncommented
+// import 'zone.js/testing'; // Commented out for zoneless
 
 // Other standard test environment setup
 import { getTestBed } from '@angular/core/testing';

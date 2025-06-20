@@ -1,45 +1,67 @@
 /* Styles for the new layout */
 .main-layout {
-  /* If main.main is already display:flex; flex-direction:column; align-items:center; this might not need much */
-  /* Or, we can make main-layout the primary flex container */
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: center; /* Center page-content horizontally */
   width: 100%;
+  padding: 10px; /* Add some padding around the whole layout */
+  box-sizing: border-box;
+}
+
+.page-content {
+  display: flex;         /* Arrange sliders-area and table-column side-by-side */
+  flex-direction: row;   /* Default, but explicit */
+  align-items: flex-start; /* Align items to the top */
+  gap: 20px;             /* Space between sliders area and table column */
+  width: 100%;           /* Allow page-content to use available width */
+  max-width: 1200px;     /* Optional: constrain max width of the content area */
+  justify-content: center; /* Center the two columns if max-width is used or content is narrower */
 }
 
 .sliders-area {
-  display: flex; /* Arrange channel rows and crossfader side-by-side */
-  gap: 30px; /* Increased space between channel sliders area and crossfader */
-  margin-bottom: 20px; /* Space before the table */
-  justify-content: center; /* Center the group of sliders and crossfader */
-  align-items: flex-start; /* Align tops of channel rows and crossfader */
-  width: 100%; /* Allow it to take width, but content will be centered */
-  padding: 20px; /* Padding around the sliders area */
+  display: flex;
+  gap: 30px;
+  /* margin-bottom: 20px; /* No longer needed as table is beside it */
+  /* justify-content: center; /* Not needed if page-content centers */
+  align-items: flex-start;
+  /* width: 100%; /* Let it size based on content or flex properties */
+  /* padding: 20px; /* Padding is now on main-layout or page-content */
   box-sizing: border-box;
+  /* flex-grow: 1; /* Allow sliders area to take available space if needed */
 }
 
 .channel-slider-rows {
   display: flex;
-  flex-direction: column; /* Stack the two rows */
-  gap: 20px; /* Increased space between the two rows of sliders */
+  flex-direction: column;
+  gap: 20px;
 }
 
 .slider-row {
-  display: flex; /* Make sliders in a row appear next to each other */
-  gap: 0; /* Potentiometers should be packed side-by-side */
-  /* No specific justify-content needed if we want them packed together */
+  display: flex;
+  gap: 0;
 }
 
 .crossfader-column {
-  display: flex; /* For alignment if needed, though app-slide-potentiometer is inline-flex */
-  /* align-items: center; /* Vertically center the crossfader if its height is different */
-  /* The crossfader itself will have a dynamic height later */
+  display: flex;
+  /* Potential future styling for alignment if crossfader height is very different */
 }
 
-/* Ensure the table takes appropriate width and is centered if needed */
+.table-column {
+  flex-shrink: 0; /* Prevent table column from shrinking */
+  width: 350px;   /* Fixed or percentage width for the table column */
+  /* Or use flex-basis:
+  flex-basis: 350px;
+  flex-grow: 0;
+  */
+}
+
+/* app-channel-values-table itself is display: block from its own :host style */
+/* The table inside it is width: 100%, so it will fill .table-column */
+/* The old style for app-channel-values-table can be removed if .table-column handles its sizing/positioning */
+/*
 app-channel-values-table {
   width: 100%;
-  max-width: 800px; /* Example max-width for the table */
-  margin: 0 auto; /* Center the table if it's narrower than its container */
+  max-width: 800px;
+  margin: 0 auto;
 }
+*/

@@ -1,7 +1,9 @@
-<div class="channel-info">
-  <h3>Channel: {{ channelNumber }}</h3>
-  <small>{{ channelDescription }}</small>
-</div>
+<ng-container *ngIf="showChannelInfo">
+  <div class="channel-info">
+    <h3>Channel: {{ channelNumber }}</h3>
+    <small>{{ channelDescription }}</small>
+  </div>
+</ng-container>
 <input
   type="range"
   orient="vertical"
@@ -10,5 +12,7 @@
   [(ngModel)]="value"
   (ngModelChange)="onSliderValueChange()"
   [style.height]="sliderHeight">
-<div (click)="startEditing()">{{ value }}</div>
-<input type="number" *ngIf="isEditing" [(ngModel)]="editValue" (blur)="stopEditing()" (keyup.enter)="stopEditing()">
+<div class="value-display-container">
+  <span *ngIf="!isEditing" (click)="startEditing()" class="value-text">{{ value }}</span>
+  <input #valueInput type="number" class="value-edit-input" *ngIf="isEditing" [(ngModel)]="editValue" (blur)="stopEditing()" (keyup.enter)="stopEditing()">
+</div>

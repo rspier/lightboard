@@ -14,12 +14,7 @@ describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App], // App is standalone
-      providers: [
-        // provideZonelessChangeDetection() // This was in spec but not in app.config, tests failed with it.
-                                         // App component is not configured for zoneless in app.config.ts by default.
-                                         // The warning NG0914 implies Zone.js is loaded.
-                                         // For tests to pass without further changes, default Zone.js based CD is assumed.
-      ]
+      providers: [provideZonelessChangeDetection()]
     }).compileComponents();
 
     fixture = TestBed.createComponent(App);

@@ -1,39 +1,43 @@
 <main class="main">
   <div class="main-layout">
-    <div class="sliders-area">
-      <div class="channel-slider-rows">
-        <div class="slider-row" id="row1">
-          <app-slide-potentiometer
-            *ngFor="let state of row1States"
-            [channelNumber]="state.channelNumber"
-            [channelDescription]="state.channelDescription"
-            [(value)]="state.value"
-            (valueChange)="onPotentiometerChange()">
-          </app-slide-potentiometer>
+    <div class="page-content">
+      <div class="sliders-area">
+        <div class="channel-slider-rows">
+          <div class="slider-row" id="row1">
+            <app-slide-potentiometer
+              *ngFor="let state of row1States"
+              [channelNumber]="state.channelNumber"
+              [channelDescription]="state.channelDescription"
+              [(value)]="state.value"
+              (valueChange)="onPotentiometerChange()">
+            </app-slide-potentiometer>
+          </div>
+          <div class="slider-row" id="row2">
+            <app-slide-potentiometer
+              *ngFor="let state of row2States"
+              [channelNumber]="state.channelNumber"
+              [channelDescription]="state.channelDescription"
+              [(value)]="state.value"
+              (valueChange)="onPotentiometerChange()">
+            </app-slide-potentiometer>
+          </div>
         </div>
-        <div class="slider-row" id="row2">
+        <div class="crossfader-column">
           <app-slide-potentiometer
-            *ngFor="let state of row2States"
-            [channelNumber]="state.channelNumber"
-            [channelDescription]="state.channelDescription"
-            [(value)]="state.value"
-            (valueChange)="onPotentiometerChange()">
+            id="crossfader"
+            [channelNumber]="0"
+            channelDescription="X-Fader"
+            [(value)]="crossfaderValue"
+            (valueChange)="onPotentiometerChange()"
+            [sliderHeight]="'320px'"
+            [showChannelInfo]="false">
           </app-slide-potentiometer>
         </div>
       </div>
-      <div class="crossfader-column">
-        <app-slide-potentiometer
-          id="crossfader"
-          [channelNumber]="0"
-          channelDescription="X-Fader"
-          [(value)]="crossfaderValue"
-          (valueChange)="onPotentiometerChange()"
-          sliderHeight="320px">
-        </app-slide-potentiometer>
+      <div class="table-column">
+        <app-channel-values-table [channelData]="combinedOutputStates"></app-channel-values-table>
       </div>
     </div>
-
-    <app-channel-values-table [channelData]="combinedOutputStates"></app-channel-values-table>
   </div>
 </main>
 
