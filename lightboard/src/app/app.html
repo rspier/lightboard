@@ -1,10 +1,14 @@
 <main class="main">
   <div class="potentiometer-container">
-    <app-slide-potentiometer [channelNumber]="1" channelDescription="Apple"></app-slide-potentiometer>
-    <app-slide-potentiometer [channelNumber]="2" channelDescription="Banana"></app-slide-potentiometer>
-    <app-slide-potentiometer [channelNumber]="3" channelDescription="Cherry"></app-slide-potentiometer>
-    <app-slide-potentiometer [channelNumber]="4" channelDescription="Date"></app-slide-potentiometer>
+    <app-slide-potentiometer
+      *ngFor="let state of potentiometerStates; let i = index"
+      [channelNumber]="state.channelNumber"
+      [channelDescription]="state.channelDescription"
+      [(value)]="state.value">
+    </app-slide-potentiometer>
   </div>
+
+  <app-channel-values-table [channelData]="potentiometerStates"></app-channel-values-table>
 </main>
 
 <router-outlet />

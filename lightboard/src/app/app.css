@@ -2,8 +2,8 @@
   display: flex;
   flex-wrap: wrap; /* Allow wrapping on smaller screens */
   justify-content: space-around; /* Distribute space */
-  gap: 20px; /* Spacing between potentiometers */
-  padding: 20px;
+  gap: 0; /* Spacing between potentiometers - removed */
+  padding: 5px; /* Reduced padding around the group */
   width: 100%; /* Ensure the container takes up available width */
   box-sizing: border-box; /* Include padding in width calculation */
 }

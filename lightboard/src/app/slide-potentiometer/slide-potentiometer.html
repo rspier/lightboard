@@ -2,6 +2,6 @@
   <h3>Channel: {{ channelNumber }}</h3>
   <small>{{ channelDescription }}</small>
 </div>
-<input type="range" orient="vertical" min="0" max="100" [(ngModel)]="value">
+<input type="range" orient="vertical" min="0" max="100" [(ngModel)]="value" (ngModelChange)="onSliderValueChange()">
 <div (click)="startEditing()">{{ value }}</div>
 <input type="number" *ngIf="isEditing" [(ngModel)]="editValue" (blur)="stopEditing()" (keyup.enter)="stopEditing()">
