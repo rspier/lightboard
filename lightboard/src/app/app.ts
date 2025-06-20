@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core'; // Import OnInit
+import { Component, OnInit, OnDestroy } from '@angular/core'; // Import OnInit, OnDestroy
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { SlidePotentiometerComponent } from './slide-potentiometer/slide-potentiometer';
@@ -15,7 +15,7 @@ import { ChannelValuesTableComponent } from './channel-values-table/channel-valu
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
-export class App implements OnInit { // Implement OnInit
+export class App implements OnInit, OnDestroy { // Implement OnInit, OnDestroy
   protected title = 'lightboard';
 
   row1States: { channelNumber: number; channelDescription: string; value: number }[] = [
@@ -33,49 +33,41 @@ export class App implements OnInit { // Implement OnInit
   ];
 
   crossfaderValue: number = 50;
-
   combinedOutputStates: { channelNumber: number; channelDescription: string; value: number }[] = [];
+
+  isAnimating: boolean = false;
+  animationInterval: any = null; // Using 'any' for NodeJS.Timeout or number for browser
 
   ngOnInit(): void {
     this.calculateCombinedOutputs();
   }
 
+  ngOnDestroy(): void {
+    if (this.animationInterval) {
+      clearInterval(this.animationInterval); // Clean up interval on component destroy
+    }
+  }
+
   calculateCombinedOutputs(): void {
     if (this.row1States.length !== this.row2States.length) {
       console.error("Row states arrays must have the same length to combine.");
-      this.combinedOutputStates = []; // Clear or handle error appropriately
+      this.combinedOutputStates = [];
       return;
     }
 
     this.combinedOutputStates = this.row1States.map((row1State, index) => {
       const row2State = this.row2States[index];
-      // Ensure channel numbers and descriptions match, or handle discrepancies
       if (row1State.channelNumber !== row2State.channelNumber || row1State.channelDescription !== row2State.channelDescription) {
-        console.warn(`Mismatch in channel data at index ${index}. Using data from row1States.`);
+        console.warn(`Mismatch in channel data at index ${index}. Using data from row1States for description.`);
       }
 
       const crossfadeRatio = this.crossfaderValue / 100;
-      // Standard crossfade: row1 * (1 - ratio) + row2 * ratio
-      // Or, if crossfaderValue = 0 means full row1, crossfaderValue = 100 means full row2
-      // The provided formula: (row1State.value * crossfadeRatio) + (row2State.value * (1 - crossfadeRatio))
-      // This means if crossfaderValue = 100 (ratio=1), we get full row1.
-      // If crossfaderValue = 0 (ratio=0), we get full row2.
-      // Let's adjust to: row1 * (1-ratio) + row2 * ratio for more intuitive crossfading
-      // where 0 = full row1, 100 = full row2.
-      // So if crossfaderValue represents amount of row2:
-      // const combinedValue = (row1State.value * (1 - crossfadeRatio)) + (row2State.value * crossfadeRatio);
-      // The original formula was: (row1State.value * crossfadeRatio) + (row2State.value * (1 - crossfadeRatio))
-      // This means:
-      // If crossfaderValue = 50 (ratio = 0.5), combined = (row1 * 0.5) + (row2 * 0.5) -> Middle
-      // If crossfaderValue = 0 (ratio = 0), combined = (row1 * 0) + (row2 * 1) -> Full Row2
-      // If crossfaderValue = 100 (ratio = 1), combined = (row1 * 1) + (row2 * 0) -> Full Row1
-      // This seems like crossfaderValue = 0 means row2, 100 means row1.
-      // Let's stick to the provided formula first.
+      // Current formula: 100% crossfader = 100% row1, 0% crossfader = 100% row2
       const combinedValue = (row1State.value * crossfadeRatio) + (row2State.value * (1 - crossfadeRatio));
 
       return {
-        channelNumber: row1State.channelNumber, // Or some other logic for combined channel number
-        channelDescription: row1State.channelDescription, // Or combined description
+        channelNumber: row1State.channelNumber,
+        channelDescription: row1State.channelDescription,
         value: Math.round(combinedValue)
       };
     });
@@ -83,5 +75,43 @@ export class App implements OnInit { // Implement OnInit
 
   onPotentiometerChange(): void {
     this.calculateCombinedOutputs();
+  }
+
+  onGoButtonClick(): void {
+    if (this.isAnimating) {
+      return;
+    }
+    // If current value is >= 50, target is 0 (full Row 2). Otherwise, target is 100 (full Row 1).
+    const targetValue = this.crossfaderValue >= 50 ? 0 : 100;
+    this.animateCrossfader(targetValue);
+  }
+
+  animateCrossfader(targetValue: number): void {
+    this.isAnimating = true;
+    if (this.animationInterval) {
+      clearInterval(this.animationInterval);
+    }
+
+    const totalDuration = 500; // ms
+    const steps = 25;
+    const intervalDuration = totalDuration / steps;
+    const initialValue = this.crossfaderValue;
+    const stepSize = (targetValue - initialValue) / steps;
+
+    let currentStep = 0;
+
+    this.animationInterval = setInterval(() => {
+      currentStep++;
+      if (currentStep >= steps) {
+        this.crossfaderValue = targetValue;
+        clearInterval(this.animationInterval);
+        this.animationInterval = null;
+        this.isAnimating = false;
+      } else {
+        this.crossfaderValue = initialValue + (stepSize * currentStep);
+      }
+      this.crossfaderValue = Math.max(0, Math.min(100, this.crossfaderValue));
+      this.onPotentiometerChange(); // Recalculate combined output for table
+    }, intervalDuration);
   }
 }

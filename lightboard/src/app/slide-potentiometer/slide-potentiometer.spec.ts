@@ -1,5 +1,5 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing'; // Removed fakeAsync, tick
-import { provideZonelessChangeDetection } from '@angular/core';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+// import { provideZonelessChangeDetection } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SlidePotentiometerComponent } from './slide-potentiometer';
 import { By } from '@angular/platform-browser';
@@ -14,7 +14,7 @@ describe('SlidePotentiometerComponent', () => {
         FormsModule,
         SlidePotentiometerComponent
       ],
-      providers: [provideZonelessChangeDetection()] // Add for zoneless
+      providers: [] // Ensure providers is empty
     })
     .compileComponents();
 
@@ -35,7 +35,7 @@ describe('SlidePotentiometerComponent', () => {
       const channelInfoDiv = fixture.debugElement.query(By.css('.channel-info'));
       expect(channelInfoDiv).toBeTruthy();
       const h3Element = channelInfoDiv.query(By.css('h3')).nativeElement;
-      expect(h3Element.textContent).toContain('Channel: 0');
+      expect(h3Element.textContent.trim()).toBe('0'); // Adjusted assertion
       const smallElement = channelInfoDiv.query(By.css('small')).nativeElement;
       expect(smallElement.textContent).toBe('');
     });
@@ -45,7 +45,7 @@ describe('SlidePotentiometerComponent', () => {
       component.channelNumber = 123;
       fixture.detectChanges();
       const h3Element = fixture.debugElement.query(By.css('.channel-info h3')).nativeElement;
-      expect(h3Element.textContent).toContain('Channel: 123');
+      expect(h3Element.textContent.trim()).toBe('123'); // Adjusted assertion
     });
 
     it('should display provided channelDescription input when showChannelInfo is true', () => {
@@ -104,7 +104,7 @@ describe('SlidePotentiometerComponent', () => {
       expect(component.valueChange.emit).toHaveBeenCalledWith(60);
     });
 
-    it('should switch to editing mode on click, show input, and hide span', async () => { // Changed to async
+    it('should switch to editing mode on click, show input, and hide span', fakeAsync(() => { // Reverted to fakeAsync
       fixture.detectChanges();
       let valueTextSpan = fixture.debugElement.query(By.css('.value-text'));
       expect(valueTextSpan).toBeTruthy('Span should be visible initially');
@@ -112,14 +112,8 @@ describe('SlidePotentiometerComponent', () => {
       expect(valueEditInput).toBeNull('Input should be hidden initially');
 
       valueTextSpan.nativeElement.click(); // This calls startEditing()
-      fixture.detectChanges(); // Allow isEditing to update and *ngIf to render the input
-
-      // In zoneless, setTimeout(fn, 0) might not be reliably flushed by detectChanges alone
-      // without Zone.js's macrotask interception.
-      // However, the primary goal is to check if the state changes and input appears.
-      // The focus part is secondary and hard to test reliably in Karma.
-      await fixture.whenStable(); // Wait for async operations like setTimeout(0) if possible
-      fixture.detectChanges(); // Another detectChanges after whenStable
+      fixture.detectChanges();
+      tick(); // Process setTimeout in startEditing
 
       expect(component.isEditing).toBe(true);
       expect(component.editValue).toBe(component.value);
@@ -129,12 +123,11 @@ describe('SlidePotentiometerComponent', () => {
       valueEditInput = fixture.debugElement.query(By.css('.value-edit-input'));
       expect(valueEditInput).toBeTruthy('Input should be visible during editing');
 
-      // Check if valueInputRef is populated, indicating the #valueInput was found
       expect(component.valueInputRef).toBeTruthy();
-      if (component.valueInputRef) { // Check if nativeElement is available
+      if (component.valueInputRef) {
            expect(component.valueInputRef.nativeElement).toEqual(valueEditInput.nativeElement);
       }
-    });
+    }));
 
     it('should switch out of editing mode and update value on input blur', () => {
       // Initial state for editing

@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideZonelessChangeDetection } from '@angular/core';
+// import { provideZonelessChangeDetection } from '@angular/core'; // Remove for Zone.js tests
 import { CommonModule } from '@angular/common';
 import { ChannelValuesTableComponent } from './channel-values-table';
 import { By } from '@angular/platform-browser';
@@ -14,7 +14,7 @@ describe('ChannelValuesTableComponent', () => {
         CommonModule,
         ChannelValuesTableComponent
       ],
-      providers: [provideZonelessChangeDetection()]
+      providers: [] // Removed provideZonelessChangeDetection
     })
     .compileComponents();
 

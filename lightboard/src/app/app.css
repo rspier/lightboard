@@ -21,19 +21,27 @@
 .sliders-area {
   display: flex;
   gap: 30px;
-  /* margin-bottom: 20px; /* No longer needed as table is beside it */
-  /* justify-content: center; /* Not needed if page-content centers */
   align-items: flex-start;
-  /* width: 100%; /* Let it size based on content or flex properties */
-  /* padding: 20px; /* Padding is now on main-layout or page-content */
   box-sizing: border-box;
-  /* flex-grow: 1; /* Allow sliders area to take available space if needed */
 }
 
 .channel-slider-rows {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 10px;
+}
+
+.scene-label {
+  text-align: center;
+  margin-top: 10px;
+  margin-bottom: 5px;
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #333;
+}
+
+.channel-slider-rows > .scene-label:first-child {
+  margin-top: 0;
 }
 
 .slider-row {
@@ -43,25 +51,35 @@
 
 .crossfader-column {
   display: flex;
-  /* Potential future styling for alignment if crossfader height is very different */
+  flex-direction: column; /* Stack slider and button */
+  align-items: center;    /* Center items horizontally in the column */
+  /* margin-top: 37px; /* This was for alignment, may need removal or adjustment */
+}
+
+.go-button {
+  display: block;
+  width: 80px;
+  padding: 10px;
+  margin-top: 15px; /* Space between crossfader and button */
+  font-size: 1em;
+  font-weight: bold;
+  color: white;
+  background-color: #007bff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.go-button:hover {
+  background-color: #0056b3;
+}
+
+.go-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
 }
 
 .table-column {
-  flex-shrink: 0; /* Prevent table column from shrinking */
-  width: 350px;   /* Fixed or percentage width for the table column */
-  /* Or use flex-basis:
-  flex-basis: 350px;
-  flex-grow: 0;
-  */
+  flex-shrink: 0;
+  width: 350px;
 }
-
-/* app-channel-values-table itself is display: block from its own :host style */
-/* The table inside it is width: 100%, so it will fill .table-column */
-/* The old style for app-channel-values-table can be removed if .table-column handles its sizing/positioning */
-/*
-app-channel-values-table {
-  width: 100%;
-  max-width: 800px;
-  margin: 0 auto;
-}
-*/
