@@ -1,14 +1,40 @@
 <main class="main">
-  <div class="potentiometer-container">
-    <app-slide-potentiometer
-      *ngFor="let state of potentiometerStates; let i = index"
-      [channelNumber]="state.channelNumber"
-      [channelDescription]="state.channelDescription"
-      [(value)]="state.value">
-    </app-slide-potentiometer>
-  </div>
+  <div class="main-layout">
+    <div class="sliders-area">
+      <div class="channel-slider-rows">
+        <div class="slider-row" id="row1">
+          <app-slide-potentiometer
+            *ngFor="let state of row1States"
+            [channelNumber]="state.channelNumber"
+            [channelDescription]="state.channelDescription"
+            [(value)]="state.value"
+            (valueChange)="onPotentiometerChange()">
+          </app-slide-potentiometer>
+        </div>
+        <div class="slider-row" id="row2">
+          <app-slide-potentiometer
+            *ngFor="let state of row2States"
+            [channelNumber]="state.channelNumber"
+            [channelDescription]="state.channelDescription"
+            [(value)]="state.value"
+            (valueChange)="onPotentiometerChange()">
+          </app-slide-potentiometer>
+        </div>
+      </div>
+      <div class="crossfader-column">
+        <app-slide-potentiometer
+          id="crossfader"
+          [channelNumber]="0"
+          channelDescription="X-Fader"
+          [(value)]="crossfaderValue"
+          (valueChange)="onPotentiometerChange()"
+          sliderHeight="320px">
+        </app-slide-potentiometer>
+      </div>
+    </div>
 
-  <app-channel-values-table [channelData]="potentiometerStates"></app-channel-values-table>
+    <app-channel-values-table [channelData]="combinedOutputStates"></app-channel-values-table>
+  </div>
 </main>
 
 <router-outlet />

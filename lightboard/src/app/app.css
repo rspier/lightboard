@@ -1,20 +1,45 @@
-.potentiometer-container {
+/* Styles for the new layout */
+.main-layout {
+  /* If main.main is already display:flex; flex-direction:column; align-items:center; this might not need much */
+  /* Or, we can make main-layout the primary flex container */
   display: flex;
-  flex-wrap: wrap; /* Allow wrapping on smaller screens */
-  justify-content: space-around; /* Distribute space */
-  gap: 0; /* Spacing between potentiometers - removed */
-  padding: 5px; /* Reduced padding around the group */
-  width: 100%; /* Ensure the container takes up available width */
-  box-sizing: border-box; /* Include padding in width calculation */
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
 }
 
-/* Optional: Ensure the main app container allows for this layout if needed */
-/* For example, if main .main wasn't already flex-column and centered */
-/* Or if you want to constrain the max-width of the potentiometer area */
-/*
-:host {
-  display: block;
-  max-width: 1200px;
-  margin: 0 auto;
+.sliders-area {
+  display: flex; /* Arrange channel rows and crossfader side-by-side */
+  gap: 30px; /* Increased space between channel sliders area and crossfader */
+  margin-bottom: 20px; /* Space before the table */
+  justify-content: center; /* Center the group of sliders and crossfader */
+  align-items: flex-start; /* Align tops of channel rows and crossfader */
+  width: 100%; /* Allow it to take width, but content will be centered */
+  padding: 20px; /* Padding around the sliders area */
+  box-sizing: border-box;
 }
-*/
+
+.channel-slider-rows {
+  display: flex;
+  flex-direction: column; /* Stack the two rows */
+  gap: 20px; /* Increased space between the two rows of sliders */
+}
+
+.slider-row {
+  display: flex; /* Make sliders in a row appear next to each other */
+  gap: 0; /* Potentiometers should be packed side-by-side */
+  /* No specific justify-content needed if we want them packed together */
+}
+
+.crossfader-column {
+  display: flex; /* For alignment if needed, though app-slide-potentiometer is inline-flex */
+  /* align-items: center; /* Vertically center the crossfader if its height is different */
+  /* The crossfader itself will have a dynamic height later */
+}
+
+/* Ensure the table takes appropriate width and is centered if needed */
+app-channel-values-table {
+  width: 100%;
+  max-width: 800px; /* Example max-width for the table */
+  margin: 0 auto; /* Center the table if it's narrower than its container */
+}

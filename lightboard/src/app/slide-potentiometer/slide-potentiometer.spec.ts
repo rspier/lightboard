@@ -50,6 +50,20 @@ describe('SlidePotentiometerComponent', () => {
     expect(smallElement.textContent).toBe('Test Description');
   });
 
+  it('should apply sliderHeight input to the range input style', () => {
+    component.sliderHeight = '200px';
+    fixture.detectChanges();
+    const rangeInput = fixture.debugElement.query(By.css('input[type="range"]')).nativeElement;
+    expect(rangeInput.style.height).toBe('200px');
+  });
+
+  it('should use default sliderHeight if none is provided', () => {
+    fixture.detectChanges(); // Default value is set in component definition
+    const rangeInput = fixture.debugElement.query(By.css('input[type="range"]')).nativeElement;
+    expect(rangeInput.style.height).toBe('150px'); // Default height
+  });
+
+
   // Value and editing logic tests
   it('should have an initial default value of 0 for the slider', () => {
     fixture.detectChanges();
@@ -57,19 +71,16 @@ describe('SlidePotentiometerComponent', () => {
   });
 
   it('should update value and emit valueChange when slider is moved', () => {
-    fixture.detectChanges(); // Initial binding
+    fixture.detectChanges();
     spyOn(component.valueChange, 'emit');
 
     const rangeInput = fixture.debugElement.query(By.css('input[type="range"]')).nativeElement;
-    rangeInput.value = '60'; // Set as string, ngModel will convert
-    rangeInput.dispatchEvent(new Event('input')); // Triggers ngModel update
-    fixture.detectChanges(); // Allow ngModel and ngModelChange to process
+    rangeInput.value = '60';
+    rangeInput.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
 
-    // (ngModelChange) calls onSliderValueChange which emits.
-    // [(ngModel)] updates 'value' property.
-
-    expect(component.value).toBe(60); // Check component value
-    expect(component.valueChange.emit).toHaveBeenCalledWith(60); // Check emission
+    expect(component.value).toBe(60);
+    expect(component.valueChange.emit).toHaveBeenCalledWith(60);
   });
 
   it('should enable editing mode when value display is clicked', () => {
@@ -84,20 +95,20 @@ describe('SlidePotentiometerComponent', () => {
 
   it('should update value and emit valueChange when editing input loses focus (blur)', () => {
     fixture.detectChanges();
-    component.startEditing(); // Sets isEditing = true, editValue = component.value (0 initially)
+    component.startEditing();
     fixture.detectChanges();
 
     spyOn(component.valueChange, 'emit');
 
     const numberInput = fixture.debugElement.query(By.css('input[type="number"]')).nativeElement;
     numberInput.value = '75';
-    numberInput.dispatchEvent(new Event('input')); // Update component.editValue via ngModel
-    fixture.detectChanges(); // Let ngModel update editValue
+    numberInput.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
 
-    expect(component.editValue).toBe(75); // Confirm editValue is updated by ngModel
+    expect(component.editValue).toBe(75);
 
-    numberInput.dispatchEvent(new Event('blur')); // This calls stopEditing()
-    fixture.detectChanges(); // Let stopEditing() process and template update
+    numberInput.dispatchEvent(new Event('blur'));
+    fixture.detectChanges();
 
     expect(component.value).toBe(75);
     expect(component.isEditing).toBe(false);
@@ -113,13 +124,13 @@ describe('SlidePotentiometerComponent', () => {
 
     const numberInput = fixture.debugElement.query(By.css('input[type="number"]')).nativeElement;
     numberInput.value = '80';
-    numberInput.dispatchEvent(new Event('input')); // Update component.editValue
+    numberInput.dispatchEvent(new Event('input'));
     fixture.detectChanges();
 
     expect(component.editValue).toBe(80);
 
     const event = new KeyboardEvent('keyup', { key: 'Enter' });
-    numberInput.dispatchEvent(event); // This calls stopEditing()
+    numberInput.dispatchEvent(event);
     fixture.detectChanges();
 
     expect(component.value).toBe(80);
