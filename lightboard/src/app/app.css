@@ -1,0 +1,20 @@
+.potentiometer-container {
+  display: flex;
+  flex-wrap: wrap; /* Allow wrapping on smaller screens */
+  justify-content: space-around; /* Distribute space */
+  gap: 20px; /* Spacing between potentiometers */
+  padding: 20px;
+  width: 100%; /* Ensure the container takes up available width */
+  box-sizing: border-box; /* Include padding in width calculation */
+}
+
+/* Optional: Ensure the main app container allows for this layout if needed */
+/* For example, if main .main wasn't already flex-column and centered */
+/* Or if you want to constrain the max-width of the potentiometer area */
+/*
+:host {
+  display: block;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+*/

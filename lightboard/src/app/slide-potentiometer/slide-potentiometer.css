@@ -8,6 +8,25 @@
   font-family: sans-serif;
 }
 
+.channel-info {
+  text-align: center; /* Center the text */
+  margin-bottom: 10px; /* Add some space below the channel info */
+  padding: 5px;
+  border-bottom: 1px solid #eee; /* Separator line */
+  width: 100%; /* Make it take full width of the host */
+}
+
+.channel-info h3 {
+  margin: 0 0 5px 0; /* Adjust margins for the heading */
+  font-size: 1em; /* Adjust font size as needed */
+  font-weight: bold;
+}
+
+.channel-info small {
+  font-size: 0.8em; /* Smaller font for the description */
+  color: #555; /* Greyish color for the description */
+}
+
 input[type="range"][orient="vertical"] {
   writing-mode: bt-lr; /* IE */
   -webkit-appearance: slider-vertical; /* WebKit */
@@ -17,7 +36,8 @@ input[type="range"][orient="vertical"] {
   margin-bottom: 10px; /* Space between slider and value */
 }
 
-div {
+/* Styles for the clickable value display div */
+div:not(.channel-info) { /* Made selector more specific */
   cursor: pointer;
   padding: 5px;
   border: 1px dashed transparent; /* Visual cue for clickability */
@@ -25,7 +45,7 @@ div {
   text-align: center; /* Center the text */
 }
 
-div:hover {
+div:not(.channel-info):hover { /* Made selector more specific */
   border-color: #eee; /* Subtle hover effect */
 }
 

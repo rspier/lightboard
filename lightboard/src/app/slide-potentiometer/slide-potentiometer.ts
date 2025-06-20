@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core'; // Added Input
 import { CommonModule } from '@angular/common'; // For *ngIf
 import { FormsModule } from '@angular/forms'; // For ngModel
 
@@ -9,7 +9,10 @@ import { FormsModule } from '@angular/forms'; // For ngModel
   templateUrl: './slide-potentiometer.html',
   styleUrl: './slide-potentiometer.css'
 })
-export class SlidePotentiometerComponent { // Corrected class name
+export class SlidePotentiometerComponent {
+  @Input() channelNumber: number = 0; // Default value
+  @Input() channelDescription: string = ''; // Default value
+
   value: number = 0;
   isEditing: boolean = false;
   editValue: number = 0;
