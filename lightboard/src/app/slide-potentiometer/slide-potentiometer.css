@@ -6,7 +6,7 @@
   border: 1px solid #ccc;
   border-radius: 4px;
   font-family: sans-serif;
-  min-width: 60px; /* Ensure host has some min-width for contents */
+  min-width: 60px;
 }
 
 .channel-info {
@@ -32,61 +32,35 @@ input[type="range"][orient="vertical"] {
   writing-mode: bt-lr;
   -webkit-appearance: slider-vertical;
   width: 20px;
-  /* height is now controlled by sliderHeight input, remove fixed height */
   padding: 0 5px;
-  margin-bottom: 10px; /* This was space between slider and value, keep for now */
+  margin-bottom: 10px;
 }
 
-/* Old styles for clickable value display and separate input - commented out */
-/*
-div:not(.channel-info) {
-  cursor: pointer;
-  padding: 5px;
-  border: 1px dashed transparent;
-  min-width: 30px;
-  text-align: center;
-}
-
-div:not(.channel-info):hover {
-  border-color: #eee;
-}
-
-input[type="number"] {
-  width: 50px;
-  text-align: center;
-  border: 1px solid #ccc;
-  border-radius: 3px;
-  padding: 5px;
-}
-*/
-
-/* New styles for in-place editing */
 .value-display-container {
-  position: relative; /* For absolute positioning of the input */
-  min-width: 50px;  /* Ensure a minimum width, can be adjusted */
-  height: 28px;     /* Approximate height of an input field with padding */
+  position: relative;
+  min-width: 50px;
+  height: 28px;
   text-align: center;
-  /* margin-top: 5px; /* Replaces margin-bottom on slider if that was the only space desired */
-  width: 100%; /* Allow container to size with host or its content */
+  width: 100%;
   box-sizing: border-box;
 }
 
-.value-text { /* Styles for the span when not editing */
+.value-text {
   cursor: pointer;
-  display: block; /* Takes full width of container */
+  display: block;
   padding: 5px;
-  border: 1px solid transparent; /* Keep layout consistent with input border */
-  line-height: 1.5; /* Adjust for vertical centering if needed */
+  border: 1px solid transparent;
+  line-height: 1.5;
   width: 100%;
   height: 100%;
   box-sizing: border-box;
-  border-radius: 3px; /* Match input's border-radius for seamless switch */
+  border-radius: 3px;
 }
 
-.value-edit-input { /* Styles for the input when editing */
+.value-edit-input {
   border: 1px solid #ccc;
   background-color: white;
-  padding: 4px; /* Adjust to align text similarly to span after border considered */
+  padding: 4px;
   font-family: inherit;
   font-size: inherit;
   color: inherit;
@@ -97,10 +71,9 @@ input[type="number"] {
   position: absolute;
   top: 0;
   left: 0;
-  border-radius: 3px; /* Consistent rounded corners */
+  border-radius: 3px;
 }
 
-/* Optional: remove spinner from number input if desired */
 .value-edit-input::-webkit-outer-spin-button,
 .value-edit-input::-webkit-inner-spin-button {
   -webkit-appearance: none;
@@ -108,5 +81,21 @@ input[type="number"] {
 }
 
 .value-edit-input[type=number] {
-  -moz-appearance: textfield; /* Firefox */
+  -moz-appearance: textfield;
+}
+
+/* New styles for color input */
+.color-display-area {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+}
+
+.color-input-native {
+  width: 40px;  /* Adjusted size */
+  height: 20px; /* Adjusted size */
+  border: 1px solid #ccc;
+  padding: 0;
+  cursor: pointer;
+  background-color: transparent;
 }

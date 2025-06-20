@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ViewChild, ElementRef } from '@angular/core'; // Added ViewChild, ElementRef
+import { Component, Input, Output, EventEmitter, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -18,7 +18,10 @@ export class SlidePotentiometerComponent {
   @Input() value: number = 0;
   @Output() valueChange = new EventEmitter<number>();
 
-  @ViewChild('valueInput') valueInputRef!: ElementRef<HTMLInputElement>; // Added ! for definite assignment
+  @Input() color: string = '#ffffff'; // Default color
+  @Output() colorChange = new EventEmitter<string>();
+
+  @ViewChild('valueInput') valueInputRef!: ElementRef<HTMLInputElement>;
 
   isEditing: boolean = false;
   editValue: number = 0;
@@ -26,11 +29,10 @@ export class SlidePotentiometerComponent {
   startEditing(): void {
     this.isEditing = true;
     this.editValue = this.value;
-    // Use setTimeout to allow the input to be rendered before focusing
     setTimeout(() => {
       if (this.valueInputRef?.nativeElement) {
         this.valueInputRef.nativeElement.focus();
-        this.valueInputRef.nativeElement.select(); // Optional: select text
+        this.valueInputRef.nativeElement.select();
       }
     }, 0);
   }
@@ -50,5 +52,11 @@ export class SlidePotentiometerComponent {
   onSliderValueChange(): void {
     this.value = Math.max(0, Math.min(100, Number(this.value)));
     this.valueChange.emit(this.value);
+  }
+
+  onColorInputChange(event: Event): void {
+    const newColor = (event.target as HTMLInputElement).value;
+    this.color = newColor; // Update the internal state
+    this.colorChange.emit(this.color);
   }
 }

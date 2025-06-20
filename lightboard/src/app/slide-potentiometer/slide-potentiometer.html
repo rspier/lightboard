@@ -16,3 +16,6 @@
   <span *ngIf="!isEditing" (click)="startEditing()" class="value-text">{{ value }}</span>
   <input #valueInput type="number" class="value-edit-input" *ngIf="isEditing" [(ngModel)]="editValue" (blur)="stopEditing()" (keyup.enter)="stopEditing()">
 </div>
+<div class="color-display-area">
+  <input type="color" class="color-input-native" [value]="color" (input)="onColorInputChange($event)" title="Select Channel Color">
+</div>

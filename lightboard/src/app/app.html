@@ -6,21 +6,27 @@
           <h2 class="scene-label">Scene 1</h2>
           <div class="slider-row" id="row1">
             <app-slide-potentiometer
-              *ngFor="let state of row1States"
+              *ngFor="let state of row1States; let i = index"
               [channelNumber]="state.channelNumber"
               [channelDescription]="state.channelDescription"
               [(value)]="state.value"
-              (valueChange)="onPotentiometerChange()">
+              (valueChange)="onPotentiometerChange()"
+              [color]="state.color"
+              (colorChange)="state.color = $event; onPotentiometerChange()"
+              [showChannelInfo]="true">
             </app-slide-potentiometer>
           </div>
           <h2 class="scene-label">Scene 2</h2>
           <div class="slider-row" id="row2">
             <app-slide-potentiometer
-              *ngFor="let state of row2States"
+              *ngFor="let state of row2States; let i = index"
               [channelNumber]="state.channelNumber"
               [channelDescription]="state.channelDescription"
               [(value)]="state.value"
-              (valueChange)="onPotentiometerChange()">
+              (valueChange)="onPotentiometerChange()"
+              [color]="state.color"
+              (colorChange)="state.color = $event; onPotentiometerChange()"
+              [showChannelInfo]="true">
             </app-slide-potentiometer>
           </div>
         </div>

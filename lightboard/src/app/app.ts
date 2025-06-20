@@ -1,8 +1,15 @@
-import { Component, OnInit, OnDestroy } from '@angular/core'; // Import OnInit, OnDestroy
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { SlidePotentiometerComponent } from './slide-potentiometer/slide-potentiometer';
 import { ChannelValuesTableComponent } from './channel-values-table/channel-values-table';
+
+interface PotentiometerState {
+  channelNumber: number;
+  channelDescription: string;
+  value: number;
+  color: string;
+}
 
 @Component({
   selector: 'app-root',
@@ -15,28 +22,28 @@ import { ChannelValuesTableComponent } from './channel-values-table/channel-valu
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
-export class App implements OnInit, OnDestroy { // Implement OnInit, OnDestroy
+export class App implements OnInit, OnDestroy {
   protected title = 'lightboard';
 
-  row1States: { channelNumber: number; channelDescription: string; value: number }[] = [
-    { channelNumber: 1, channelDescription: "Apple", value: 0 },
-    { channelNumber: 2, channelDescription: "Banana", value: 25 },
-    { channelNumber: 3, channelDescription: "Cherry", value: 50 },
-    { channelNumber: 4, channelDescription: "Date", value: 75 }
+  row1States: PotentiometerState[] = [
+    { channelNumber: 1, channelDescription: "Apple", value: 0, color: '#ff0000' }, // Red
+    { channelNumber: 2, channelDescription: "Banana", value: 25, color: '#00ff00' }, // Green
+    { channelNumber: 3, channelDescription: "Cherry", value: 50, color: '#0000ff' }, // Blue
+    { channelNumber: 4, channelDescription: "Date", value: 75, color: '#ffff00' }  // Yellow
   ];
 
-  row2States: { channelNumber: number; channelDescription: string; value: number }[] = [
-    { channelNumber: 1, channelDescription: "Apple", value: 100 },
-    { channelNumber: 2, channelDescription: "Banana", value: 75 },
-    { channelNumber: 3, channelDescription: "Cherry", value: 50 },
-    { channelNumber: 4, channelDescription: "Date", value: 25 }
+  row2States: PotentiometerState[] = [
+    { channelNumber: 1, channelDescription: "Apple", value: 100, color: '#00ffff' }, // Cyan
+    { channelNumber: 2, channelDescription: "Banana", value: 75, color: '#ff00ff' }, // Magenta
+    { channelNumber: 3, channelDescription: "Cherry", value: 50, color: '#ffa500' }, // Orange
+    { channelNumber: 4, channelDescription: "Date", value: 25, color: '#800080' }  // Purple
   ];
 
   crossfaderValue: number = 50;
-  combinedOutputStates: { channelNumber: number; channelDescription: string; value: number }[] = [];
+  combinedOutputStates: PotentiometerState[] = [];
 
   isAnimating: boolean = false;
-  animationInterval: any = null; // Using 'any' for NodeJS.Timeout or number for browser
+  animationInterval: any = null;
 
   ngOnInit(): void {
     this.calculateCombinedOutputs();
@@ -44,8 +51,23 @@ export class App implements OnInit, OnDestroy { // Implement OnInit, OnDestroy
 
   ngOnDestroy(): void {
     if (this.animationInterval) {
-      clearInterval(this.animationInterval); // Clean up interval on component destroy
+      clearInterval(this.animationInterval);
     }
+  }
+
+  // Helper to parse hex color string to RGB object
+  private hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : null;
+  }
+
+  // Helper to convert RGB object back to hex color string
+  private rgbToHex(r: number, g: number, b: number): string {
+    return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).padStart(6, '0');
   }
 
   calculateCombinedOutputs(): void {
@@ -61,14 +83,32 @@ export class App implements OnInit, OnDestroy { // Implement OnInit, OnDestroy
         console.warn(`Mismatch in channel data at index ${index}. Using data from row1States for description.`);
       }
 
-      const crossfadeRatio = this.crossfaderValue / 100;
-      // Current formula: 100% crossfader = 100% row1, 0% crossfader = 100% row2
-      const combinedValue = (row1State.value * crossfadeRatio) + (row2State.value * (1 - crossfadeRatio));
+      const crossfadeRatio = this.crossfaderValue / 100; // 0 = full row2, 1 = full row1
+      const invCrossfadeRatio = 1 - crossfadeRatio;
+
+      const combinedValue = (row1State.value * crossfadeRatio) + (row2State.value * invCrossfadeRatio);
+
+      let blendedColorHex = '#ffffff'; // Default to white if colors are invalid
+      const rgb1 = this.hexToRgb(row1State.color);
+      const rgb2 = this.hexToRgb(row2State.color);
+
+      if (rgb1 && rgb2) {
+        const blendedR = Math.round(rgb1.r * crossfadeRatio + rgb2.r * invCrossfadeRatio);
+        const blendedG = Math.round(rgb1.g * crossfadeRatio + rgb2.g * invCrossfadeRatio);
+        const blendedB = Math.round(rgb1.b * crossfadeRatio + rgb2.b * invCrossfadeRatio);
+        blendedColorHex = this.rgbToHex(blendedR, blendedG, blendedB);
+      } else {
+        console.warn(`Invalid color format for blending at index ${index}. Defaulting color.`);
+        // Potentially use row1State.color or row2State.color if one is valid and other is not
+        if(rgb1) blendedColorHex = row1State.color;
+        else if(rgb2) blendedColorHex = row2State.color;
+      }
 
       return {
         channelNumber: row1State.channelNumber,
         channelDescription: row1State.channelDescription,
-        value: Math.round(combinedValue)
+        value: Math.round(combinedValue),
+        color: blendedColorHex
       };
     });
   }
@@ -81,7 +121,6 @@ export class App implements OnInit, OnDestroy { // Implement OnInit, OnDestroy
     if (this.isAnimating) {
       return;
     }
-    // If current value is >= 50, target is 0 (full Row 2). Otherwise, target is 100 (full Row 1).
     const targetValue = this.crossfaderValue >= 50 ? 0 : 100;
     this.animateCrossfader(targetValue);
   }
@@ -92,7 +131,7 @@ export class App implements OnInit, OnDestroy { // Implement OnInit, OnDestroy
       clearInterval(this.animationInterval);
     }
 
-    const totalDuration = 500; // ms
+    const totalDuration = 500;
     const steps = 25;
     const intervalDuration = totalDuration / steps;
     const initialValue = this.crossfaderValue;
@@ -111,7 +150,7 @@ export class App implements OnInit, OnDestroy { // Implement OnInit, OnDestroy
         this.crossfaderValue = initialValue + (stepSize * currentStep);
       }
       this.crossfaderValue = Math.max(0, Math.min(100, this.crossfaderValue));
-      this.onPotentiometerChange(); // Recalculate combined output for table
+      this.onPotentiometerChange();
     }, intervalDuration);
   }
 }
