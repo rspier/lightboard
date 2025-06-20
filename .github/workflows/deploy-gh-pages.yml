@@ -1,0 +1,64 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main # Or your default branch
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./lightboard # Set working directory for all run commands
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Cache Node modules
+        uses: actions/cache@v4
+        id: cache-npm
+        with:
+          path: lightboard/node_modules # Path relative to repo root
+          key: ${{ runner.os }}-node-${{ hashFiles('lightboard/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        # Working directory is already ./lightboard
+        run: npm ci
+
+      - name: Build application
+        # Working directory is already ./lightboard
+        # The base-href should match the repository name if deploying to gh-pages like <user>.github.io/<repo>/
+        # Assuming the repository name will be 'lightboard'
+        run: npm run build -- --configuration production --base-href /lightboard/
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Path to upload from, relative to the repository root.
+          # Angular default output is dist/<project-name>/browser
+          path: 'lightboard/dist/lightboard/browser/'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
