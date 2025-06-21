@@ -70,7 +70,9 @@
   align-items: center;
   justify-content: center;
   width: 25px; /* Width for the rotated text's container */
-  margin-right: 0; /* Space will be handled by brain-icon's margin */
+  margin-right: 5px; /* This provides space before the slider row, now that icon is gone */
+  cursor: pointer; /* Make the label area clickable */
+  user-select: none; /* Prevent text selection on label click */
   /* min-height: 100px; /* Let content (slider-row) define height of wrapper */
 }
 
@@ -101,7 +103,7 @@
   gap: 0;
   justify-content: center;
   margin: 8px 0; /* Add some vertical margin around combined output row */
-  padding-left: 30px; /* Indent content to align with sliders (25px label width + 5px margin) */
+  padding-left: 30px; /* Indent content to align with sliders (25px label width + 5px margin from .scene-label-container) */
   box-sizing: border-box; /* Ensure padding is included in width calculation */
 }
 
@@ -149,14 +151,7 @@
 }
 
 /* Styles for Scene Text Input Feature */
-.brain-icon { /* Updated selector */
-  cursor: pointer;
-  margin-left: 5px; /* Space from scene-label-container */
-  margin-right: 5px; /* Space before slider-row */
-  font-size: 1.2em; /* Adjust size as needed */
-  user-select: none; /* Prevent text selection on icon */
-  line-height: 1; /* Helps with vertical alignment if icon font has extra space */
-}
+/* .brain-icon class is removed */
 
 .scene-text-input-wrapper {
   /* This wrapper will appear below a scene's slider row */
@@ -200,11 +195,11 @@
   background-color: var(--button-primary-hover-bg-color);
 }
 
-.error-messages {
+.error-messages { /* This class was for the old inline error display, can be removed or repurposed if needed */
   margin-top: 8px;
   padding: 5px;
-  background-color: var(--modal-error-text-color); /* A bit strong, maybe lighten this or use text color */
-  color: var(--button-primary-text-color); /* Assuming error bg is dark enough for light text */
+  /* background-color: var(--modal-error-text-color); /* A bit strong, maybe lighten this or use text color */
+  /* color: var(--button-primary-text-color); /* Assuming error bg is dark enough for light text */
   border-radius: 3px;
   font-size: 0.9em;
 }
@@ -216,34 +211,13 @@
   margin-bottom: 0;
 }
 
-/* Adjusting scene-label-container if brain icon makes it too wide or misaligns text */
+/* Cleaned up old comments regarding brain icon positioning */
 .scene-label-container {
-  /* display: flex; already set */
-  /* align-items: center; already set */
-  /* justify-content: center; already set */
-  /* Consider if the brain icon should be part of the vertical text flow or sit beside it.
-     Current placement of span as sibling to h2 inside might be tricky with vertical writing mode.
-     If h2 is display:block, span will be below.
-     If .scene-label-container is flex-direction:row for the h2 and span,
-     the vertical text might be an issue.
-     For now, assuming the span sits next to the h2 in normal flow, then parent rotates.
-     This might need the brain icon to also have writing-mode and rotation if it's part of the same text flow.
-     A simpler approach for brain icon might be absolute positioning relative to scene-row-wrapper,
-     or placing it outside the label container.
-
-     Let's try making the scene-label-container itself a bit wider to accommodate the icon
-     if the icon is intended to be next to the (rotated) label.
-     And make it flex row to put label and icon side by side before rotation.
-  */
-  /* flex-direction: row; /* No longer needed here, icon is outside */
-  /* align-items: center; /* Already part of base .scene-label-container style */
+  /* display: flex; align-items: center; justify-content: center; are existing and fine */
 }
 
 .scene-label {
- /* font-size: 1em; ... already set */
- /* writing-mode: vertical-lr; ... already set */
- /* transform: rotate(180deg); ... already set */
-  /* margin-right: 5px; /* No longer needed, icon is outside */
+ /* All existing styles for scene-label are fine. No margin-right needed as icon is gone. */
 }
 
 .global-command-feedback {

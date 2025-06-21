@@ -10,10 +10,9 @@
         <div class="channel-slider-rows">
 
           <div class="scene-row-wrapper">
-            <div class="scene-label-container">
+            <div class="scene-label-container" (click)="toggleSceneTextInput(1)" title="Text Input for Scene 1">
               <h2 class="scene-label scene-1-label">Scene 1</h2>
             </div>
-            <span class="brain-icon" (click)="toggleSceneTextInput(1)" title="Text Input for Scene 1">🧠</span>
             <div class="slider-row" id="row1">
               <app-slide-potentiometer
                 *ngFor="let state of row1States; trackBy: trackByState"
@@ -39,10 +38,9 @@
           </div>
 
           <div class="scene-row-wrapper">
-            <div class="scene-label-container">
+            <div class="scene-label-container" (click)="toggleSceneTextInput(2)" title="Text Input for Scene 2">
               <h2 class="scene-label scene-2-label">Scene 2</h2>
             </div>
-            <span class="brain-icon" (click)="toggleSceneTextInput(2)" title="Text Input for Scene 2">🧠</span>
             <div class="slider-row" id="row2">
               <app-slide-potentiometer
                 *ngFor="let state of row2States; trackBy: trackByState"

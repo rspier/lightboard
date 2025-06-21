@@ -57,6 +57,8 @@ export class App implements OnInit, OnDestroy {
   scene2CommandsString: string = '';
   applyTextCommandErrors: string[] = [];
 
+  private unlistenKeyDown: (() => void) | undefined; // For keyboard shortcut listener cleanup
+
   private currentNumChannels: number;
   private currentBackendUrl: string;
   private currentCrossfadeDurationMs: number;
@@ -110,11 +112,35 @@ export class App implements OnInit, OnDestroy {
       if (channelsOrDescriptionsChanged) { this.calculateCombinedOutputs(); }
       this.cdr.detectChanges();
     });
+
+    // Setup global keyboard listener for shortcuts
+    this.unlistenKeyDown = this.renderer.listen('document', 'keydown', (event: KeyboardEvent) => {
+      const activeElement = document.activeElement as HTMLElement;
+      const isInputFocused = activeElement &&
+                             (activeElement.tagName === 'INPUT' ||
+                              activeElement.tagName === 'TEXTAREA' ||
+                              activeElement.tagName === 'SELECT');
+
+      if (isInputFocused || this.showSceneTextInputModal) {
+        // Don't process shortcuts if an input is focused or text input modal is already open
+        return;
+      }
+
+      // Check for Shift key explicitly for '!' and '@' as they are on number keys
+      if (event.shiftKey && event.key === '!') { // Shift + 1
+        event.preventDefault();
+        this.toggleSceneTextInput(1);
+      } else if (event.shiftKey && event.key === '@') { // Shift + 2
+        event.preventDefault();
+        this.toggleSceneTextInput(2);
+      }
+    });
   }
 
   ngOnDestroy(): void {
     if (this.animationInterval) { clearInterval(this.animationInterval); }
     if (this.settingsSubscription) { this.settingsSubscription.unsubscribe(); }
+    if (this.unlistenKeyDown) { this.unlistenKeyDown(); } // Cleanup global listener
   }
 
   private applyTheme(isDarkMode: boolean): void { if (isDarkMode) { this.renderer.addClass(this.document.body, 'dark-theme'); } else { this.renderer.removeClass(this.document.body, 'dark-theme'); } }
