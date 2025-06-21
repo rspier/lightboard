@@ -1,0 +1,19 @@
+<div class="modal-overlay" *ngIf="isVisible" (click)="onCancel()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <h3 class="modal-title">{{ sceneLabel }} Text Input</h3>
+    <div class="modal-body">
+      <input
+        type="text"
+        class="text-input-field"
+        [(ngModel)]="textInputValue"
+        (keydown.enter)="onInputEnter($event)"
+        placeholder="e.g., 1@100#F00 2@50#0FF"
+        aria-label="Commands for {{ sceneLabel }}">
+      <!-- Removed error display from within modal for now, will be in main app view -->
+    </div>
+    <div class="modal-actions">
+      <button class="button secondary-button" (click)="onCancel()">Cancel</button>
+      <button class="button primary-button" (click)="onApply()">Apply</button>
+    </div>
+  </div>
+</div>

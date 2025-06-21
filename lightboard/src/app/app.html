@@ -12,8 +12,8 @@
           <div class="scene-row-wrapper">
             <div class="scene-label-container">
               <h2 class="scene-label scene-1-label">Scene 1</h2>
-              <span class="brain-icon" (click)="toggleSceneTextInput(1)" title="Text Input for Scene 1">🧠</span>
             </div>
+            <span class="brain-icon" (click)="toggleSceneTextInput(1)" title="Text Input for Scene 1">🧠</span>
             <div class="slider-row" id="row1">
               <app-slide-potentiometer
                 *ngFor="let state of row1States; trackBy: trackByState"
@@ -27,14 +27,7 @@
               </app-slide-potentiometer>
             </div>
           </div>
-          <!-- Text Input Area for Scene 1 -->
-          <div class="scene-text-input-wrapper" *ngIf="scene1TextInputVisible">
-            <textarea class="scene-text-input" [(ngModel)]="scene1TextInputValue" placeholder="e.g., 1@100#F00\n2@50#00F"></textarea>
-            <button class="scene-text-apply-button" (click)="applySceneTextCommands(1)">Apply Scene 1</button>
-            <div *ngIf="scene1TextErrors.length > 0" class="error-messages">
-              <p *ngFor="let err of scene1TextErrors">{{ err }}</p>
-            </div>
-          </div>
+          <!-- Old inline text input for Scene 1 removed -->
 
           <div class="combined-output-row">
             <app-combined-output-display
@@ -48,8 +41,8 @@
           <div class="scene-row-wrapper">
             <div class="scene-label-container">
               <h2 class="scene-label scene-2-label">Scene 2</h2>
-              <span class="brain-icon" (click)="toggleSceneTextInput(2)" title="Text Input for Scene 2">🧠</span>
             </div>
+            <span class="brain-icon" (click)="toggleSceneTextInput(2)" title="Text Input for Scene 2">🧠</span>
             <div class="slider-row" id="row2">
               <app-slide-potentiometer
                 *ngFor="let state of row2States; trackBy: trackByState"
@@ -63,14 +56,7 @@
               </app-slide-potentiometer>
             </div>
           </div>
-          <!-- Text Input Area for Scene 2 -->
-          <div class="scene-text-input-wrapper" *ngIf="scene2TextInputVisible">
-            <textarea class="scene-text-input" [(ngModel)]="scene2TextInputValue" placeholder="e.g., 1@100#F00\n2@50#00F"></textarea>
-            <button class="scene-text-apply-button" (click)="applySceneTextCommands(2)">Apply Scene 2</button>
-            <div *ngIf="scene2TextErrors.length > 0" class="error-messages">
-              <p *ngFor="let err of scene2TextErrors">{{ err }}</p>
-            </div>
-          </div>
+          <!-- Old inline text input for Scene 2 removed -->
 
         </div>
         <div class="crossfader-column">
@@ -91,6 +77,20 @@
     </div>
   </div>
 </main>
+
+<!-- General Error Display Area for Text Command Apply -->
+<div class="global-command-feedback" *ngIf="applyTextCommandErrors.length > 0">
+  <h4>Command Input Feedback:</h4>
+  <p *ngFor="let err of applyTextCommandErrors" [class.success-message]="err.includes('successfully')">{{ err }}</p>
+</div>
+
+<app-scene-text-input-modal
+  [isVisible]="showSceneTextInputModal"
+  [sceneLabel]="currentSceneForModal === 1 ? 'Scene 1' : (currentSceneForModal === 2 ? 'Scene 2' : 'Scene')"
+  [initialValue]="modalInitialText"
+  (closeModal)="handleCloseSceneTextInputModal()"
+  (applyCommands)="handleApplySceneCommandsFromModal($event)">
+</app-scene-text-input-modal>
 
 <app-settings-modal *ngIf="showSettingsModal" (close)="toggleSettingsModal()"></app-settings-modal>
 

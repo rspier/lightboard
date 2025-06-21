@@ -62,7 +62,7 @@
 /* New styles for vertical labels and their wrappers */
 .scene-row-wrapper {
   display: flex;
-  align-items: stretch; /* Make label container and slider row same height */
+  align-items: center; /* Changed from stretch for better icon alignment */
 }
 
 .scene-label-container {
@@ -70,7 +70,7 @@
   align-items: center;
   justify-content: center;
   width: 25px; /* Width for the rotated text's container */
-  margin-right: 5px; /* Space between rotated label and slider row */
+  margin-right: 0; /* Space will be handled by brain-icon's margin */
   /* min-height: 100px; /* Let content (slider-row) define height of wrapper */
 }
 
@@ -149,12 +149,13 @@
 }
 
 /* Styles for Scene Text Input Feature */
-.scene-label-container .brain-icon {
+.brain-icon { /* Updated selector */
   cursor: pointer;
-  margin-left: 8px; /* Space between scene label and brain icon */
+  margin-left: 5px; /* Space from scene-label-container */
+  margin-right: 5px; /* Space before slider-row */
   font-size: 1.2em; /* Adjust size as needed */
   user-select: none; /* Prevent text selection on icon */
-  /* Align with vertical label if needed - may require flex adjustments on parent */
+  line-height: 1; /* Helps with vertical alignment if icon font has extra space */
 }
 
 .scene-text-input-wrapper {
@@ -234,13 +235,38 @@
      if the icon is intended to be next to the (rotated) label.
      And make it flex row to put label and icon side by side before rotation.
   */
-  flex-direction: row; /* To place label and icon side-by-side before rotation of parent */
-  align-items: center; /* Vertically center label and icon */
+  /* flex-direction: row; /* No longer needed here, icon is outside */
+  /* align-items: center; /* Already part of base .scene-label-container style */
 }
 
 .scene-label {
  /* font-size: 1em; ... already set */
  /* writing-mode: vertical-lr; ... already set */
  /* transform: rotate(180deg); ... already set */
-  margin-right: 5px; /* Add some space between label and brain icon if they are side-by-side */
+  /* margin-right: 5px; /* No longer needed, icon is outside */
+}
+
+.global-command-feedback {
+  margin: 15px;
+  padding: 10px;
+  border: 1px solid var(--app-border-color);
+  border-radius: 4px;
+  background-color: var(--slider-host-bg-color);
+}
+.global-command-feedback h4 {
+  margin-top: 0;
+  margin-bottom: 8px;
+  font-size: 1.1em;
+}
+.global-command-feedback p {
+  margin: 3px 0;
+  font-size: 0.9em;
+  color: var(--modal-error-text-color); /* Default to error color */
+}
+.global-command-feedback p.success-message {
+  color: green; /* Or a theme variable for success text */
+}
+/* Dark theme specific success color if needed */
+body.dark-theme .global-command-feedback p.success-message {
+  color: lightgreen;
 }
