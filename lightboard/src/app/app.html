@@ -8,18 +8,23 @@
     <div class="page-content">
       <div class="sliders-area">
         <div class="channel-slider-rows">
-          <h2 class="scene-label">Scene 1</h2>
-          <div class="slider-row" id="row1">
-            <app-slide-potentiometer
-              *ngFor="let state of row1States; let i = index"
-              [channelNumber]="state.channelNumber"
-              [channelDescription]="state.channelDescription"
-              [(value)]="state.value"
-              (valueChange)="onPotentiometerChange()"
-              [color]="state.color"
-              (colorChange)="state.color = $event; onPotentiometerChange()"
-              [showChannelInfo]="true">
-            </app-slide-potentiometer>
+
+          <div class="scene-row-wrapper">
+            <div class="scene-label-container">
+              <h2 class="scene-label scene-1-label">Scene 1</h2>
+            </div>
+            <div class="slider-row" id="row1">
+              <app-slide-potentiometer
+                *ngFor="let state of row1States; trackBy: trackByState"
+                [channelNumber]="state.channelNumber"
+                [channelDescription]="state.channelDescription"
+                [(value)]="state.value"
+                (valueChange)="onPotentiometerChange()"
+                [color]="state.color"
+                (colorChange)="state.color = $event; onPotentiometerChange()"
+                [showChannelInfo]="true">
+              </app-slide-potentiometer>
+            </div>
           </div>
 
           <div class="combined-output-row">
@@ -31,19 +36,24 @@
             </app-combined-output-display>
           </div>
 
-          <h2 class="scene-label">Scene 2</h2>
-          <div class="slider-row" id="row2">
-            <app-slide-potentiometer
-              *ngFor="let state of row2States; let i = index"
-              [channelNumber]="state.channelNumber"
-              [channelDescription]="state.channelDescription"
-              [(value)]="state.value"
-              (valueChange)="onPotentiometerChange()"
-              [color]="state.color"
-              (colorChange)="state.color = $event; onPotentiometerChange()"
-              [showChannelInfo]="true">
-            </app-slide-potentiometer>
+          <div class="scene-row-wrapper">
+            <div class="scene-label-container">
+              <h2 class="scene-label scene-2-label">Scene 2</h2>
+            </div>
+            <div class="slider-row" id="row2">
+              <app-slide-potentiometer
+                *ngFor="let state of row2States; trackBy: trackByState"
+                [channelNumber]="state.channelNumber"
+                [channelDescription]="state.channelDescription"
+                [(value)]="state.value"
+                (valueChange)="onPotentiometerChange()"
+                [color]="state.color"
+                (colorChange)="state.color = $event; onPotentiometerChange()"
+                [showChannelInfo]="true">
+              </app-slide-potentiometer>
+            </div>
           </div>
+
         </div>
         <div class="crossfader-column">
           <app-slide-potentiometer
@@ -58,7 +68,6 @@
           <button (click)="onGoButtonClick()" class="go-button" [disabled]="isAnimating">Go</button>
         </div>
       </div>
-      <!-- Old table column removed -->
     </div>
   </div>
 </main>

@@ -39,8 +39,8 @@
 .page-content {
   display: flex;
   flex-direction: row;
-  align-items: flex-start; /* Keep this as flex-start if crossfader shouldn't vertically stretch/center with potentially taller channel-slider-rows */
-  gap: 20px; /* This is the gap between sliders-area and where table-column was, can be adjusted if needed */
+  align-items: flex-start;
+  gap: 20px;
   width: 100%;
   max-width: 1200px;
   justify-content: center;
@@ -48,34 +48,51 @@
 
 .sliders-area {
   display: flex;
-  gap: 20px; /* Reduced from 30px - Space between channel sliders area and crossfader */
-  align-items: center; /* Vertically center channel-slider-rows and crossfader-column relative to each other */
+  gap: 20px;
+  align-items: center;
   box-sizing: border-box;
 }
 
 .channel-slider-rows {
   display: flex;
   flex-direction: column;
-  gap: 8px; /* Reduced from 15px - Space between Scene 1, Combined Output, Scene 2 rows */
+  gap: 8px;
+}
+
+/* New styles for vertical labels and their wrappers */
+.scene-row-wrapper {
+  display: flex;
+  align-items: stretch; /* Make label container and slider row same height */
+}
+
+.scene-label-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 25px; /* Width for the rotated text's container */
+  margin-right: 5px; /* Space between rotated label and slider row */
+  /* min-height: 100px; /* Let content (slider-row) define height of wrapper */
 }
 
 .scene-label {
-  text-align: center;
-  margin-bottom: 4px; /* Slightly reduced from 5px */
-  font-size: 1.2em;
+  font-size: 1em;
   font-weight: bold;
   color: var(--app-text-color);
-  /* margin-top is handled by parent gap or :first-child rule */
+  white-space: nowrap;
+  writing-mode: vertical-lr;
+  transform: rotate(180deg); /* Rotate to read bottom-to-top, left-to-right */
+  margin: 0; /* Reset margins */
+  padding: 0;
+  text-align: center; /* Center text along its vertical axis */
 }
 
-.channel-slider-rows > .scene-label:first-child {
-  margin-top: 0;
-}
+/* Removed old .channel-slider-rows > .scene-label:first-child as labels are now inside wrappers */
 
 .slider-row {
   display: flex;
   gap: 0;
   justify-content: center;
+  flex-grow: 1; /* Allow slider row to take available space */
 }
 
 .combined-output-row {
@@ -83,14 +100,15 @@
   flex-wrap: nowrap;
   gap: 0;
   justify-content: center;
-  /* margin-bottom will be controlled by parent .channel-slider-rows gap */
+  margin: 8px 0; /* Add some vertical margin around combined output row */
 }
 
 .crossfader-column {
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* align-self: center; /* If .sliders-area is align-items: flex-start, this can center the column itself */
+  /* align-self: stretch; /* Make crossfader column same height as channel-slider-rows */
+  /* This might need adjustment depending on the desired vertical alignment of the crossfader itself. */
 }
 
 .go-button {

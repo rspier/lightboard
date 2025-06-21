@@ -216,9 +216,17 @@ export class App implements OnInit, OnDestroy {
   }
 
   onGoButtonClick(): void {
-    if (this.isAnimating) return;
-    const targetValue = this.crossfaderValue >= 50 ? 0 : 100;
-    this.animateCrossfader(targetValue);
+    if (this.isAnimating) {
+      if (this.animationInterval) {
+        clearInterval(this.animationInterval);
+        this.animationInterval = null;
+      }
+      this.isAnimating = false;
+      this.cdr.detectChanges(); // Update UI for button state
+    } else {
+      const targetValue = this.crossfaderValue >= 50 ? 0 : 100;
+      this.animateCrossfader(targetValue);
+    }
   }
 
   animateCrossfader(targetValue: number): void {
@@ -253,5 +261,9 @@ export class App implements OnInit, OnDestroy {
   // Added for *ngFor trackBy in app.html for combinedOutputStates
   public trackByCombinedState(index: number, item: PotentiometerState): number {
     return item.channelNumber;
+  }
+
+  public trackByState(index: number, item: PotentiometerState): number {
+    return item.channelNumber; // Or a more unique ID if channelNumber can repeat across rows (though not in this design)
   }
 }
