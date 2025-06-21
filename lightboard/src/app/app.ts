@@ -55,7 +55,7 @@ export class App implements OnInit, OnDestroy {
   modalInitialText: string = '';
   scene1CommandsString: string = '';
   scene2CommandsString: string = '';
-  applyTextCommandErrors: string[] = [];
+  modalFeedbackMessages: {text: string, type: 'error' | 'success'}[] = []; // Renamed and typed
 
   private unlistenKeyDown: (() => void) | undefined; // For keyboard shortcut listener cleanup
 
@@ -133,6 +133,9 @@ export class App implements OnInit, OnDestroy {
       } else if (event.shiftKey && event.key === '@') { // Shift + 2
         event.preventDefault();
         this.toggleSceneTextInput(2);
+      } else if (event.key === 'Escape' && this.showSceneTextInputModal) {
+        event.preventDefault();
+        this.handleCloseSceneTextInputModal();
       }
     });
   }
@@ -162,9 +165,9 @@ export class App implements OnInit, OnDestroy {
   // Updated toggle function for modal
   toggleSceneTextInput(sceneNumber: 1 | 2): void {
     this.currentSceneForModal = sceneNumber;
-    this.modalInitialText = sceneNumber === 1 ? this.scene1CommandsString : this.scene2CommandsString;
+    this.modalInitialText = ''; // Always open with a clear input field
     this.showSceneTextInputModal = true;
-    this.applyTextCommandErrors = []; // Clear previous errors when opening modal
+    this.modalFeedbackMessages = []; // Clear previous messages when opening modal
     this.cdr.detectChanges();
   }
 
@@ -173,6 +176,7 @@ export class App implements OnInit, OnDestroy {
     this.showSceneTextInputModal = false;
     this.currentSceneForModal = null;
     this.modalInitialText = ''; // Clear initial text for next opening
+    this.modalFeedbackMessages = []; // Also clear messages when modal is explicitly closed
     this.cdr.detectChanges();
   }
 
@@ -180,26 +184,29 @@ export class App implements OnInit, OnDestroy {
   handleApplySceneCommandsFromModal(commandsText: string): void {
     if (this.currentSceneForModal === null) {
       console.error('currentSceneForModal is null. Cannot apply commands.');
-      this.applyTextCommandErrors = ['Error: No scene selected. Please try opening the input again.'];
-      this.showSceneTextInputModal = false;
+      // This case should ideally not happen if UI controls are correct
+      this.modalFeedbackMessages = [{ text: 'Error: No scene selected. Please try opening the input again.', type: 'error'}];
+      this.showSceneTextInputModal = false; // Close modal if something went wrong with context
       this.cdr.detectChanges();
       return;
     }
     const targetScene = this.currentSceneForModal;
     if (targetScene === 1) { this.scene1CommandsString = commandsText; } else { this.scene2CommandsString = commandsText; }
-    this.applyTextCommandErrors = [];
+
+    this.modalFeedbackMessages = []; // Clear previous messages for new attempt
+
     const { commands, errors } = this.parseSceneCommands(commandsText, this.currentNumChannels);
 
     if (errors.length > 0) {
-      this.applyTextCommandErrors.push(...errors);
-      if (commands.length > 0) { // If there were some valid commands amidst errors
-        this.applyTextCommandErrors.push("Some commands were parsed but not applied due to errors. Please fix errors and try again.");
+      errors.forEach(err => this.modalFeedbackMessages.push({ text: err, type: 'error' }));
+      if (commands.length > 0) {
+        this.modalFeedbackMessages.push({ text: "Some commands were parsed but not applied due to errors. Please fix errors and try again.", type: 'error'});
       }
-      // Modal remains open for user to correct errors. Errors are displayed in the main app view.
+      // Modal remains open for user to correct errors. Messages are passed to modal.
     } else if (commands.length > 0) {
       const targetStates = targetScene === 1 ? this.row1States : this.row2States;
       const newStates = targetStates.map(s => ({ ...s }));
-      let applicationErrorOccurred = false; // Flag for errors during application phase
+      let applicationErrorOccurred = false;
 
       commands.forEach(cmd => {
         const stateToUpdate = newStates.find(s => s.channelNumber === cmd.channel);
@@ -209,8 +216,7 @@ export class App implements OnInit, OnDestroy {
             stateToUpdate.color = cmd.color;
           }
         } else {
-          // This error should ideally be caught by parseSceneCommands if channel numbers are validated against currentNumChannels
-           this.applyTextCommandErrors.push(`Error during application: Channel ${cmd.channel} not found in scene ${targetScene}. This shouldn't happen if parsing is correct.`);
+           this.modalFeedbackMessages.push({ text: `Error during application: Channel ${cmd.channel} not found in scene ${targetScene}. This shouldn't happen if parsing is correct.`, type: 'error'});
            applicationErrorOccurred = true;
         }
       });
@@ -219,18 +225,18 @@ export class App implements OnInit, OnDestroy {
         if (targetScene === 1) { this.row1States = newStates; } else { this.row2States = newStates; }
         this.calculateCombinedOutputs();
         this.onPotentiometerChange();
-        this.applyTextCommandErrors.push(`Applied ${commands.length} command(s) successfully to Scene ${targetScene}.`);
-        this.showSceneTextInputModal = false; // Close modal on success
+        this.modalFeedbackMessages.push({ text: `Applied ${commands.length} command(s) successfully to Scene ${targetScene}.`, type: 'success'});
+        this.showSceneTextInputModal = false;
         this.currentSceneForModal = null;
       } else {
-        // Errors occurred during the application phase itself (e.g. channel not found after parsing said it was ok)
-        // Modal would remain open as per current logic flow (since showSceneTextInputModal not set to false here)
-        // but errors are in applyTextCommandErrors.
+        // Application errors occurred, modal remains open, messages passed.
       }
-    } else { // No commands entered and no parsing errors
-      this.applyTextCommandErrors.push("No commands were entered or applied.");
-      this.showSceneTextInputModal = false; // Close modal as there's nothing to do
-      this.currentSceneForModal = null;
+    } else {
+      this.modalFeedbackMessages.push({ text: "No commands were entered or applied.", type: 'error' }); // Or 'info' type if we add it
+      // Decide if modal should close here. For now, let's keep it open to show the message.
+      // If we want it to close:
+      // this.showSceneTextInputModal = false;
+      // this.currentSceneForModal = null;
     }
     this.cdr.detectChanges();
   }
@@ -240,9 +246,9 @@ export class App implements OnInit, OnDestroy {
     const commands: ParsedCommand[] = [];
     const errors: string[] = [];
 
-    // Trim the whole input, then split by any sequence of one or more whitespace characters.
-    // Filter out any empty strings that might result from multiple spaces between commands.
-    const commandSegments = textInput.trim().split(/\s+/).filter(segment => segment.length > 0);
+    // Trim the whole input, then split by any sequence of one or more commas or whitespace characters.
+    // Filter out any empty strings that might result from multiple delimiters.
+    const commandSegments = textInput.trim().split(/[,\s]+/).filter(segment => segment.length > 0);
 
     // Regex for an individual command segment
     const commandRegex = /^\s*(\d+)\s*@\s*(\d{1,3})\s*(?:#?\s*([0-9a-fA-F]{3}|[0-9a-fA-F]{6}))?\s*$/;

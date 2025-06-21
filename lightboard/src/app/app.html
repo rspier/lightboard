@@ -76,16 +76,13 @@
   </div>
 </main>
 
-<!-- General Error Display Area for Text Command Apply -->
-<div class="global-command-feedback" *ngIf="applyTextCommandErrors.length > 0">
-  <h4>Command Input Feedback:</h4>
-  <p *ngFor="let err of applyTextCommandErrors" [class.success-message]="err.includes('successfully')">{{ err }}</p>
-</div>
+<!-- Old global error display removed -->
 
 <app-scene-text-input-modal
   [isVisible]="showSceneTextInputModal"
   [sceneLabel]="currentSceneForModal === 1 ? 'Scene 1' : (currentSceneForModal === 2 ? 'Scene 2' : 'Scene')"
   [initialValue]="modalInitialText"
+  [messages]="modalFeedbackMessages"
   (closeModal)="handleCloseSceneTextInputModal()"
   (applyCommands)="handleApplySceneCommandsFromModal($event)">
 </app-scene-text-input-modal>

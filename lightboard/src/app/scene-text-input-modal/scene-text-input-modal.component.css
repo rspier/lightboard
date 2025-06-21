@@ -50,6 +50,41 @@
   color: var(--app-text-color); /* Use app text for input text */
 }
 
+.modal-messages {
+  margin-top: 10px;
+  padding: 8px;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+
+.modal-messages p {
+  margin: 0 0 5px 0;
+  padding: 0;
+}
+.modal-messages p:last-child {
+  margin-bottom: 0;
+}
+
+.message-error {
+  color: var(--modal-error-text-color, red); /* Fallback to red */
+  background-color: rgba(255, 0, 0, 0.1); /* Light red background */
+  border-left: 3px solid var(--modal-error-text-color, red);
+  padding: 5px 8px;
+}
+
+.message-success {
+  color: green; /* Fallback to green */
+  background-color: rgba(0, 128, 0, 0.1); /* Light green background */
+  border-left: 3px solid green;
+  padding: 5px 8px;
+}
+/* Potentially add dark theme specifics for success if needed */
+body.dark-theme .message-success {
+  color: lightgreen;
+  border-left-color: lightgreen;
+}
+
+
 .modal-actions {
   display: flex;
   justify-content: flex-end;

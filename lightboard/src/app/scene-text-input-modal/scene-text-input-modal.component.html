@@ -10,7 +10,12 @@
         (keydown.enter)="onInputEnter($any($event))"
         placeholder="e.g., 1@100#F00 2@50#0FF"
         [attr.aria-label]="'Commands for ' + sceneLabel">
-      <!-- Removed error display from within modal for now, will be in main app view -->
+
+      <div class="modal-messages" *ngIf="messages.length > 0">
+        <p *ngFor="let msg of messages" [ngClass]="{'message-error': msg.type === 'error', 'message-success': msg.type === 'success'}">
+          {{ msg.text }}
+        </p>
+      </div>
     </div>
     <div class="modal-actions">
       <button class="button secondary-button" (click)="onCancel()">Cancel</button>

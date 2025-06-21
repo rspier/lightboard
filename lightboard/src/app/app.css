@@ -220,27 +220,4 @@
  /* All existing styles for scene-label are fine. No margin-right needed as icon is gone. */
 }
 
-.global-command-feedback {
-  margin: 15px;
-  padding: 10px;
-  border: 1px solid var(--app-border-color);
-  border-radius: 4px;
-  background-color: var(--slider-host-bg-color);
-}
-.global-command-feedback h4 {
-  margin-top: 0;
-  margin-bottom: 8px;
-  font-size: 1.1em;
-}
-.global-command-feedback p {
-  margin: 3px 0;
-  font-size: 0.9em;
-  color: var(--modal-error-text-color); /* Default to error color */
-}
-.global-command-feedback p.success-message {
-  color: green; /* Or a theme variable for success text */
-}
-/* Dark theme specific success color if needed */
-body.dark-theme .global-command-feedback p.success-message {
-  color: lightgreen;
-}
+/* Removed .global-command-feedback styles as the element is removed */

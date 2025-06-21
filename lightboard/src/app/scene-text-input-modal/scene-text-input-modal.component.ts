@@ -13,6 +13,7 @@ export class SceneTextInputModalComponent implements OnChanges, AfterViewChecked
   @Input() isVisible: boolean = false;
   @Input() sceneLabel: string = '';
   @Input() initialValue: string = '';
+  @Input() messages: {text: string, type: 'error' | 'success'}[] = [];
 
   @Output() closeModal = new EventEmitter<void>();
   @Output() applyCommands = new EventEmitter<string>();
