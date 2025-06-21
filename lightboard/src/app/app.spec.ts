@@ -78,8 +78,13 @@ describe('App', () => {
       clearInterval(app.animationInterval);
       app.animationInterval = null;
     }
-    if ((jasmine.clock() as any).isInstalled && (jasmine.clock() as any).isInstalled()) {
-         jasmine.clock().uninstall();
+    // Corrected global clock cleanup
+    if ((jasmine.clock() as any).isInstalled && typeof (jasmine.clock() as any).uninstall === 'function') {
+      try {
+        jasmine.clock().uninstall();
+      } catch (e) {
+        // console.error('Error uninstalling global jasmine clock:', e);
+      }
     }
   });
 
@@ -206,7 +211,7 @@ describe('App', () => {
       // mockChannelSettingsService.getCurrentAppSettings is already stubbed to return initialTestSettings in the outer beforeEach
       fixture.detectChanges(); // Triggers constructor and ngOnInit
 
-      expect(mockRenderer.removeClass).toHaveBeenCalledWith(fixture.nativeElement.ownerDocument.body, 'dark-theme');
+      expect(mockRenderer.removeClass).toHaveBeenCalledWith(mockDocument.body, 'dark-theme');
       expect(mockRenderer.addClass).not.toHaveBeenCalled();
     });
 
@@ -218,12 +223,12 @@ describe('App', () => {
       // Re-create fixture and component with the new mock setup for constructor
       fixture = TestBed.createComponent(App);
       app = fixture.componentInstance;
-      // Need to get the mockRenderer again if TestBed is reset, but here it's a top-level mock.
-      // However, the document instance might change. Let's verify using app.document.body
+      // Update mockDocument to the new fixture's document instance
+      mockDocument = fixture.debugElement.injector.get(DOCUMENT);
 
       fixture.detectChanges(); // Triggers constructor and ngOnInit for the new component
 
-      expect(mockRenderer.addClass).toHaveBeenCalledWith(app['document'].body, 'dark-theme');
+      expect(mockRenderer.addClass).toHaveBeenCalledWith(mockDocument.body, 'dark-theme');
       expect(mockRenderer.removeClass).not.toHaveBeenCalled();
     });
 
@@ -238,7 +243,7 @@ describe('App', () => {
       appSettingsSubject.next({ ...initialTestSettings, darkMode: true });
       fixture.detectChanges(); // Allow subscription to process
 
-      expect(mockRenderer.addClass).toHaveBeenCalledWith(app['document'].body, 'dark-theme');
+      expect(mockRenderer.addClass).toHaveBeenCalledWith(mockDocument.body, 'dark-theme');
       expect(mockRenderer.removeClass).not.toHaveBeenCalled();
     });
 
@@ -248,6 +253,8 @@ describe('App', () => {
       mockChannelSettingsService.getCurrentAppSettings.and.returnValue(darkInitialSettings);
       fixture = TestBed.createComponent(App); // Recreate for dark initial
       app = fixture.componentInstance;
+      // Update mockDocument to the new fixture's document instance
+      mockDocument = fixture.debugElement.injector.get(DOCUMENT);
       fixture.detectChanges(); // Constructor applies dark, ngOnInit sets up subscription
 
       // Reset spies to only capture the effect of the subscription update.
@@ -257,35 +264,44 @@ describe('App', () => {
       appSettingsSubject.next({ ...initialTestSettings, darkMode: false }); // Change to light
       fixture.detectChanges(); // Allow subscription to process
 
-      expect(mockRenderer.removeClass).toHaveBeenCalledWith(app['document'].body, 'dark-theme');
+      expect(mockRenderer.removeClass).toHaveBeenCalledWith(mockDocument.body, 'dark-theme');
       expect(mockRenderer.addClass).not.toHaveBeenCalled();
     });
   });
 
   // Go Button and Animation tests from before
   describe('Go Button and Crossfader Animation', () => {
+    beforeEach(() => {
+      jasmine.clock().install();
+    });
+
     afterEach(() => {
-      if (typeof (jasmine.clock() as any).uninstall === 'function') {
-        try { jasmine.clock().uninstall(); } catch (e) {}
+      // Ensure clock is uninstalled after each test in this suite
+      if ((jasmine.clock() as any).isInstalled && typeof (jasmine.clock() as any).uninstall === 'function') {
+        try {
+          jasmine.clock().uninstall();
+        } catch (e) {
+          // console.error('Error uninstalling jasmine clock in describe suite:', e);
+        }
       }
     });
 
     it('animateCrossfader should use currentCrossfadeDurationMs', () => {
-      jasmine.clock().install();
+      // jasmine.clock().install(); // Removed, handled by describe's beforeEach
       app['currentCrossfadeDurationMs'] = 1000;
       const expectedInterval = 1000 / 25;
-      spyOn(window, 'setInterval').and.callThrough();
+      spyOn(window, 'setInterval').and.callThrough(); // Still useful to ensure it's called
       app.animateCrossfader(100);
       expect(window.setInterval).toHaveBeenCalledWith(jasmine.any(Function), expectedInterval);
-      jasmine.clock().tick(1000); // Let animation complete for this specific test
-      // No uninstall here, let afterEach handle it.
+      jasmine.clock().tick(1000); // Let animation complete
+      // jasmine.clock().uninstall(); // Removed, handled by describe's afterEach
     });
 
     it('should stop animation and clear interval if Go is clicked while animating', () => {
-      jasmine.clock().install(); // Install clock for this test
+      // jasmine.clock().install(); // Removed, handled by describe's beforeEach
       fixture.detectChanges(); // Initial state
 
-      app['currentCrossfadeDurationMs'] = 1000; // Set a known duration for easier tick calculation
+      app['currentCrossfadeDurationMs'] = 1000; // Set a known duration
       const initialCrossfaderValue = 0;
       app.crossfaderValue = initialCrossfaderValue;
 
@@ -317,7 +333,7 @@ describe('App', () => {
       // onPotentiometerChange should have been called by the interrupting onGoButtonClick
       expect(mockHttpDataService.postCombinedOutput).toHaveBeenCalledTimes(1);
 
-      jasmine.clock().uninstall(); // Uninstall clock specific to this test
+      // jasmine.clock().uninstall(); // Removed, handled by describe's afterEach
     });
   });
   // Other Go button tests and calculateCombinedOutputs tests are assumed to be present and correct.
