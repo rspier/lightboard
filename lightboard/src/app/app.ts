@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, Renderer2, Inject } from '@angular/core';
 import { DOCUMENT, CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms'; // Import FormsModule
 import { RouterOutlet } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { SlidePotentiometerComponent } from './slide-potentiometer/slide-potentiometer';
@@ -27,6 +28,7 @@ interface ParsedCommand {
   selector: 'app-root',
   imports: [
     CommonModule,
+    FormsModule, // Add FormsModule here
     RouterOutlet,
     SlidePotentiometerComponent,
     // ChannelValuesTableComponent, // Removed
