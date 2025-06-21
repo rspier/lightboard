@@ -204,7 +204,7 @@ describe('App', () => {
       // Spy on applyTheme before each test in this suite
       // Note: This spies on the method for *all* instances, but we get a new `app` instance
       // in some tests if fixture is recreated. The spy should persist on the prototype.
-      applyThemeSpy = spyOn(App.prototype, 'applyTheme').and.callThrough();
+      applyThemeSpy = spyOn(App.prototype as any, 'applyTheme').and.callThrough();
     });
 
     // Test for initial light theme from constructor (based on beforeEach's initialTestSettings)
