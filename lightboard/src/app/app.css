@@ -136,3 +136,14 @@
   color: var(--button-disabled-text-color);
   cursor: not-allowed;
 }
+
+.go-button.animating {
+  background-color: var(--button-secondary-bg-color);
+  color: var(--button-secondary-text-color);
+  /* Ensure cursor remains pointer, it inherits by default */
+}
+
+.go-button.animating:hover {
+  background-color: var(--button-secondary-hover-bg-color);
+  color: var(--button-secondary-text-color);
+}

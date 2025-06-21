@@ -65,7 +65,7 @@
             [sliderHeight]="'320px'"
             [showChannelInfo]="false">
           </app-slide-potentiometer>
-          <button (click)="onGoButtonClick()" class="go-button" [disabled]="isAnimating">Go</button>
+          <button (click)="onGoButtonClick()" class="go-button" [class.animating]="isAnimating">Go</button>
         </div>
       </div>
     </div>
