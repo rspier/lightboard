@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing'; // Import fakeAsync, tick
+import { ComponentFixture, TestBed } from '@angular/core/testing'; // Removed fakeAsync, tick
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { SettingsModalComponent } from './settings-modal.component';
@@ -154,11 +154,12 @@ describe('SettingsModalComponent', () => {
       expect(mockChannelSettingsService.updateCrossfadeDurationSeconds).not.toHaveBeenCalled();
       expect(component.close.emit).not.toHaveBeenCalled();
     });
+  }); // End of describe('saveSettings')
 
-  it('should bind darkMode to the checkbox and update component property', fakeAsync(() => { // Use fakeAsync
+  it('should bind darkMode to the checkbox and update component property (ngModel test)', async () => {
     component.darkMode = false;
     fixture.detectChanges();
-    tick(); // Ensure model is stable before interaction
+    await fixture.whenStable();
 
     const checkboxDebugElement = fixture.debugElement.query(By.css('#dark-mode-toggle'));
     const checkboxNativeElement = checkboxDebugElement.nativeElement as HTMLInputElement;
@@ -166,28 +167,48 @@ describe('SettingsModalComponent', () => {
     expect(checkboxNativeElement.checked).toBeFalse();
 
     checkboxNativeElement.checked = true;
-    checkboxNativeElement.dispatchEvent(new Event('change'));
+    checkboxNativeElement.dispatchEvent(new Event('change')); // ngModel listens to 'change' or 'input'
 
     fixture.detectChanges();
-    tick(); // Allow ngModel to propagate the change
+    await fixture.whenStable();
 
     expect(component.darkMode).toBeTrue();
-  }));
+  });
 
-  // Optional: Test property to view binding (if not covered by the above)
-  it('should bind component darkMode property to checkbox state', fakeAsync(() => {
+  it('should bind component darkMode property to checkbox state (property to view)', async () => {
     component.darkMode = true;
     fixture.detectChanges();
-    tick();
+    await fixture.whenStable();
 
     const checkboxNativeElement = fixture.debugElement.query(By.css('#dark-mode-toggle')).nativeElement as HTMLInputElement;
     expect(checkboxNativeElement.checked).toBeTrue();
 
     component.darkMode = false;
     fixture.detectChanges();
-    tick();
+    await fixture.whenStable();
     expect(checkboxNativeElement.checked).toBeFalse();
-  }));
+  });
+
+  it('should update component property when checkbox is clicked by user (view to model)', async () => {
+    component.darkMode = false; // Start with a known state
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const checkbox = fixture.debugElement.query(By.css('#dark-mode-toggle')).nativeElement as HTMLInputElement;
+    expect(checkbox.checked).toBe(false); // Initial check
+
+    checkbox.click(); // Simulate user click
+    fixture.detectChanges();
+    await fixture.whenStable(); // Allow ngModel to propagate the change
+
+    expect(component.darkMode).toBeTrue(); // Component property should be updated
+    expect(checkbox.checked).toBe(true); // Checkbox state should also be true
+
+    checkbox.click(); // Click again
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(component.darkMode).toBeFalse();
+    expect(checkbox.checked).toBe(false);
   });
 
   it('should emit close on cancel', () => {
@@ -220,21 +241,5 @@ describe('SettingsModalComponent', () => {
     expect(component.numChannelsError).toBeNull();
     expect(component.backendUrlError).toBeNull();
     expect(component.durationError).toBeNull();
-  });
-
-  it('should bind darkMode to the checkbox', () => {
-    component.darkMode = true;
-    fixture.detectChanges();
-    const checkbox = fixture.debugElement.query(By.css('#dark-mode-toggle')).nativeElement as HTMLInputElement;
-    expect(checkbox.checked).toBeTrue();
-
-    component.darkMode = false;
-    fixture.detectChanges();
-    expect(checkbox.checked).toBeFalse();
-
-    // Simulate user clicking checkbox
-    checkbox.click();
-    fixture.detectChanges();
-    expect(component.darkMode).toBeTrue(); // Should update component property via ngModel
   });
 });

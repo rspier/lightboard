@@ -1,5 +1,5 @@
 import { TestBed, ComponentFixture, fakeAsync, tick } from '@angular/core/testing'; // Imported fakeAsync and tick for potential use if needed, though jasmine.clock is primary for intervals
-import { Renderer2, NgZone, ChangeDetectorRef } from '@angular/core';
+import { provideZonelessChangeDetection, Renderer2, NgZone, ChangeDetectorRef } from '@angular/core'; // Restored provideZonelessChangeDetection
 import { DOCUMENT } from '@angular/common';
 import { App } from './app';
 import { By } from '@angular/platform-browser';
@@ -63,8 +63,8 @@ describe('App', () => {
       providers: [
         { provide: ChannelSettingsService, useValue: mockChannelSettingsService },
         { provide: HttpDataService, useValue: mockHttpDataService },
-        { provide: Renderer2, useValue: mockRenderer }
-        // Removed provideZonelessChangeDetection()
+        { provide: Renderer2, useValue: mockRenderer },
+        provideZonelessChangeDetection() // Restored for zoneless testing of App component
       ]
     }).compileComponents();
 
