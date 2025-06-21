@@ -101,6 +101,8 @@
   gap: 0;
   justify-content: center;
   margin: 8px 0; /* Add some vertical margin around combined output row */
+  padding-left: 30px; /* Indent content to align with sliders (25px label width + 5px margin) */
+  box-sizing: border-box; /* Ensure padding is included in width calculation */
 }
 
 .crossfader-column {

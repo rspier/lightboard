@@ -7,7 +7,7 @@
 
 .display-box {
   width: 100%; /* Take full width of the host's allocated space */
-  padding: 10px; /* Adjusted from 8px to 10px to match slide-potentiometer padding */
+  padding: 10px; /* Match slide-potentiometer padding for consistent item width */
   border: 1px solid var(--slider-host-border-color, #ccc); /* Use existing variable or default */
   border-radius: 4px;
   display: flex;
