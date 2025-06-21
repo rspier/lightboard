@@ -14,6 +14,8 @@ export class SlidePotentiometerComponent {
   @Input() channelDescription: string = '';
   @Input() sliderHeight: string = '150px';
   @Input() showChannelInfo: boolean = true;
+  @Input() showValueDisplay: boolean = true; // New input
+  @Input() showColorInput: boolean = true; // New input
 
   @Input() value: number = 0;
   @Output() valueChange = new EventEmitter<number>();

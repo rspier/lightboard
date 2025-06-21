@@ -63,7 +63,9 @@
             [(value)]="crossfaderValue"
             (valueChange)="onPotentiometerChange()"
             [sliderHeight]="'320px'"
-            [showChannelInfo]="false">
+            [showChannelInfo]="false"
+            [showValueDisplay]="false"
+            [showColorInput]="false">
           </app-slide-potentiometer>
           <button (click)="onGoButtonClick()" class="go-button" [class.animating]="isAnimating">Go</button>
         </div>
