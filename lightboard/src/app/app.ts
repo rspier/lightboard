@@ -216,13 +216,25 @@ export class App implements OnInit, OnDestroy {
   }
 
   onGoButtonClick(): void {
-    if (this.isAnimating) return;
+    if (this.isAnimating) {
+      // If animation is running, stop it
+      if (this.animationInterval) {
+        clearInterval(this.animationInterval);
+        this.animationInterval = null;
+      }
+      this.isAnimating = false;
+      // Ensure the final state is calculated and sent
+      this.onPotentiometerChange();
+      this.cdr.detectChanges(); // Ensure UI updates if needed
+      return;
+    }
     const targetValue = this.crossfaderValue >= 50 ? 0 : 100;
     this.animateCrossfader(targetValue);
   }
 
   animateCrossfader(targetValue: number): void {
     this.isAnimating = true;
+    // Clear any existing interval just in case, though onGoButtonClick should handle it
     if (this.animationInterval) clearInterval(this.animationInterval);
     const totalDuration = this.currentCrossfadeDurationMs;
     const steps = 25;

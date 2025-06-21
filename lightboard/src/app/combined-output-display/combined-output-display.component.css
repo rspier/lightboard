@@ -1,8 +1,9 @@
 :host {
   display: flex; /* Allow the component to be a flex item if its parent is flex */
-  flex: 1; /* Allow it to grow and shrink as part of a flex row */
-  min-width: 60px; /* Minimum width to prevent too much squishing */
+  width: 82px; /* Match slide-potentiometer (60px min-width + 2*10px padding + 2*1px border) */
+  /* min-width: 60px; */ /* Replaced by fixed width for alignment */
   font-family: var(--app-font-family, sans-serif); /* Use variable if defined, else fallback */
+  box-sizing: border-box; /* Ensure padding and border are included in the width */
 }
 
 .display-box {
