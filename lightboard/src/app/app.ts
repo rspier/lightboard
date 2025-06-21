@@ -64,25 +64,26 @@ export class App implements OnInit, OnDestroy {
     this.currentBackendUrl = initialSettings.backendUrl;
     this.currentCrossfadeDurationMs = initialSettings.crossfadeDurationSeconds * 1000;
     this.currentDarkMode = initialSettings.darkMode;
-    this.initializeChannelStates(this.currentNumChannels);
+    // Pass descriptions directly from initialSettings
+    this.initializeChannelStates(this.currentNumChannels, initialSettings.channelDescriptions);
     this.applyTheme(this.currentDarkMode);
   }
 
-  initializeChannelStates(numChannels: number): void {
-    const currentDescriptions = this.channelSettingsService.getCurrentChannelDescriptions();
+  initializeChannelStates(numChannels: number, descriptions: string[]): void {
+    // const currentDescriptions = this.channelSettingsService.getCurrentChannelDescriptions(); // No longer needed
 
     this.row1States = [];
     this.row2States = [];
     for (let i = 0; i < numChannels; i++) {
       this.row1States.push({
         channelNumber: i + 1,
-        channelDescription: currentDescriptions[i] || `Channel ${i + 1}`,
+        channelDescription: descriptions[i] || `Channel ${i + 1}`,
         value: 0,
         color: this.defaultColorsScene1[i] || '#ffffff'
       });
       this.row2States.push({
         channelNumber: i + 1,
-        channelDescription: currentDescriptions[i] || `Channel ${i + 1}`,
+        channelDescription: descriptions[i] || `Channel ${i + 1}`,
         value: 100,
         color: this.defaultColorsScene2[i] || '#ffffff'
       });
@@ -95,7 +96,8 @@ export class App implements OnInit, OnDestroy {
       let channelsOrDescriptionsChanged = false;
       if (this.currentNumChannels !== settings.numChannels) {
         this.currentNumChannels = settings.numChannels;
-        this.initializeChannelStates(settings.numChannels);
+        // Pass new descriptions along with new number of channels
+        this.initializeChannelStates(settings.numChannels, settings.channelDescriptions);
         channelsOrDescriptionsChanged = true;
       } else {
         const newDescriptions = settings.channelDescriptions;

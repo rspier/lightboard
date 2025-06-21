@@ -188,6 +188,23 @@ describe('SettingsModalComponent', () => {
     tick();
     expect(checkboxNativeElement.checked).toBeFalse();
   }));
+
+  // The following test is a duplicate and does not use fakeAsync, so it should be removed.
+  // it('should bind darkMode to the checkbox', () => {
+  //   component.darkMode = true;
+  //   fixture.detectChanges();
+  //   const checkbox = fixture.debugElement.query(By.css('#dark-mode-toggle')).nativeElement as HTMLInputElement;
+  //   expect(checkbox.checked).toBeTrue();
+
+  //   component.darkMode = false;
+  //   fixture.detectChanges();
+  //   expect(checkbox.checked).toBeFalse();
+
+  //   // Simulate user clicking checkbox
+  //   checkbox.click();
+  //   fixture.detectChanges();
+  //   expect(component.darkMode).toBeTrue(); // Should update component property via ngModel
+  // });
   });
 
   it('should emit close on cancel', () => {
