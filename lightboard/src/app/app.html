@@ -12,6 +12,7 @@
           <div class="scene-row-wrapper">
             <div class="scene-label-container">
               <h2 class="scene-label scene-1-label">Scene 1</h2>
+              <span class="brain-icon" (click)="toggleSceneTextInput(1)" title="Text Input for Scene 1">🧠</span>
             </div>
             <div class="slider-row" id="row1">
               <app-slide-potentiometer
@@ -24,6 +25,14 @@
                 (colorChange)="state.color = $event; onPotentiometerChange()"
                 [showChannelInfo]="true">
               </app-slide-potentiometer>
+            </div>
+          </div>
+          <!-- Text Input Area for Scene 1 -->
+          <div class="scene-text-input-wrapper" *ngIf="scene1TextInputVisible">
+            <textarea class="scene-text-input" [(ngModel)]="scene1TextInputValue" placeholder="e.g., 1@100#F00\n2@50#00F"></textarea>
+            <button class="scene-text-apply-button" (click)="applySceneTextCommands(1)">Apply Scene 1</button>
+            <div *ngIf="scene1TextErrors.length > 0" class="error-messages">
+              <p *ngFor="let err of scene1TextErrors">{{ err }}</p>
             </div>
           </div>
 
@@ -39,6 +48,7 @@
           <div class="scene-row-wrapper">
             <div class="scene-label-container">
               <h2 class="scene-label scene-2-label">Scene 2</h2>
+              <span class="brain-icon" (click)="toggleSceneTextInput(2)" title="Text Input for Scene 2">🧠</span>
             </div>
             <div class="slider-row" id="row2">
               <app-slide-potentiometer
@@ -51,6 +61,14 @@
                 (colorChange)="state.color = $event; onPotentiometerChange()"
                 [showChannelInfo]="true">
               </app-slide-potentiometer>
+            </div>
+          </div>
+          <!-- Text Input Area for Scene 2 -->
+          <div class="scene-text-input-wrapper" *ngIf="scene2TextInputVisible">
+            <textarea class="scene-text-input" [(ngModel)]="scene2TextInputValue" placeholder="e.g., 1@100#F00\n2@50#00F"></textarea>
+            <button class="scene-text-apply-button" (click)="applySceneTextCommands(2)">Apply Scene 2</button>
+            <div *ngIf="scene2TextErrors.length > 0" class="error-messages">
+              <p *ngFor="let err of scene2TextErrors">{{ err }}</p>
             </div>
           </div>
 

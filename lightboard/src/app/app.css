@@ -147,3 +147,100 @@
   background-color: var(--button-secondary-hover-bg-color);
   color: var(--button-secondary-text-color);
 }
+
+/* Styles for Scene Text Input Feature */
+.scene-label-container .brain-icon {
+  cursor: pointer;
+  margin-left: 8px; /* Space between scene label and brain icon */
+  font-size: 1.2em; /* Adjust size as needed */
+  user-select: none; /* Prevent text selection on icon */
+  /* Align with vertical label if needed - may require flex adjustments on parent */
+}
+
+.scene-text-input-wrapper {
+  /* This wrapper will appear below a scene's slider row */
+  margin-top: 10px;
+  margin-bottom: 10px; /* Space before the next element (combined output or next scene) */
+  padding: 10px;
+  border: 1px solid var(--app-border-color);
+  border-radius: 4px;
+  background-color: var(--slider-host-bg-color); /* Use a similar bg as sliders for context */
+  /* The wrapper should span similar width as slider rows, may need adjustments */
+  /* If .channel-slider-rows is the parent, this will align left.
+     Consider adding padding-left: 30px; box-sizing: border-box;
+     if it needs to align with the content of combined-output-row and sliders.
+     For now, let it be full width within its context. */
+}
+
+.scene-text-input {
+  width: 100%;
+  min-height: 60px; /* Roughly 3-4 lines */
+  padding: 5px;
+  box-sizing: border-box;
+  border: 1px solid var(--modal-input-border-color); /* Use modal's input border */
+  border-radius: 3px;
+  font-family: monospace; /* Good for fixed-width-like input */
+  background-color: var(--app-bg-color); /* Match app background for input field */
+  color: var(--app-text-color); /* Match app text for input text */
+  margin-bottom: 8px; /* Space before the apply button */
+}
+
+.scene-text-apply-button {
+  padding: 8px 12px;
+  font-size: 0.9em;
+  color: var(--button-primary-text-color);
+  background-color: var(--button-primary-bg-color);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.scene-text-apply-button:hover {
+  background-color: var(--button-primary-hover-bg-color);
+}
+
+.error-messages {
+  margin-top: 8px;
+  padding: 5px;
+  background-color: var(--modal-error-text-color); /* A bit strong, maybe lighten this or use text color */
+  color: var(--button-primary-text-color); /* Assuming error bg is dark enough for light text */
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+.error-messages p {
+  margin: 0 0 3px 0;
+  padding: 0;
+}
+.error-messages p:last-child {
+  margin-bottom: 0;
+}
+
+/* Adjusting scene-label-container if brain icon makes it too wide or misaligns text */
+.scene-label-container {
+  /* display: flex; already set */
+  /* align-items: center; already set */
+  /* justify-content: center; already set */
+  /* Consider if the brain icon should be part of the vertical text flow or sit beside it.
+     Current placement of span as sibling to h2 inside might be tricky with vertical writing mode.
+     If h2 is display:block, span will be below.
+     If .scene-label-container is flex-direction:row for the h2 and span,
+     the vertical text might be an issue.
+     For now, assuming the span sits next to the h2 in normal flow, then parent rotates.
+     This might need the brain icon to also have writing-mode and rotation if it's part of the same text flow.
+     A simpler approach for brain icon might be absolute positioning relative to scene-row-wrapper,
+     or placing it outside the label container.
+
+     Let's try making the scene-label-container itself a bit wider to accommodate the icon
+     if the icon is intended to be next to the (rotated) label.
+     And make it flex row to put label and icon side by side before rotation.
+  */
+  flex-direction: row; /* To place label and icon side-by-side before rotation of parent */
+  align-items: center; /* Vertically center label and icon */
+}
+
+.scene-label {
+ /* font-size: 1em; ... already set */
+ /* writing-mode: vertical-lr; ... already set */
+ /* transform: rotate(180deg); ... already set */
+  margin-right: 5px; /* Add some space between label and brain icon if they are side-by-side */
+}

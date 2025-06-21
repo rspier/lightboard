@@ -16,6 +16,13 @@ interface PotentiometerState {
   color: string;
 }
 
+// Interface for parsed text commands
+interface ParsedCommand {
+  channel: number; // 1-based
+  level: number;   // 0-100
+  color?: string;  // Hex string like #RRGGBB, normalized
+}
+
 @Component({
   selector: 'app-root',
   imports: [
@@ -43,6 +50,14 @@ export class App implements OnInit, OnDestroy {
 
   showSettingsModal: boolean = false;
   private settingsSubscription: Subscription | undefined;
+
+  // State variables for Scene Text Input
+  scene1TextInputVisible: boolean = false;
+  scene2TextInputVisible: boolean = false;
+  scene1TextInputValue: string = '';
+  scene2TextInputValue: string = '';
+  scene1TextErrors: string[] = [];
+  scene2TextErrors: string[] = [];
 
   private currentNumChannels: number;
   private currentBackendUrl: string;
@@ -267,5 +282,138 @@ export class App implements OnInit, OnDestroy {
 
   public trackByState(index: number, item: PotentiometerState): number {
     return item.channelNumber; // Or a more unique ID if channelNumber can repeat across rows (though not in this design)
+  }
+
+  toggleSceneTextInput(sceneNumber: 1 | 2): void {
+    if (sceneNumber === 1) {
+      this.scene1TextInputVisible = !this.scene1TextInputVisible;
+      this.scene1TextErrors = []; // Clear errors when toggling
+      if (!this.scene1TextInputVisible) this.scene1TextInputValue = ''; // Optionally clear text when hiding
+    } else if (sceneNumber === 2) {
+      this.scene2TextInputVisible = !this.scene2TextInputVisible;
+      this.scene2TextErrors = []; // Clear errors when toggling
+      if (!this.scene2TextInputVisible) this.scene2TextInputValue = ''; // Optionally clear text when hiding
+    }
+    this.cdr.detectChanges();
+  }
+
+  private parseSceneCommands(textInput: string, numChannels: number): { commands: ParsedCommand[], errors: string[] } {
+    const commands: ParsedCommand[] = [];
+    const errors: string[] = [];
+    const lines = textInput.split('\n');
+    // Regex: channel @ level # color (color is optional, # is optional if color present)
+    // Channel: digits, Level: 1-3 digits, Color: 3 or 6 hex chars
+    const commandRegex = /^\s*(\d+)\s*@\s*(\d{1,3})\s*(?:#?\s*([0-9a-fA-F]{3}|[0-9a-fA-F]{6}))?\s*$/;
+
+    lines.forEach((line, index) => {
+      const trimmedLine = line.trim();
+      if (trimmedLine === '') return; // Ignore empty lines
+
+      const match = trimmedLine.match(commandRegex);
+      if (!match) {
+        errors.push(`Line ${index + 1}: Malformed command "${trimmedLine}". Expected format: channel@level[#color]`);
+        return;
+      }
+
+      const channel = parseInt(match[1], 10);
+      const level = parseInt(match[2], 10);
+      let colorHex = match[3] ? match[3].toUpperCase() : undefined;
+      let lineError = false;
+
+      // Validate Channel
+      if (isNaN(channel) || channel <= 0 || channel > numChannels) {
+        errors.push(`Line ${index + 1}: Channel number ${match[1]} is out of range (1-${numChannels}).`);
+        lineError = true;
+      }
+
+      // Validate Level
+      if (isNaN(level) || level < 0 || level > 100) {
+        errors.push(`Line ${index + 1}: Level ${match[2]} is out of range (0-100).`);
+        lineError = true;
+      }
+
+      // Validate and Normalize Color (if present)
+      if (colorHex) {
+        if (!/^[0-9A-F]+$/.test(colorHex) || (colorHex.length !== 3 && colorHex.length !== 6)) {
+          errors.push(`Line ${index + 1}: Invalid color format "${match[3]}". Use 3 or 6 hex characters.`);
+          lineError = true;
+        } else {
+          if (colorHex.length === 3) {
+            colorHex = `${colorHex[0]}${colorHex[0]}${colorHex[1]}${colorHex[1]}${colorHex[2]}${colorHex[2]}`;
+          }
+          colorHex = `#${colorHex}`;
+        }
+      }
+
+      if (!lineError) {
+        commands.push({ channel, level, color: colorHex });
+      }
+    });
+
+    return { commands, errors };
+  }
+
+  applySceneTextCommands(sceneNumber: 1 | 2): void {
+    const textInput = sceneNumber === 1 ? this.scene1TextInputValue : this.scene2TextInputValue;
+    const targetStates = sceneNumber === 1 ? this.row1States : this.row2States;
+
+    if (sceneNumber === 1) {
+      this.scene1TextErrors = [];
+    } else {
+      this.scene2TextErrors = [];
+    }
+
+    const { commands, errors } = this.parseSceneCommands(textInput, this.currentNumChannels);
+
+    if (sceneNumber === 1) {
+      this.scene1TextErrors.push(...errors);
+    } else {
+      this.scene2TextErrors.push(...errors);
+    }
+
+    if (commands.length > 0 && errors.length === 0) { // Only apply if all commands are valid
+      // It's safer to create a new array to trigger change detection properly for *ngFor etc.
+      const newStates = targetStates.map(s => ({ ...s })); // Deep copy for modification
+
+      commands.forEach(cmd => {
+        const stateToUpdate = newStates.find(s => s.channelNumber === cmd.channel);
+        if (stateToUpdate) {
+          stateToUpdate.value = cmd.level;
+          if (cmd.color) {
+            stateToUpdate.color = cmd.color;
+          }
+        }
+      });
+
+      if (sceneNumber === 1) {
+        this.row1States = newStates;
+        // Optionally clear input on success
+        // this.scene1TextInputValue = '';
+      } else {
+        this.row2States = newStates;
+        // this.scene2TextInputValue = '';
+      }
+
+      this.calculateCombinedOutputs();
+      this.onPotentiometerChange(); // This also calls cdr.detectChanges()
+
+      const successMessage = `Applied ${commands.length} command(s) successfully.`;
+      if (sceneNumber === 1) {
+        this.scene1TextErrors.push(successMessage);
+      } else {
+        this.scene2TextErrors.push(successMessage);
+      }
+
+    } else if (commands.length > 0 && errors.length > 0) {
+        const partialApplyError = "Some commands were valid but not applied due to errors in other lines. Please fix errors and try again.";
+        if (sceneNumber === 1) {
+            this.scene1TextErrors.push(partialApplyError);
+        } else {
+            this.scene2TextErrors.push(partialApplyError);
+        }
+    }
+
+
+    this.cdr.detectChanges(); // Ensure errors are displayed
   }
 }
