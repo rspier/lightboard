@@ -78,14 +78,7 @@ describe('App', () => {
       clearInterval(app.animationInterval);
       app.animationInterval = null;
     }
-    // Corrected global clock cleanup
-    if ((jasmine.clock() as any).isInstalled && typeof (jasmine.clock() as any).uninstall === 'function') {
-      try {
-        jasmine.clock().uninstall();
-      } catch (e) {
-        // console.error('Error uninstalling global jasmine clock:', e);
-      }
-    }
+    // Removed global clock cleanup to let suites manage their own clocks
   });
 
   it('should create the app', () => {
@@ -205,12 +198,22 @@ describe('App', () => {
 
   // Theme tests from before
   describe('Theme Initialization and Updates', () => {
+    let applyThemeSpy: jasmine.Spy;
+
+    beforeEach(() => {
+      // Spy on applyTheme before each test in this suite
+      // Note: This spies on the method for *all* instances, but we get a new `app` instance
+      // in some tests if fixture is recreated. The spy should persist on the prototype.
+      applyThemeSpy = spyOn(App.prototype, 'applyTheme').and.callThrough();
+    });
+
     // Test for initial light theme from constructor (based on beforeEach's initialTestSettings)
     it('should apply light theme (remove dark-theme class) by default on construction if settings are for light mode', () => {
       // initialTestSettings in the outer beforeEach has darkMode: false
       // mockChannelSettingsService.getCurrentAppSettings is already stubbed to return initialTestSettings in the outer beforeEach
       fixture.detectChanges(); // Triggers constructor and ngOnInit
 
+      expect(applyThemeSpy).toHaveBeenCalledWith(false); // Check if applyTheme was called correctly by constructor
       expect(mockRenderer.removeClass).toHaveBeenCalledWith(mockDocument.body, 'dark-theme');
       expect(mockRenderer.addClass).not.toHaveBeenCalled();
     });
@@ -221,28 +224,31 @@ describe('App', () => {
       mockChannelSettingsService.getCurrentAppSettings.and.returnValue(darkInitialSettings);
 
       // Re-create fixture and component with the new mock setup for constructor
+      // applyThemeSpy is on App.prototype, so it will apply to the new instance.
+      applyThemeSpy.calls.reset(); // Reset for this specific test's calls
       fixture = TestBed.createComponent(App);
       app = fixture.componentInstance;
-      // Update mockDocument to the new fixture's document instance
-      mockDocument = fixture.debugElement.injector.get(DOCUMENT);
+      mockDocument = fixture.debugElement.injector.get(DOCUMENT); // Update mockDocument for new fixture
 
       fixture.detectChanges(); // Triggers constructor and ngOnInit for the new component
 
+      expect(applyThemeSpy).toHaveBeenCalledWith(true); // Check if applyTheme was called correctly by constructor
       expect(mockRenderer.addClass).toHaveBeenCalledWith(mockDocument.body, 'dark-theme');
       expect(mockRenderer.removeClass).not.toHaveBeenCalled();
     });
 
     it('should switch to dark theme when darkMode setting changes to true via subscription', () => {
-      // Initial state is light (from outer beforeEach's initialTestSettings via constructor)
-      fixture.detectChanges();
-      // At this point, removeClass should have been called by constructor/ngOnInit based on initial settings.
-      // Reset spies to only capture the effect of the subscription update.
+      fixture.detectChanges(); // Initial call for light theme by constructor
+
+      // Reset spies to focus on the subscription call
+      applyThemeSpy.calls.reset();
       mockRenderer.addClass.calls.reset();
       mockRenderer.removeClass.calls.reset();
 
       appSettingsSubject.next({ ...initialTestSettings, darkMode: true });
       fixture.detectChanges(); // Allow subscription to process
 
+      expect(applyThemeSpy).toHaveBeenCalledWith(true); // Check if applyTheme was called correctly by subscription
       expect(mockRenderer.addClass).toHaveBeenCalledWith(mockDocument.body, 'dark-theme');
       expect(mockRenderer.removeClass).not.toHaveBeenCalled();
     });
@@ -251,19 +257,23 @@ describe('App', () => {
       // Start by setting initial to dark via constructor for this test
       const darkInitialSettings = { ...initialTestSettings, darkMode: true };
       mockChannelSettingsService.getCurrentAppSettings.and.returnValue(darkInitialSettings);
-      fixture = TestBed.createComponent(App); // Recreate for dark initial
-      app = fixture.componentInstance;
-      // Update mockDocument to the new fixture's document instance
-      mockDocument = fixture.debugElement.injector.get(DOCUMENT);
-      fixture.detectChanges(); // Constructor applies dark, ngOnInit sets up subscription
 
-      // Reset spies to only capture the effect of the subscription update.
+      // Spy is on prototype, but reset its call count for this specific test context after re-creation
+      applyThemeSpy.calls.reset();
+      fixture = TestBed.createComponent(App);
+      app = fixture.componentInstance;
+      mockDocument = fixture.debugElement.injector.get(DOCUMENT);
+      fixture.detectChanges(); // Constructor applies dark. applyTheme(true) called.
+
+      // Reset spies to focus on the subscription call
+      applyThemeSpy.calls.reset();
       mockRenderer.addClass.calls.reset();
       mockRenderer.removeClass.calls.reset();
 
       appSettingsSubject.next({ ...initialTestSettings, darkMode: false }); // Change to light
       fixture.detectChanges(); // Allow subscription to process
 
+      expect(applyThemeSpy).toHaveBeenCalledWith(false); // Check if applyTheme was called correctly by subscription
       expect(mockRenderer.removeClass).toHaveBeenCalledWith(mockDocument.body, 'dark-theme');
       expect(mockRenderer.addClass).not.toHaveBeenCalled();
     });
