@@ -8,7 +8,7 @@
         [(ngModel)]="textInputValue"
         (keydown.enter)="onInputEnter($event)"
         placeholder="e.g., 1@100#F00 2@50#0FF"
-        aria-label="Commands for {{ sceneLabel }}">
+        [attr.aria-label]="'Commands for ' + sceneLabel">
       <!-- Removed error display from within modal for now, will be in main app view -->
     </div>
     <div class="modal-actions">
