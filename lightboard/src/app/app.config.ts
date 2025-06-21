@@ -7,7 +7,7 @@ import { routes } from './app.routes';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideZonelessChangeDetection(),
+    // provideZonelessChangeDetection(), // Removed to align with Zone.js usage in tests and default component strategy
     provideRouter(routes),
     provideHttpClient(withInterceptorsFromDi()) // Add this line
   ]

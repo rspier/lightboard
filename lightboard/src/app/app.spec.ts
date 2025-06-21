@@ -1,5 +1,5 @@
-import { TestBed, ComponentFixture } from '@angular/core/testing';
-import { provideZonelessChangeDetection, Renderer2, NgZone, ChangeDetectorRef } from '@angular/core';
+import { TestBed, ComponentFixture, fakeAsync, tick } from '@angular/core/testing'; // Imported fakeAsync and tick for potential use if needed, though jasmine.clock is primary for intervals
+import { Renderer2, NgZone, ChangeDetectorRef } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { App } from './app';
 import { By } from '@angular/platform-browser';
@@ -63,8 +63,8 @@ describe('App', () => {
       providers: [
         { provide: ChannelSettingsService, useValue: mockChannelSettingsService },
         { provide: HttpDataService, useValue: mockHttpDataService },
-        { provide: Renderer2, useValue: mockRenderer },
-        provideZonelessChangeDetection()
+        { provide: Renderer2, useValue: mockRenderer }
+        // Removed provideZonelessChangeDetection()
       ]
     }).compileComponents();
 
@@ -200,52 +200,64 @@ describe('App', () => {
 
   // Theme tests from before
   describe('Theme Initialization and Updates', () => {
-    it('should apply initial theme based on settings after ngOnInit', () => {
-      mockChannelSettingsService.getCurrentAppSettings.and.returnValue({...initialTestSettings, darkMode: false });
-      fixture.detectChanges();
+    // Test for initial light theme from constructor (based on beforeEach's initialTestSettings)
+    it('should apply light theme (remove dark-theme class) by default on construction if settings are for light mode', () => {
+      // initialTestSettings in the outer beforeEach has darkMode: false
+      // mockChannelSettingsService.getCurrentAppSettings is already stubbed to return initialTestSettings in the outer beforeEach
+      fixture.detectChanges(); // Triggers constructor and ngOnInit
+
       expect(mockRenderer.removeClass).toHaveBeenCalledWith(fixture.nativeElement.ownerDocument.body, 'dark-theme');
       expect(mockRenderer.addClass).not.toHaveBeenCalled();
     });
 
-    it('should apply dark theme if initial setting is dark', () => {
-      const darkInitialSettings = {...initialTestSettings, darkMode: true };
+    // Test for initial dark theme from constructor
+    it('should apply dark theme (add dark-theme class) on construction if settings are for dark mode', () => {
+      const darkInitialSettings = { ...initialTestSettings, darkMode: true };
       mockChannelSettingsService.getCurrentAppSettings.and.returnValue(darkInitialSettings);
-      appSettingsSubject.next(darkInitialSettings);
 
-      // Recreate component to ensure constructor uses the new darkInitialSettings via getCurrentAppSettings
+      // Re-create fixture and component with the new mock setup for constructor
       fixture = TestBed.createComponent(App);
       app = fixture.componentInstance;
-      // Renderer mock is still the same, document reference will be from new fixture
+      // Need to get the mockRenderer again if TestBed is reset, but here it's a top-level mock.
+      // However, the document instance might change. Let's verify using app.document.body
 
-      fixture.detectChanges();
-      expect(mockRenderer.addClass).toHaveBeenCalledWith(fixture.nativeElement.ownerDocument.body, 'dark-theme');
+      fixture.detectChanges(); // Triggers constructor and ngOnInit for the new component
+
+      expect(mockRenderer.addClass).toHaveBeenCalledWith(app['document'].body, 'dark-theme');
       expect(mockRenderer.removeClass).not.toHaveBeenCalled();
     });
 
-
-    it('should switch to dark theme when darkMode setting changes to true', () => {
-      // Initial state is light (initialTestSettings.darkMode = false)
+    it('should switch to dark theme when darkMode setting changes to true via subscription', () => {
+      // Initial state is light (from outer beforeEach's initialTestSettings via constructor)
       fixture.detectChanges();
+      // At this point, removeClass should have been called by constructor/ngOnInit based on initial settings.
+      // Reset spies to only capture the effect of the subscription update.
       mockRenderer.addClass.calls.reset();
       mockRenderer.removeClass.calls.reset();
 
-      appSettingsSubject.next({...initialTestSettings, darkMode: true });
-      // Subscription in ngOnInit calls applyTheme -> renderer methods
-      // cdr.detectChanges() in subscription ensures view is updated if needed, but renderer call is direct
-      expect(mockRenderer.addClass).toHaveBeenCalledWith(fixture.nativeElement.ownerDocument.body, 'dark-theme');
+      appSettingsSubject.next({ ...initialTestSettings, darkMode: true });
+      fixture.detectChanges(); // Allow subscription to process
+
+      expect(mockRenderer.addClass).toHaveBeenCalledWith(app['document'].body, 'dark-theme');
       expect(mockRenderer.removeClass).not.toHaveBeenCalled();
     });
 
-    it('should switch to light theme when darkMode setting changes to false', () => {
-      // Start with dark theme
-      appSettingsSubject.next({...initialTestSettings, darkMode: true });
-      fixture.detectChanges(); // Apply dark theme
+    it('should switch to light theme when darkMode setting changes to false via subscription', () => {
+      // Start by setting initial to dark via constructor for this test
+      const darkInitialSettings = { ...initialTestSettings, darkMode: true };
+      mockChannelSettingsService.getCurrentAppSettings.and.returnValue(darkInitialSettings);
+      fixture = TestBed.createComponent(App); // Recreate for dark initial
+      app = fixture.componentInstance;
+      fixture.detectChanges(); // Constructor applies dark, ngOnInit sets up subscription
+
+      // Reset spies to only capture the effect of the subscription update.
       mockRenderer.addClass.calls.reset();
       mockRenderer.removeClass.calls.reset();
 
-      appSettingsSubject.next({...initialTestSettings, darkMode: false });
-      // Subscription in ngOnInit calls applyTheme -> renderer methods
-      expect(mockRenderer.removeClass).toHaveBeenCalledWith(fixture.nativeElement.ownerDocument.body, 'dark-theme');
+      appSettingsSubject.next({ ...initialTestSettings, darkMode: false }); // Change to light
+      fixture.detectChanges(); // Allow subscription to process
+
+      expect(mockRenderer.removeClass).toHaveBeenCalledWith(app['document'].body, 'dark-theme');
       expect(mockRenderer.addClass).not.toHaveBeenCalled();
     });
   });
@@ -265,8 +277,47 @@ describe('App', () => {
       spyOn(window, 'setInterval').and.callThrough();
       app.animateCrossfader(100);
       expect(window.setInterval).toHaveBeenCalledWith(jasmine.any(Function), expectedInterval);
-      jasmine.clock().tick(1000);
-      jasmine.clock().uninstall();
+      jasmine.clock().tick(1000); // Let animation complete for this specific test
+      // No uninstall here, let afterEach handle it.
+    });
+
+    it('should stop animation and clear interval if Go is clicked while animating', () => {
+      jasmine.clock().install(); // Install clock for this test
+      fixture.detectChanges(); // Initial state
+
+      app['currentCrossfadeDurationMs'] = 1000; // Set a known duration for easier tick calculation
+      const initialCrossfaderValue = 0;
+      app.crossfaderValue = initialCrossfaderValue;
+
+      // Start an animation by clicking Go
+      app.onGoButtonClick(); // This will animate towards 100
+      expect(app.isAnimating).toBeTrue();
+      expect(app.animationInterval).not.toBeNull();
+
+      // Simulate some time passing, but not enough to complete
+      // Animation has 25 steps. Tick for about half the steps.
+      const midAnimationTicks = (app['currentCrossfadeDurationMs'] / 25) * 12;
+      jasmine.clock().tick(midAnimationTicks);
+
+      const valueAfterPartialAnimation = app.crossfaderValue;
+      expect(valueAfterPartialAnimation).toBeGreaterThan(initialCrossfaderValue); // Value should have changed
+      expect(app.isAnimating).toBeTrue(); // Still animating
+
+      // Click Go button again to interrupt
+      // Reset spy for postCombinedOutput to check if onPotentiometerChange (which calls it) is triggered by interruption
+      mockHttpDataService.postCombinedOutput.calls.reset();
+      app.onGoButtonClick();
+
+      expect(app.isAnimating).toBeFalse();
+      expect(app.animationInterval).toBeNull(); // Interval should be cleared
+
+      // Value should remain at the interrupted position
+      expect(app.crossfaderValue).toBeCloseTo(valueAfterPartialAnimation, 0);
+
+      // onPotentiometerChange should have been called by the interrupting onGoButtonClick
+      expect(mockHttpDataService.postCombinedOutput).toHaveBeenCalledTimes(1);
+
+      jasmine.clock().uninstall(); // Uninstall clock specific to this test
     });
   });
   // Other Go button tests and calculateCombinedOutputs tests are assumed to be present and correct.
