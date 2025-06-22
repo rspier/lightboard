@@ -10,13 +10,22 @@
   box-sizing: border-box;
 }
 
-/* Removed .app-header h1 styles as H1 element is removed */
+/* Removed .app-header and .app-header h1 styles */
 
-.header-icons {
+.header-icons { /* Now for fixed positioning */
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  z-index: 1050; /* Ensure above most content, but below modals if they have higher z-index */
   display: flex;
   align-items: center;
+  background-color: var(--fixed-icons-bg-color, rgba(255, 255, 255, 0.8)); /* Semi-transparent background */
+  padding: 8px;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
+/* Individual icon styling remains largely the same, but adjust margin if needed */
 .settings-icon, .shortcuts-icon {
   font-size: 2em; /* Consistent icon size */
   cursor: pointer;
@@ -43,6 +52,7 @@
   align-items: center;
   width: 100%;
   padding: 10px;
+  padding-top: 70px; /* Added padding to prevent overlap with fixed header icons */
   box-sizing: border-box;
   background-color: var(--app-bg-color);
   color: var(--app-text-color);
@@ -245,6 +255,12 @@ input[type="range"].duration-slider::-moz-range-thumb {
 :host-context(body.dark-theme) input[type="range"].duration-slider::-moz-range-thumb {
   background: var(--slider-thumb-color-dark, #5dade2);
   border-color: var(--slider-thumb-border-color-dark, #4a90c2);
+}
+
+:host-context(body.dark-theme) .header-icons {
+  background-color: var(--fixed-icons-bg-color-dark, rgba(40, 40, 40, 0.8));
+  /* Text color for icons is already themed by --app-header-text-color,
+     which should be updated or replaced if it was tied to old header bg */
 }
 
 

@@ -1,8 +1,8 @@
 :host {
-  display: inline-block; /* Changed from inline-flex to better support absolute positioning of children */
-  position: relative; /* To act as a containing block for .channel-info */
-  flex-direction: column; /* Flex properties might not be needed if not using flex alignment for main items */
-  align-items: center; /* Still useful for centering the slider itself if host is wider */
+  display: inline-flex; /* Reverted to inline-flex for proper flex alignment of children */
+  position: relative;
+  flex-direction: column; /* Ensure children stack vertically */
+  align-items: center; /* Center children (like the slider) horizontally */
   padding: 10px;
   padding-top: 25px; /* Add padding at the top to make space for the channel number */
   border: 1px solid var(--slider-host-border-color);
