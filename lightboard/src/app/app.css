@@ -166,11 +166,91 @@
   color: var(--button-secondary-text-color);
 }
 
-.crossfade-duration-dial {
-  margin-top: 15px; /* Space below the Go button */
-  /* The rotary dial component itself has a fixed width,
-     so it will be centered by align-items: center on crossfader-column */
+.crossfade-slider-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 15px;
+  width: 150px; /* Or adjust as needed */
 }
+
+.duration-slider-label {
+  font-size: 0.8em;
+  color: var(--app-text-color);
+  margin-bottom: 5px;
+}
+
+input[type="range"].duration-slider {
+  width: 100%;
+  cursor: pointer;
+  /* Basic reset for consistent appearance */
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent; /* Otherwise it shows default track in some browsers */
+}
+
+/* Custom Track Styling */
+input[type="range"].duration-slider::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 8px;
+  background: var(--slider-track-color, #ddd);
+  border-radius: 4px;
+  border: 1px solid var(--slider-track-border-color, #ccc);
+}
+
+input[type="range"].duration-slider::-moz-range-track {
+  width: 100%;
+  height: 8px;
+  background: var(--slider-track-color, #ddd);
+  border-radius: 4px;
+  border: 1px solid var(--slider-track-border-color, #ccc);
+}
+
+/* Custom Thumb Styling */
+input[type="range"].duration-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  margin-top: -5px; /* (track-height - thumb-height) / 2 - border-width approx */
+  width: 18px;
+  height: 18px;
+  background: var(--slider-thumb-color, #3498db);
+  border-radius: 50%;
+  border: 1px solid var(--slider-thumb-border-color, #2980b9);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+input[type="range"].duration-slider::-moz-range-thumb {
+  width: 16px; /* Slightly smaller to account for border */
+  height: 16px;
+  background: var(--slider-thumb-color, #3498db);
+  border-radius: 50%;
+  border: 1px solid var(--slider-thumb-border-color, #2980b9);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+/* Dark Theme Adjustments for Slider */
+:host-context(body.dark-theme) .duration-slider-label {
+  color: var(--app-text-color, #ccc);
+}
+
+:host-context(body.dark-theme) input[type="range"].duration-slider::-webkit-slider-runnable-track {
+  background: var(--slider-track-color-dark, #555);
+  border-color: var(--slider-track-border-color-dark, #444);
+}
+:host-context(body.dark-theme) input[type="range"].duration-slider::-moz-range-track {
+  background: var(--slider-track-color-dark, #555);
+  border-color: var(--slider-track-border-color-dark, #444);
+}
+
+:host-context(body.dark-theme) input[type="range"].duration-slider::-webkit-slider-thumb {
+  background: var(--slider-thumb-color-dark, #5dade2);
+  border-color: var(--slider-thumb-border-color-dark, #4a90c2);
+}
+:host-context(body.dark-theme) input[type="range"].duration-slider::-moz-range-thumb {
+  background: var(--slider-thumb-color-dark, #5dade2);
+  border-color: var(--slider-thumb-border-color-dark, #4a90c2);
+}
+
 
 /* Styles for Scene Text Input Feature */
 /* .brain-icon class is removed */

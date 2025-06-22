@@ -8,7 +8,7 @@ import { CombinedOutputDisplayComponent } from './combined-output-display/combin
 import { SettingsModalComponent } from './settings-modal/settings-modal.component';
 import { KeyboardShortcutsModalComponent } from './keyboard-shortcuts-modal/keyboard-shortcuts-modal.component';
 import { SceneTextInputModalComponent } from './scene-text-input-modal/scene-text-input-modal.component';
-import { RotaryDialComponent } from './rotary-dial/rotary-dial.component'; // Added
+// import { RotaryDialComponent } from './rotary-dial/rotary-dial.component'; // Removed
 import { ChannelSettingsService, AppSettings } from './channel-settings.service';
 import { HttpDataService, CombinedOutputData } from './http-data.service';
 
@@ -35,8 +35,8 @@ interface ParsedCommand {
     CombinedOutputDisplayComponent,
     SettingsModalComponent,
     SceneTextInputModalComponent,
-    KeyboardShortcutsModalComponent,
-    RotaryDialComponent // Added
+    KeyboardShortcutsModalComponent
+    // RotaryDialComponent // Removed
   ],
   templateUrl: './app.html',
   styleUrl: './app.css'
@@ -216,11 +216,12 @@ export class App implements OnInit, OnDestroy {
   public trackByCombinedState(index: number, item: PotentiometerState): number { return item.channelNumber; }
   public trackByState(index: number, item: PotentiometerState): number { return item.channelNumber; }
 
-  onCrossfadeDurationChange(newDuration: number): void {
+  onCrossfadeDurationSliderChange(event: Event): void {
+    const newDuration = parseFloat((event.target as HTMLInputElement).value);
     this.displayCrossfadeDurationSeconds = newDuration;
     this.currentCrossfadeDurationMs = newDuration * 1000;
     this.channelSettingsService.updateCrossfadeDurationSeconds(newDuration);
-    this.cdr.detectChanges(); // Ensure UI updates if other components depend on this indirectly
+    this.cdr.detectChanges();
   }
 
   // Updated toggle function for modal

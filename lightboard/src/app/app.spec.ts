@@ -649,68 +649,101 @@ describe('App', () => {
     });
   });
 
-  describe('Rotary Dial Integration for Crossfade Duration', () => {
+  describe('Horizontal Slider Integration for Crossfade Duration', () => {
+    let sliderElement: HTMLInputElement;
+    let sliderLabelElement: HTMLLabelElement;
+
     beforeEach(() => {
-      // Ensure initial app state for these specific tests
       app.displayCrossfadeDurationSeconds = initialTestSettings.crossfadeDurationSeconds;
       app['currentCrossfadeDurationMs'] = initialTestSettings.crossfadeDurationSeconds * 1000;
-      fixture.detectChanges(); // To render the dial if it's visible and update bindings
+      fixture.detectChanges();
+      const sliderDebugElement = fixture.debugElement.query(By.css('#crossfade-duration-slider'));
+      if (sliderDebugElement) {
+        sliderElement = sliderDebugElement.nativeElement;
+      }
+      const labelDebugElement = fixture.debugElement.query(By.css('.duration-slider-label'));
+       if (labelDebugElement) {
+        sliderLabelElement = labelDebugElement.nativeElement;
+      }
     });
 
-    it('should initialize displayCrossfadeDurationSeconds from ChannelSettingsService', () => {
-      // This is implicitly tested by beforeEach of the main describe block
-      // and the constructor logic test for app component.
-      // Explicitly checking the value set in app component:
+    it('should initialize slider with value from ChannelSettingsService and display it in label', () => {
       expect(app.displayCrossfadeDurationSeconds).toBe(initialTestSettings.crossfadeDurationSeconds);
-      const dialDebugElement = fixture.debugElement.query(By.css('app-rotary-dial'));
-      expect(dialDebugElement).toBeTruthy();
-      expect(dialDebugElement.componentInstance.value).toBe(initialTestSettings.crossfadeDurationSeconds);
+      expect(sliderElement).toBeTruthy();
+      if (sliderElement) {
+        expect(sliderElement.value).toBe(initialTestSettings.crossfadeDurationSeconds.toString());
+        expect(sliderElement.min).toBe('0.1');
+        expect(sliderElement.max).toBe('5');
+        expect(sliderElement.step).toBe('0.1');
+      }
+      if (sliderLabelElement) {
+        expect(sliderLabelElement.textContent).toContain(`X-Fade: ${initialTestSettings.crossfadeDurationSeconds}s`);
+      }
     });
 
-    it('onCrossfadeDurationChange should update duration in app and call service', () => {
+    it('onCrossfadeDurationSliderChange should update duration in app and call service on input event', () => {
+      expect(sliderElement).toBeTruthy();
+      if (!sliderElement) return;
+
       const newDuration = 2.5;
-      spyOn(app['cdr'], 'detectChanges').and.callThrough(); // Spy on detectChanges
+      spyOn(app, 'onCrossfadeDurationSliderChange').and.callThrough();
+      spyOn(app['cdr'], 'detectChanges').and.callThrough();
 
-      app.onCrossfadeDurationChange(newDuration);
+      sliderElement.value = newDuration.toString();
+      sliderElement.dispatchEvent(new Event('input')); // Simulate input event
+      fixture.detectChanges();
 
+      expect(app.onCrossfadeDurationSliderChange).toHaveBeenCalled();
       expect(app.displayCrossfadeDurationSeconds).toBe(newDuration);
       expect(app['currentCrossfadeDurationMs']).toBe(newDuration * 1000);
       expect(mockChannelSettingsService.updateCrossfadeDurationSeconds).toHaveBeenCalledWith(newDuration);
-      expect(app['cdr'].detectChanges).toHaveBeenCalled(); // From within onCrossfadeDurationChange
+      expect(app['cdr'].detectChanges).toHaveBeenCalled();
+      if (sliderLabelElement) {
+        expect(sliderLabelElement.textContent).toContain(`X-Fade: ${newDuration}s`);
+      }
     });
 
-    it('animateCrossfader should use currentCrossfadeDurationMs updated by dial changes', () => {
+    it('animateCrossfader should use currentCrossfadeDurationMs updated by slider changes', () => {
+      expect(sliderElement).toBeTruthy();
+      if (!sliderElement) return;
+
       const newDurationSeconds = 3.0;
-      app.onCrossfadeDurationChange(newDurationSeconds); // Simulate dial change
+      sliderElement.value = newDurationSeconds.toString();
+      sliderElement.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
 
       spyOn(window, 'setInterval').and.callThrough();
-      jasmine.clock().install(); // Install clock for this test
+      jasmine.clock().install();
 
-      app.animateCrossfader(100); // Target value doesn't matter, only duration used by setInterval
+      app.animateCrossfader(100);
 
-      const expectedInterval = (newDurationSeconds * 1000) / 25; // 25 steps
+      const expectedInterval = (newDurationSeconds * 1000) / 25;
       expect(window.setInterval).toHaveBeenCalledWith(jasmine.any(Function), expectedInterval);
 
-      jasmine.clock().tick(newDurationSeconds * 1000); // Run full animation
+      jasmine.clock().tick(newDurationSeconds * 1000);
       jasmine.clock().uninstall();
     });
 
-    it('should update displayCrossfadeDurationSeconds if settings are reset via service', () => {
-      const defaultDurationFromService = 0.2; // Assume this is the default the service would reset to
+    it('should update slider value if settings are reset via service', () => {
+      const defaultDurationFromService = 0.2;
       const newSettingsAfterReset: AppSettings = {
         ...initialTestSettings,
         crossfadeDurationSeconds: defaultDurationFromService
       };
 
-      // Simulate settings reset from service
       appSettingsSubject.next(newSettingsAfterReset);
-      fixture.detectChanges(); // Process subscription
+      fixture.detectChanges();
 
       expect(app.displayCrossfadeDurationSeconds).toBe(defaultDurationFromService);
       expect(app['currentCrossfadeDurationMs']).toBe(defaultDurationFromService * 1000);
 
-      const dialDebugElement = fixture.debugElement.query(By.css('app-rotary-dial'));
-      expect(dialDebugElement.componentInstance.value).toBe(defaultDurationFromService);
+      expect(sliderElement).toBeTruthy();
+      if (sliderElement) {
+        expect(sliderElement.value).toBe(defaultDurationFromService.toString());
+      }
+      if (sliderLabelElement) {
+        expect(sliderLabelElement.textContent).toContain(`X-Fade: ${defaultDurationFromService}s`);
+      }
     });
   });
 });
