@@ -584,7 +584,8 @@ describe('App', () => {
       shiftKey: shiftKey,
     });
     target.dispatchEvent(event);
-    fixture.detectChanges(); // Ensure component reacts to the event
+    // fixture.detectChanges(); // REMOVED: Component's internal cdr.detectChanges() should handle updates.
+                               // The test's fixture.detectChanges() was likely conflicting.
   }
 
   describe('Keyboard Shortcuts', () => {
