@@ -15,24 +15,45 @@ describe('RotaryDialComponent', () => {
     }).compileComponents();
 
     fixture = TestBed.createComponent(RotaryDialComponent);
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing'; // Added fakeAsync, tick
+import { RotaryDialComponent } from './rotary-dial.component';
+import { CommonModule } from '@angular/common';
+import { SimpleChange } from '@angular/core'; // Added SimpleChange
+
+describe('RotaryDialComponent', () => {
+  let component: RotaryDialComponent;
+  let fixture: ComponentFixture<RotaryDialComponent>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [
+        CommonModule,
+        RotaryDialComponent // Standalone component
+      ]
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(RotaryDialComponent);
     component = fixture.componentInstance;
-    // Default inputs (can be overridden in specific tests)
-    component.min = 0;
-    component.max = 100;
-    component.step = 1;
-    component.value = 50;
-    component.label = 'Test Dial';
-    component.unit = '%';
-    fixture.detectChanges(); // Trigger ngOnInit & ngOnChanges
+    // Match app.html inputs for general tests for consistency
+    component.min = 0.1;
+    component.max = 5;
+    component.step = 0.1;
+    component.value = 0.5; // Initial value from app.ts default/service
+    component.label = 'Duration';
+    component.unit = 's';
+    fixture.detectChanges();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should initialize with default values and update display', () => {
-    expect(component.currentAngle).toBe(0); // (50-0)/(100-0) * 270 - 135 = 0.5 * 270 - 135 = 135 - 135 = 0
-    expect(component.displayValue).toBe('50%');
+  it('should initialize with provided inputs and update display', () => {
+    // value = 0.5, min = 0.1, max = 5
+    // valueRatio = (0.5 - 0.1) / (5 - 0.1) = 0.4 / 4.9 = approx 0.08163
+    // currentAngle = (0.08163 * 270) - 135 = 22.04 - 135 = approx -112.96
+    expect(component.currentAngle).toBeCloseTo(-112.96, 2);
+    expect(component.displayValue).toBe('0.5s');
   });
 
   it('should update angle and displayValue when value input changes', () => {
@@ -215,4 +236,53 @@ describe('RotaryDialComponent', () => {
     });
   });
   // For now, this covers basic setup and value handling.
+
+  it('should allow setting values near minimum like 0.1, 0.2 when step is 0.1', () => {
+    // Inputs are already set in beforeEach to min=0.1, max=5, step=0.1, value=0.5
+    // ngOnInit and initial ngOnChanges have run.
+    // Component's current value is 0.5s.
+
+    // Simulate user dragging to a position that should result in 0.1
+    (component as any).updateValueFromAngle(-135); // Corresponds to min value
+    fixture.detectChanges();
+    expect(component.value).toBe(0.1);
+    expect(component.displayValue).toBe('0.1s');
+
+    // Simulate user dragging to a position that should result in 0.2
+    // Angle for 0.2: valueRatio = (0.2-0.1)/(5-0.1) = 0.1/4.9 = approx 0.020408
+    // normalizedAngle = 0.020408 * 270 = approx 5.510
+    // currentAngle = 5.510 - 135 = approx -129.490
+    (component as any).updateValueFromAngle(-129.490); // Approx angle for 0.2
+    fixture.detectChanges();
+    expect(component.value).toBe(0.2); // Value should be exactly 0.2 due to stepping
+    expect(component.displayValue).toBe('0.2s');
+
+    // Test another low value, e.g. 0.3
+    // Angle for 0.3: valueRatio = (0.3-0.1)/(5-0.1) = 0.2/4.9 = approx 0.040816
+    // normalizedAngle = 0.040816 * 270 = approx 11.010
+    // currentAngle = 11.010 - 135 = approx -123.989
+    // Note: previous test used -123.979, slight difference is fine for test intent.
+    (component as any).updateValueFromAngle(-123.989); // Approx angle for 0.3
+    fixture.detectChanges();
+    expect(component.value).toBe(0.3);
+    expect(component.displayValue).toBe('0.3s');
+
+    // Test setting value to 0.9
+    // Angle for 0.9: valueRatio = (0.9-0.1)/(5-0.1) = 0.8/4.9 = approx 0.163265
+    // normalizedAngle = 0.163265 * 270 = approx 44.081
+    // currentAngle = 44.081 - 135 = approx -90.919
+    (component as any).updateValueFromAngle(-90.919); // Approx angle for 0.9
+    fixture.detectChanges();
+    expect(component.value).toBe(0.9);
+    expect(component.displayValue).toBe('0.9s');
+
+    // Test setting value to 1.0
+    // Angle for 1.0: valueRatio = (1.0-0.1)/(5-0.1) = 0.9/4.9 = approx 0.183673
+    // normalizedAngle = 0.183673 * 270 = approx 49.591
+    // currentAngle = 49.591 - 135 = approx -85.409
+    (component as any).updateValueFromAngle(-85.409); // Approx angle for 1.0
+    fixture.detectChanges();
+    expect(component.value).toBe(1.0);
+    expect(component.displayValue).toBe('1.0s');
+  });
 });

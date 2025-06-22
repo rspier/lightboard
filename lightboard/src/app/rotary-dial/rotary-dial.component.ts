@@ -28,21 +28,48 @@ export class RotaryDialComponent implements OnInit, OnChanges {
   constructor(private elRef: ElementRef) {}
 
   ngOnInit(): void {
+    // Ensure initial value respects step and constraints
+    this.value = this.clampAndStepValue(this.value);
     this.updateAngleFromValue();
     this.updateDisplayValue();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['value'] && !this.dragging) { // Update angle if value changes externally and not dragging
-      this.updateAngleFromValue();
+    let needsVisualUpdate = false;
+    let revalidatedValue = this.value;
+
+    // Order of operations:
+    // 1. If min/max/step inputs change, current 'this.value' might be invalid. Re-validate it.
+    // 2. If 'value' input changes, it takes precedence and also needs validation against current/new constraints.
+
+    if (changes['min'] || changes['max'] || changes['step']) {
+      // Constraints changed. Re-validate the component's current value.
+      // Note: this.step, this.min, this.max are already updated by Angular with new @Input values.
+      revalidatedValue = this.clampAndStepValue(this.value);
+      needsVisualUpdate = true;
     }
-    if (changes['value'] || changes['unit']) {
-        this.updateDisplayValue();
+
+    if (changes['value'] && !this.dragging) {
+      // External value input changed. This new value must be validated.
+      // It overrides any re-validation from just constraint changes if 'value' also changed in same cycle.
+      revalidatedValue = this.clampAndStepValue(changes['value'].currentValue);
+      needsVisualUpdate = true;
     }
-     if (changes['min'] || changes['max'] || changes['step']) {
-        this.value = this.clampAndStepValue(this.value); // Re-validate value if constraints change
-        this.updateAngleFromValue();
-        this.updateDisplayValue();
+
+    // Apply the revalidated value if it's different from the current internal value
+    if (this.value !== revalidatedValue) {
+        this.value = revalidatedValue;
+        // Do NOT emit valueChange here if the change came from an @Input('value')
+        // or from constraints changing. Only emit on user interaction.
+    }
+
+    if (changes['unit']) { // If only unit changes, still need a display update
+        needsVisualUpdate = true;
+    }
+
+    if (needsVisualUpdate) {
+        this.updateAngleFromValue(); // Uses this.value
+        this.updateDisplayValue();   // Uses this.value and this.unit
     }
   }
 
