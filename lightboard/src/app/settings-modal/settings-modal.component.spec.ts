@@ -219,24 +219,24 @@ describe('SettingsModalComponent', () => {
     component.darkMode = true;
     fixture.detectChanges();
     tick(); // Ensure model is stable
-    expect(checkbox.checked).toBeTrue('Checkbox should be checked when component.darkMode is true');
+    expect(checkbox.checked).toBeTrue();
 
     component.darkMode = false;
     fixture.detectChanges();
     tick(); // Ensure model is stable
-    expect(checkbox.checked).toBeFalse('Checkbox should be unchecked when component.darkMode is false');
+    expect(checkbox.checked).toBeFalse();
 
     // Test view to component property binding (simulating user interaction)
     checkbox.checked = true;
     checkbox.dispatchEvent(new Event('change'));
     fixture.detectChanges();
     tick(); // Allow ngModel to propagate the change
-    expect(component.darkMode).toBeTrue('component.darkMode should update to true after checkbox is checked by user');
+    expect(component.darkMode).toBeTrue();
 
     checkbox.checked = false;
     checkbox.dispatchEvent(new Event('change'));
     fixture.detectChanges();
     tick(); // Allow ngModel to propagate the change
-    expect(component.darkMode).toBeFalse('component.darkMode should update to false after checkbox is unchecked by user');
+    expect(component.darkMode).toBeFalse();
   }));
 });
