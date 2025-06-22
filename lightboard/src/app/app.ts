@@ -6,6 +6,7 @@ import { Subscription } from 'rxjs';
 import { SlidePotentiometerComponent } from './slide-potentiometer/slide-potentiometer';
 import { CombinedOutputDisplayComponent } from './combined-output-display/combined-output-display.component';
 import { SettingsModalComponent } from './settings-modal/settings-modal.component';
+import { KeyboardShortcutsModalComponent } from './keyboard-shortcuts-modal/keyboard-shortcuts-modal.component'; // Added
 import { SceneTextInputModalComponent } from './scene-text-input-modal/scene-text-input-modal.component';
 import { ChannelSettingsService, AppSettings } from './channel-settings.service';
 import { HttpDataService, CombinedOutputData } from './http-data.service';
@@ -32,7 +33,8 @@ interface ParsedCommand {
     SlidePotentiometerComponent,
     CombinedOutputDisplayComponent,
     SettingsModalComponent,
-    SceneTextInputModalComponent
+    SceneTextInputModalComponent,
+    KeyboardShortcutsModalComponent // Added
   ],
   templateUrl: './app.html',
   styleUrl: './app.css'
@@ -47,6 +49,7 @@ export class App implements OnInit, OnDestroy {
   isAnimating: boolean = false;
   animationInterval: any = null;
   showSettingsModal: boolean = false;
+  showShortcutsModal: boolean = false; // Added
   private settingsSubscription: Subscription | undefined;
 
   // State variables for Scene Text Input Modal
@@ -121,21 +124,44 @@ export class App implements OnInit, OnDestroy {
                               activeElement.tagName === 'TEXTAREA' ||
                               activeElement.tagName === 'SELECT');
 
-      if (isInputFocused || this.showSceneTextInputModal) {
-        // Don't process shortcuts if an input is focused or text input modal is already open
+      // Handle Escape key for modals first
+      if (event.key === 'Escape') {
+        if (this.showShortcutsModal) {
+          event.preventDefault();
+          this.closeShortcutsModal();
+          return; // Escape used for shortcuts modal, stop further processing
+        }
+        if (this.showSceneTextInputModal) {
+          event.preventDefault();
+          this.handleCloseSceneTextInputModal();
+          return; // Escape used for scene text input modal
+        }
+        if (this.showSettingsModal) {
+          event.preventDefault();
+          this.toggleSettingsModal(); // Close settings modal
+          return;
+        }
+      }
+
+      // Prevent other shortcuts if any modal is open or an input is focused
+      // (and the key pressed was not Escape, as that's handled above)
+      if (isInputFocused || this.showSceneTextInputModal || this.showSettingsModal || this.showShortcutsModal) {
         return;
       }
 
-      // Check for Shift key explicitly for '!' and '@' as they are on number keys
+      // Process other shortcuts
       if (event.shiftKey && event.key === '!') { // Shift + 1
         event.preventDefault();
         this.toggleSceneTextInput(1);
       } else if (event.shiftKey && event.key === '@') { // Shift + 2
         event.preventDefault();
         this.toggleSceneTextInput(2);
-      } else if (event.key === 'Escape' && this.showSceneTextInputModal) {
+      } else if (event.key === '?') {
         event.preventDefault();
-        this.handleCloseSceneTextInputModal();
+        this.toggleShortcutsModal();
+      } else if (event.code === 'Space' || event.key === ' ') { // Spacebar for Go button
+        event.preventDefault();
+        this.onGoButtonClick();
       }
     });
   }
@@ -159,6 +185,8 @@ export class App implements OnInit, OnDestroy {
   onGoButtonClick(): void { if (this.isAnimating) { if (this.animationInterval) { clearInterval(this.animationInterval); this.animationInterval = null; } this.isAnimating = false; this.cdr.detectChanges(); } else { const targetValue = this.crossfaderValue >= 50 ? 0 : 100; this.animateCrossfader(targetValue); } }
   animateCrossfader(targetValue: number): void { this.isAnimating = true; if (this.animationInterval) clearInterval(this.animationInterval); const totalDuration = this.currentCrossfadeDurationMs; const steps = 25; const intervalDuration = Math.max(1, totalDuration / steps); const initialValue = this.crossfaderValue; const stepSize = (targetValue - initialValue) / steps; let currentStep = 0; this.animationInterval = setInterval(() => { currentStep++; if (currentStep >= steps) { this.crossfaderValue = targetValue; clearInterval(this.animationInterval); this.animationInterval = null; this.isAnimating = false; } else { this.crossfaderValue = initialValue + (stepSize * currentStep); } this.crossfaderValue = Math.max(0, Math.min(100, this.crossfaderValue)); this.onPotentiometerChange(); this.cdr.detectChanges(); }, intervalDuration); }
   toggleSettingsModal(): void { this.showSettingsModal = !this.showSettingsModal; }
+  toggleShortcutsModal(): void { this.showShortcutsModal = !this.showShortcutsModal; } // Added
+  closeShortcutsModal(): void { this.showShortcutsModal = false; } // Added
   public trackByCombinedState(index: number, item: PotentiometerState): number { return item.channelNumber; }
   public trackByState(index: number, item: PotentiometerState): number { return item.channelNumber; }
 

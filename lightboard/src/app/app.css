@@ -16,13 +16,29 @@
   color: var(--app-header-text-color);
 }
 
-.settings-icon {
-  font-size: 2em;
+.header-icons {
+  display: flex;
+  align-items: center;
+}
+
+.settings-icon, .shortcuts-icon {
+  font-size: 2em; /* Consistent icon size */
   cursor: pointer;
   color: var(--app-header-text-color);
+  padding: 0 5px; /* Add some padding around icons */
+  margin-left: 10px; /* Space between icons, and from the title if only one */
+  border-radius: 4px; /* Optional: slight rounding for hover effect */
+  transition: background-color 0.2s ease-in-out, opacity 0.2s;
 }
-.settings-icon:hover {
+
+.settings-icon:hover, .shortcuts-icon:hover {
   opacity: 0.7;
+  /* Or a background highlight, depending on theme variables available */
+  /* background-color: var(--app-header-hover-bg-color, #555); */ /* Example if such a var existed */
+}
+
+.shortcuts-icon {
+  font-weight: bold; /* Make '?' more prominent if desired */
 }
 
 .main-layout {

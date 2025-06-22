@@ -493,4 +493,159 @@ describe('App', () => {
       expect(app.combinedOutputStates[1].color).toBe('#808080');
     });
   });
+
+  // Helper function to dispatch keyboard events
+  function dispatchKeyboardEvent(key: string, code?: string, shiftKey: boolean = false, target: EventTarget = mockDocument.body) {
+    const event = new KeyboardEvent('keydown', {
+      key: key,
+      code: code || key, // Use key if code is not provided (e.g. for '?')
+      bubbles: true,
+      cancelable: true,
+      shiftKey: shiftKey,
+    });
+    target.dispatchEvent(event);
+    fixture.detectChanges(); // Ensure component reacts to the event
+  }
+
+  describe('Keyboard Shortcuts', () => {
+    let onGoButtonClickSpy: jasmine.Spy;
+    let toggleShortcutsModalSpy: jasmine.Spy;
+    let toggleSceneTextInputSpy: jasmine.Spy;
+    let handleCloseSceneTextInputModalSpy: jasmine.Spy;
+    let closeShortcutsModalSpy: jasmine.Spy;
+    let toggleSettingsModalSpy: jasmine.Spy;
+
+    beforeEach(() => {
+      // Spies are attached to the 'app' instance from the outer describe block
+      onGoButtonClickSpy = spyOn(app, 'onGoButtonClick').and.callThrough();
+      toggleShortcutsModalSpy = spyOn(app, 'toggleShortcutsModal').and.callThrough();
+      toggleSceneTextInputSpy = spyOn(app, 'toggleSceneTextInput').and.callThrough();
+      handleCloseSceneTextInputModalSpy = spyOn(app, 'handleCloseSceneTextInputModal').and.callThrough();
+      closeShortcutsModalSpy = spyOn(app, 'closeShortcutsModal').and.callThrough();
+      toggleSettingsModalSpy = spyOn(app, 'toggleSettingsModal').and.callThrough();
+
+      // Ensure modals are closed and no input is focused initially for each test
+      app.showShortcutsModal = false;
+      app.showSceneTextInputModal = false;
+      app.showSettingsModal = false;
+      if (mockDocument.activeElement instanceof HTMLElement) {
+        mockDocument.activeElement.blur();
+      }
+      fixture.detectChanges();
+    });
+
+    it('should call onGoButtonClick when Spacebar is pressed and no modal/input is active', () => {
+      dispatchKeyboardEvent(' ', 'Space');
+      expect(onGoButtonClickSpy).toHaveBeenCalled();
+    });
+
+    it('should call toggleShortcutsModal when "?" is pressed and no modal/input is active', () => {
+      dispatchKeyboardEvent('?');
+      expect(toggleShortcutsModalSpy).toHaveBeenCalled();
+    });
+
+    it('should call toggleSceneTextInput(1) when Shift+1 is pressed', () => {
+      dispatchKeyboardEvent('!', 'Digit1', true); // '!' is Shift+1
+      expect(toggleSceneTextInputSpy).toHaveBeenCalledWith(1);
+    });
+
+    it('should call toggleSceneTextInput(2) when Shift+2 is pressed', () => {
+      dispatchKeyboardEvent('@', 'Digit2', true); // '@' is Shift+2
+      expect(toggleSceneTextInputSpy).toHaveBeenCalledWith(2);
+    });
+
+    describe('Escape key behavior', () => {
+      it('should close shortcuts modal if open', () => {
+        app.showShortcutsModal = true;
+        fixture.detectChanges();
+        dispatchKeyboardEvent('Escape');
+        expect(closeShortcutsModalSpy).toHaveBeenCalled();
+        expect(app.showShortcutsModal).toBeFalse();
+      });
+
+      it('should close scene text input modal if open (and shortcuts modal is not)', () => {
+        app.showSceneTextInputModal = true;
+        fixture.detectChanges();
+        dispatchKeyboardEvent('Escape');
+        expect(handleCloseSceneTextInputModalSpy).toHaveBeenCalled();
+        expect(app.showSceneTextInputModal).toBeFalse();
+      });
+
+      it('should close settings modal if open (and other modals are not)', () => {
+        app.showSettingsModal = true;
+        fixture.detectChanges();
+        dispatchKeyboardEvent('Escape');
+        expect(toggleSettingsModalSpy).toHaveBeenCalled(); // toggleSettingsModal is used to close it
+        expect(app.showSettingsModal).toBeFalse();
+      });
+
+      it('should prioritize shortcuts modal over scene text input modal for Escape', () => {
+        app.showShortcutsModal = true;
+        app.showSceneTextInputModal = true;
+        fixture.detectChanges();
+        dispatchKeyboardEvent('Escape');
+        expect(closeShortcutsModalSpy).toHaveBeenCalled();
+        expect(handleCloseSceneTextInputModalSpy).not.toHaveBeenCalled();
+        expect(app.showShortcutsModal).toBeFalse();
+        expect(app.showSceneTextInputModal).toBeTrue(); // Should still be open
+      });
+
+       it('should prioritize scene text input modal over settings modal for Escape', () => {
+        app.showSceneTextInputModal = true;
+        app.showSettingsModal = true;
+        fixture.detectChanges();
+        dispatchKeyboardEvent('Escape');
+        expect(handleCloseSceneTextInputModalSpy).toHaveBeenCalled();
+        expect(toggleSettingsModalSpy).not.toHaveBeenCalled();
+        expect(app.showSceneTextInputModal).toBeFalse();
+        expect(app.showSettingsModal).toBeTrue(); // Should still be open
+      });
+    });
+
+    describe('Shortcuts inhibition', () => {
+      const testCases = [
+        { name: 'Spacebar', key: ' ', code: 'Space', spy: () => onGoButtonClickSpy, args: [] as any[] },
+        { name: 'QuestionMark', key: '?', code: '?', spy: () => toggleShortcutsModalSpy, args: [] as any[] },
+        { name: 'Shift+1', key: '!', code: 'Digit1', shift: true, spy: () => toggleSceneTextInputSpy, args: [1] as any[] },
+        { name: 'Shift+2', key: '@', code: 'Digit2', shift: true, spy: () => toggleSceneTextInputSpy, args: [2] as any[] },
+      ];
+
+      function runInhibitionTest(modalType: 'scene' | 'shortcuts' | 'settings' | 'inputFocus') {
+        testCases.forEach(tc => {
+          it(`should NOT trigger shortcut for '${tc.name}' if ${modalType} is active/focused`, () => {
+            if (modalType === 'scene') app.showSceneTextInputModal = true;
+            else if (modalType === 'shortcuts') app.showShortcutsModal = true;
+            else if (modalType === 'settings') app.showSettingsModal = true;
+            else if (modalType === 'inputFocus') {
+              const input = mockDocument.createElement('input');
+              mockDocument.body.appendChild(input);
+              input.focus();
+              fixture.detectChanges(); // ensure focus is registered
+              dispatchKeyboardEvent(tc.key, tc.code, tc.shift, input);
+              mockDocument.body.removeChild(input); // cleanup
+              expect(tc.spy()).not.toHaveBeenCalled();
+              return; // exit after specific input test logic
+            }
+
+            fixture.detectChanges();
+            dispatchKeyboardEvent(tc.key, tc.code, tc.shift);
+            if (tc.args.length > 0) {
+                 expect(tc.spy()).not.toHaveBeenCalledWith(...tc.args);
+            } else {
+                 expect(tc.spy()).not.toHaveBeenCalled();
+            }
+
+            // Reset modal states for next iteration
+            app.showSceneTextInputModal = false;
+            app.showShortcutsModal = false;
+            app.showSettingsModal = false;
+          });
+        });
+      }
+      runInhibitionTest('scene');
+      runInhibitionTest('shortcuts');
+      runInhibitionTest('settings');
+      runInhibitionTest('inputFocus');
+    });
+  });
 });

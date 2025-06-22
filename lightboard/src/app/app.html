@@ -1,6 +1,9 @@
 <div class="app-header">
   <h1>Lightboard Control</h1>
-  <span class="settings-icon" (click)="toggleSettingsModal()" title="Settings">&#9881;</span>
+  <div class="header-icons">
+    <span class="shortcuts-icon" (click)="toggleShortcutsModal()" title="Keyboard Shortcuts">?</span>
+    <span class="settings-icon" (click)="toggleSettingsModal()" title="Settings">&#9881;</span>
+  </div>
 </div>
 
 <main class="main">
@@ -88,5 +91,10 @@
 </app-scene-text-input-modal>
 
 <app-settings-modal *ngIf="showSettingsModal" (close)="toggleSettingsModal()"></app-settings-modal>
+
+<app-keyboard-shortcuts-modal
+  [isVisible]="showShortcutsModal"
+  (closeEvent)="closeShortcutsModal()">
+</app-keyboard-shortcuts-modal>
 
 <router-outlet />
