@@ -20,6 +20,6 @@
 </ng-container>
 <ng-container *ngIf="showColorInput">
   <div class="color-display-area">
-    <input type="color" class="color-input-native" [value]="color" (input)="onColorInputChange($event)" title="Select Channel Color">
+    <input type="color" class="color-input-native" [value]="color" (input)="onColorInputChange($event)" [title]="'Color: ' + color.toUpperCase()">
   </div>
 </ng-container>
