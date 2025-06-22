@@ -66,19 +66,19 @@ input[type="range"][orient="vertical"]::-moz-range-track {
 input[type="range"][orient="vertical"]::-webkit-slider-thumb {
   -webkit-appearance: none; /* Override default appearance */
   appearance: none;
-  width: 22px; /* Width of the thumb */
-  height: 12px; /* Height of the thumb */
+  width: 16px; /* Width of the thumb */
+  height: 22px; /* Height of the thumb - taller than wide */
   background: var(--slider-thumb-color, #3498db);
   border-radius: 3px; /* Slightly rounded rectangle */
   border: 1px solid var(--slider-thumb-border-color, #2980b9);
   cursor: grab;
-  /* Adjust margin to center on track if track width and input width are different */
-  /* margin-left needs careful calculation if track is narrower than input's effective area */
+  /* For vertical sliders, the thumb is usually centered horizontally by default on the track after -webkit-appearance: none; */
+  /* No specific margin needed here typically, unlike horizontal sliders' margin-top. */
 }
 
 input[type="range"][orient="vertical"]::-moz-range-thumb {
-  width: 20px;
-  height: 10px;
+  width: 16px;
+  height: 22px;
   background: var(--slider-thumb-color, #3498db);
   border-radius: 3px;
   border: 1px solid var(--slider-thumb-border-color, #2980b9);
