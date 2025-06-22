@@ -1,5 +1,4 @@
 <div class="app-header">
-  <h1>Lightboard Control</h1>
   <div class="header-icons">
     <span class="shortcuts-icon" (click)="toggleShortcutsModal()" title="Keyboard Shortcuts">?</span>
     <span class="settings-icon" (click)="toggleSettingsModal()" title="Settings">&#9881;</span>
@@ -20,7 +19,6 @@
               <app-slide-potentiometer
                 *ngFor="let state of row1States; trackBy: trackByState"
                 [channelNumber]="state.channelNumber"
-                [channelDescription]="state.channelDescription"
                 [(value)]="state.value"
                 (valueChange)="onPotentiometerChange()"
                 [color]="state.color"
@@ -48,7 +46,6 @@
               <app-slide-potentiometer
                 *ngFor="let state of row2States; trackBy: trackByState"
                 [channelNumber]="state.channelNumber"
-                [channelDescription]="state.channelDescription"
                 [(value)]="state.value"
                 (valueChange)="onPotentiometerChange()"
                 [color]="state.color"

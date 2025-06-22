@@ -1,35 +1,38 @@
 :host {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
+  display: inline-block; /* Changed from inline-flex to better support absolute positioning of children */
+  position: relative; /* To act as a containing block for .channel-info */
+  flex-direction: column; /* Flex properties might not be needed if not using flex alignment for main items */
+  align-items: center; /* Still useful for centering the slider itself if host is wider */
   padding: 10px;
-  border: 1px solid var(--slider-host-border-color); /* Use variable */
+  padding-top: 25px; /* Add padding at the top to make space for the channel number */
+  border: 1px solid var(--slider-host-border-color);
   border-radius: 4px;
-  /* font-family is inherited */
   min-width: 60px;
-  background-color: var(--slider-host-bg-color); /* Use variable */
+  background-color: var(--slider-host-bg-color);
 }
 
 .channel-info {
-  text-align: center;
-  margin-bottom: 10px;
-  padding: 5px;
-  border-bottom: 1px solid var(--slider-channel-info-border-color); /* Use variable */
-  width: 100%;
+  position: absolute;
+  top: 2px;
+  left: 3px;
+  padding: 0; /* Reset padding */
+  /* Remove properties that are no longer relevant for top-left positioning */
+  /* text-align: center; */
+  /* margin-bottom: 10px; */
+  /* border-bottom: 1px solid var(--slider-channel-info-border-color); */
+  /* width: 100%; */
+  z-index: 1; /* Ensure it's above other static content if any overlap could occur */
 }
 
 .channel-info h3 {
-  margin: 0 0 5px 0;
-  font-size: 1em;
+  margin: 0; /* Reset margin */
+  font-size: 0.9em; /* Slightly smaller if needed to fit well */
   font-weight: bold;
-  color: var(--slider-text-color); /* Use variable */
+  color: var(--slider-text-color);
+  line-height: 1; /* Adjust line height for compact display */
 }
 
-.channel-info small {
-  font-size: 0.8em;
-  color: var(--slider-text-color); /* Use variable */
-  opacity: 0.8; /* Keep opacity for dimmer effect */
-}
+/* .channel-info small was removed as channelDescription is gone */
 
 input[type="range"][orient="vertical"] {
   writing-mode: bt-lr;

@@ -11,7 +11,7 @@ import { FormsModule } from '@angular/forms';
 })
 export class SlidePotentiometerComponent {
   @Input() channelNumber: number = 0;
-  @Input() channelDescription: string = '';
+  // @Input() channelDescription: string = ''; // Removed
   @Input() sliderHeight: string = '150px';
   @Input() showChannelInfo: boolean = true;
   @Input() showValueDisplay: boolean = true; // New input

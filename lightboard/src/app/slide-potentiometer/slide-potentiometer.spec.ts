@@ -34,8 +34,8 @@ describe('SlidePotentiometerComponent', () => {
       expect(channelInfoDiv).toBeTruthy();
       const h3Element = channelInfoDiv.query(By.css('h3')).nativeElement;
       expect(h3Element.textContent.trim()).toBe('0');
-      const smallElement = channelInfoDiv.query(By.css('small')).nativeElement;
-      expect(smallElement.textContent).toBe('');
+      // const smallElement = channelInfoDiv.query(By.css('small')).nativeElement; // Description removed
+      // expect(smallElement.textContent).toBe(''); // Description removed
     });
 
     it('should display provided channelNumber input when showChannelInfo is true', () => {
@@ -46,13 +46,13 @@ describe('SlidePotentiometerComponent', () => {
       expect(h3Element.textContent.trim()).toBe('123');
     });
 
-    it('should display provided channelDescription input when showChannelInfo is true', () => {
-      component.showChannelInfo = true;
-      component.channelDescription = 'Test Description';
-      fixture.detectChanges();
-      const smallElement = fixture.debugElement.query(By.css('.channel-info small')).nativeElement;
-      expect(smallElement.textContent).toBe('Test Description');
-    });
+    // it('should display provided channelDescription input when showChannelInfo is true', () => { // Test removed
+    //   component.showChannelInfo = true;
+    //   component.channelDescription = 'Test Description';
+    //   fixture.detectChanges();
+    //   const smallElement = fixture.debugElement.query(By.css('.channel-info small')).nativeElement;
+    //   expect(smallElement.textContent).toBe('Test Description');
+    // });
 
     it('should not display .channel-info div if showChannelInfo is false', () => {
       component.showChannelInfo = false;
@@ -78,6 +78,23 @@ describe('SlidePotentiometerComponent', () => {
       fixture.detectChanges();
       const rangeInput = fixture.debugElement.query(By.css('input[type="range"]')).nativeElement;
       expect(rangeInput.style.height).toBe('150px');
+    });
+
+    it('should position .channel-info (channel number) at the top-left', () => {
+      component.showChannelInfo = true;
+      fixture.detectChanges();
+
+      const hostElement = fixture.nativeElement;
+      const channelInfoElement = fixture.debugElement.query(By.css('.channel-info')).nativeElement as HTMLElement;
+
+      const hostStyle = getComputedStyle(hostElement);
+      expect(hostStyle.position).toBe('relative');
+      expect(hostStyle.paddingTop).toBe('25px'); // Check for padding if it was part of the solution
+
+      const channelInfoStyle = getComputedStyle(channelInfoElement);
+      expect(channelInfoStyle.position).toBe('absolute');
+      expect(channelInfoStyle.top).toMatch(/^(2px|0px)$/); // Allow for slight variations or if padding is used on host
+      expect(channelInfoStyle.left).toMatch(/^(3px|0px)$/);
     });
   });
 

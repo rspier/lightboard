@@ -1,6 +1,6 @@
 .app-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end; /* Changed from space-between to align icons to the right */
   align-items: center;
   padding: 10px 20px;
   background-color: var(--app-header-bg-color);
@@ -10,11 +10,7 @@
   box-sizing: border-box;
 }
 
-.app-header h1 {
-  margin: 0;
-  font-size: 1.5em;
-  color: var(--app-header-text-color);
-}
+/* Removed .app-header h1 styles as H1 element is removed */
 
 .header-icons {
   display: flex;
