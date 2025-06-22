@@ -37,23 +37,14 @@
 input[type="range"][orient="vertical"] {
   writing-mode: bt-lr;
   -webkit-appearance: slider-vertical;
-  width: 20px;
-  padding: 0 5px;
+  width: 20px; /* Total width for the input area */
+  /* padding: 0 5px; */ /* Removed padding to simplify thumb positioning */
   margin-bottom: 10px;
-  background: transparent; /* Remove default track background for custom styling */
+  background: transparent;
 }
 
 /* Vertical Slider Track */
 input[type="range"][orient="vertical"]::-webkit-slider-runnable-track {
-  width: 8px; /* Width of the track */
-  height: 100%;
-  background: var(--slider-track-color, #ddd);
-  border-radius: 4px;
-  border: 1px solid var(--slider-track-border-color, #ccc);
-  margin: 0 auto; /* Center track if input is wider */
-}
-
-input[type="range"][orient="vertical"]::-moz-range-track {
   width: 8px;
   height: 100%;
   background: var(--slider-track-color, #ddd);
@@ -62,27 +53,41 @@ input[type="range"][orient="vertical"]::-moz-range-track {
   margin: 0 auto;
 }
 
+input[type="range"][orient="vertical"]::-moz-range-track {
+  width: 8px;
+  height: 100%;
+  background: var(--slider-track-color, #ddd);
+  border-radius: 4px;
+  border: 1px solid var(--slider-track-border-color, #ccc);
+  margin: 0 auto; /* Mozilla also needs this to center track in the input width */
+}
+
 /* Vertical Slider Thumb */
 input[type="range"][orient="vertical"]::-webkit-slider-thumb {
-  -webkit-appearance: none; /* Override default appearance */
+  -webkit-appearance: none;
   appearance: none;
-  width: 16px; /* Width of the thumb */
-  height: 22px; /* Height of the thumb - taller than wide */
-  background: var(--slider-thumb-color, #3498db);
-  border-radius: 3px; /* Slightly rounded rectangle */
+  padding: 0; /* Reset padding */
+  border: none; /* Reset border before applying custom one */
+  background-clip: content-box; /* Or padding-box, test which works best */
+
+  width: 14px;
+  height: 20px;
+  background-color: var(--slider-thumb-color, #3498db);
+  border-radius: 3px;
   border: 1px solid var(--slider-thumb-border-color, #2980b9);
   cursor: grab;
-  /* For vertical sliders, the thumb is usually centered horizontally by default on the track after -webkit-appearance: none; */
-  /* No specific margin needed here typically, unlike horizontal sliders' margin-top. */
+  /* Vertical centering is implicit with slider-vertical and writing-mode.
+     Horizontal centering is on the track; thumb should align with track. */
 }
 
 input[type="range"][orient="vertical"]::-moz-range-thumb {
-  width: 16px;
-  height: 22px;
+  width: 14px;
+  height: 20px;
   background: var(--slider-thumb-color, #3498db);
   border-radius: 3px;
   border: 1px solid var(--slider-thumb-border-color, #2980b9);
   cursor: grab;
+  padding: 0; /* Reset padding */
 }
 
 /* Dark Theme adjustments for vertical sliders */
