@@ -21,10 +21,12 @@ export class KeyboardShortcutsModalComponent {
   // Optional: Close modal on Escape key press directly within the component
   // This can be redundant if the parent component already handles global Escape
   // but can be useful if this modal is used in different contexts.
-  @HostListener('document:keydown.escape', ['$event'])
-  onEscapeKey(event: KeyboardEvent): void {
+  @HostListener('document:keydown.escape') // Removed ['$event']
+  onEscapeKey(): void { // Removed event parameter
     if (this.isVisible) {
-      // event.stopPropagation(); // Prevent other escape listeners if needed
+      // No event object to call stopPropagation or preventDefault on,
+      // but for a simple close operation, it's often not needed here.
+      // The global handler in app.ts should manage preventDefault.
       this.close();
     }
   }
