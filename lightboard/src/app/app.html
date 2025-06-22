@@ -93,6 +93,7 @@
 <app-settings-modal *ngIf="showSettingsModal" (close)="toggleSettingsModal()"></app-settings-modal>
 
 <app-keyboard-shortcuts-modal
+  *ngIf="showShortcutsModal"
   [isVisible]="showShortcutsModal"
   (closeEvent)="closeShortcutsModal()">
 </app-keyboard-shortcuts-modal>
