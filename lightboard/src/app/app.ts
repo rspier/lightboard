@@ -164,6 +164,11 @@ export class App implements OnInit, OnDestroy {
         this.onGoButtonClick();
       }
     });
+
+    // Explicitly ensure shortcuts modal is closed after init,
+    // as a safeguard against unexpected opening.
+    this.showShortcutsModal = false;
+    this.cdr.detectChanges(); // Ensure UI reflects this state if it was somehow changed
   }
 
   ngOnDestroy(): void {
