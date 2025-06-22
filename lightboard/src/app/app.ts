@@ -162,10 +162,10 @@ export class App implements OnInit, OnDestroy {
       }
 
       // Process other shortcuts
-      if (event.shiftKey && event.key === '!') { // Shift + 1
+      if (!event.shiftKey && event.key.toLowerCase() === 'q') {
         event.preventDefault();
         this.toggleSceneTextInput(1);
-      } else if (event.shiftKey && event.key === '@') { // Shift + 2
+      } else if (!event.shiftKey && event.key.toLowerCase() === 'w') {
         event.preventDefault();
         this.toggleSceneTextInput(2);
       } else if (event.key === '?') {
@@ -281,6 +281,11 @@ export class App implements OnInit, OnDestroy {
   toggleSceneTextInput(sceneNumber: 1 | 2): void {
     this.currentSceneForModal = sceneNumber;
     this.modalInitialText = ''; // Always open with a clear input field
+    if (sceneNumber === 1) {
+      this.scene1CommandsString = ''; // Clear stored commands for Scene 1
+    } else if (sceneNumber === 2) {
+      this.scene2CommandsString = ''; // Clear stored commands for Scene 2
+    }
     this.showSceneTextInputModal = true;
     this.modalFeedbackMessages = []; // Clear previous messages when opening modal
     this.cdr.detectChanges();

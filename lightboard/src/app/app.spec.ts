@@ -122,6 +122,27 @@ describe('App', () => {
   });
 
   // ... (CombinedOutputDisplay Rendering tests are fine) ...
+  // Test for SceneTextInputModal functionality
+  describe('Scene Text Input Modal', () => {
+    it('toggleSceneTextInput should show modal, set current scene, and clear texts', () => {
+      app.scene1CommandsString = "some old commands"; // Pre-fill to test clearing
+      app.toggleSceneTextInput(1);
+      expect(app.showSceneTextInputModal).toBeTrue();
+      expect(app.currentSceneForModal).toBe(1);
+      expect(app.modalInitialText).toBe('');
+      expect(app.scene1CommandsString).toBe(''); // Verify sceneXCommandsString is cleared
+      expect(app.modalFeedbackMessages.length).toBe(0);
+
+      app.scene2CommandsString = "other old commands";
+      app.toggleSceneTextInput(2);
+      expect(app.showSceneTextInputModal).toBeTrue();
+      expect(app.currentSceneForModal).toBe(2);
+      expect(app.modalInitialText).toBe('');
+      expect(app.scene2CommandsString).toBe(''); // Verify sceneXCommandsString is cleared
+    });
+    // Other tests for handleCloseSceneTextInputModal, handleApplySceneCommandsFromModal remain the same
+  });
+
   describe('CombinedOutputDisplay Rendering', () => {
     it('should render the correct number of app-combined-output-display components', () => {
       fixture.detectChanges();
@@ -603,13 +624,13 @@ describe('App', () => {
       expect(toggleShortcutsModalSpy).toHaveBeenCalled();
     });
 
-    it('should call toggleSceneTextInput(1) when Shift+1 is pressed', () => {
-      dispatchKeyboardEvent('!', 'Digit1', true); // '!' is Shift+1
+    it('should call toggleSceneTextInput(1) when "q" is pressed', () => {
+      dispatchKeyboardEvent('q', 'KeyQ', false);
       expect(toggleSceneTextInputSpy).toHaveBeenCalledWith(1);
     });
 
-    it('should call toggleSceneTextInput(2) when Shift+2 is pressed', () => {
-      dispatchKeyboardEvent('@', 'Digit2', true); // '@' is Shift+2
+    it('should call toggleSceneTextInput(2) when "w" is pressed', () => {
+      dispatchKeyboardEvent('w', 'KeyW', false);
       expect(toggleSceneTextInputSpy).toHaveBeenCalledWith(2);
     });
 
@@ -663,10 +684,10 @@ describe('App', () => {
 
     describe('Shortcuts inhibition', () => {
       const testCases = [
-        { name: 'Spacebar', key: ' ', code: 'Space', spy: () => onGoButtonClickSpy, args: [] as any[] },
-        { name: 'QuestionMark', key: '?', code: '?', spy: () => toggleShortcutsModalSpy, args: [] as any[] },
-        { name: 'Shift+1', key: '!', code: 'Digit1', shift: true, spy: () => toggleSceneTextInputSpy, args: [1] as any[] },
-        { name: 'Shift+2', key: '@', code: 'Digit2', shift: true, spy: () => toggleSceneTextInputSpy, args: [2] as any[] },
+        { name: 'Spacebar', key: ' ', code: 'Space', spy: () => onGoButtonClickSpy, args: [] as any[], shift: false },
+        { name: 'QuestionMark', key: '?', code: '?', spy: () => toggleShortcutsModalSpy, args: [] as any[], shift: false },
+        { name: 'Q', key: 'q', code: 'KeyQ', shift: false, spy: () => toggleSceneTextInputSpy, args: [1] as any[] },
+        { name: 'W', key: 'w', code: 'KeyW', shift: false, spy: () => toggleSceneTextInputSpy, args: [2] as any[] },
       ];
 
       function runInhibitionTest(modalType: 'scene' | 'shortcuts' | 'settings' | 'inputFocus') {
