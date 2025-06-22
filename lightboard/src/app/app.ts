@@ -189,9 +189,18 @@ export class App implements OnInit, OnDestroy {
   onPotentiometerChange(): void { this.calculateCombinedOutputs(); if (this.currentBackendUrl && this.combinedOutputStates && this.combinedOutputStates.length > 0) { this.httpDataService.postCombinedOutput(this.currentBackendUrl, this.combinedOutputStates as CombinedOutputData[]).subscribe({ next: () => {}, error: (err) => { console.error('Error posting data:', err); } }); } }
   onGoButtonClick(): void { if (this.isAnimating) { if (this.animationInterval) { clearInterval(this.animationInterval); this.animationInterval = null; } this.isAnimating = false; this.cdr.detectChanges(); } else { const targetValue = this.crossfaderValue >= 50 ? 0 : 100; this.animateCrossfader(targetValue); } }
   animateCrossfader(targetValue: number): void { this.isAnimating = true; if (this.animationInterval) clearInterval(this.animationInterval); const totalDuration = this.currentCrossfadeDurationMs; const steps = 25; const intervalDuration = Math.max(1, totalDuration / steps); const initialValue = this.crossfaderValue; const stepSize = (targetValue - initialValue) / steps; let currentStep = 0; this.animationInterval = setInterval(() => { currentStep++; if (currentStep >= steps) { this.crossfaderValue = targetValue; clearInterval(this.animationInterval); this.animationInterval = null; this.isAnimating = false; } else { this.crossfaderValue = initialValue + (stepSize * currentStep); } this.crossfaderValue = Math.max(0, Math.min(100, this.crossfaderValue)); this.onPotentiometerChange(); this.cdr.detectChanges(); }, intervalDuration); }
-  toggleSettingsModal(): void { this.showSettingsModal = !this.showSettingsModal; }
-  toggleShortcutsModal(): void { this.showShortcutsModal = !this.showShortcutsModal; } // Added
-  closeShortcutsModal(): void { this.showShortcutsModal = false; } // Added
+  toggleSettingsModal(): void {
+    this.showSettingsModal = !this.showSettingsModal;
+    this.cdr.detectChanges(); // Ensure UI updates
+  }
+  toggleShortcutsModal(): void {
+    this.showShortcutsModal = !this.showShortcutsModal;
+    this.cdr.detectChanges(); // Ensure UI updates
+  }
+  closeShortcutsModal(): void {
+    this.showShortcutsModal = false;
+    this.cdr.detectChanges(); // Ensure UI updates
+  }
   public trackByCombinedState(index: number, item: PotentiometerState): number { return item.channelNumber; }
   public trackByState(index: number, item: PotentiometerState): number { return item.channelNumber; }
 
