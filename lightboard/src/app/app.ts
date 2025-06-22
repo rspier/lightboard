@@ -194,8 +194,61 @@ export class App implements OnInit, OnDestroy {
   private rgbToHex(r: number, g: number, b: number): string { return ("#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).padStart(6, '0')).toLowerCase(); }
 
   calculateCombinedOutputs(): void {
-    if (!this.row1States || !this.row2States || this.row1States.length !== this.row2States.length || this.row1States.length === 0 || this.row1States.length !== this.currentNumChannels ) { this.combinedOutputStates = Array.from({length: this.currentNumChannels || 0}, (_, i) => { const desc = this.channelSettingsService.getCurrentChannelDescriptions(); return { channelNumber: i + 1, channelDescription: (desc && desc[i]) || `Channel ${i+1}`, value: 0, color: '#000000' }; }); return; }
-    this.combinedOutputStates = this.row1States.map((row1State, index) => { const row2State = this.row2States[index]; const crossfadeRatio = this.crossfaderValue / 100; const invCrossfadeRatio = 1 - crossfadeRatio; const combinedValue = (row1State.value * crossfadeRatio) + (row2State.value * invCrossfadeRatio); let blendedColorHex = '#ffffff'; const rgb1 = this.hexToRgb(row1State.color); const rgb2 = this.hexToRgb(row2State.color); if (rgb1 && rgb2) { const blendedR = Math.round(rgb1.r * crossfadeRatio + rgb2.r * invCrossfadeRatio); const blendedG = Math.round(rgb1.g * crossfadeRatio + rgb2.g * invCrossfadeRatio); const blendedB = Math.round(rgb1.b * crossfadeRatio + rgb2.b * invCrossfadeRatio); blendedColorHex = this.rgbToHex(blendedR, blendedG, blendedB); } else { if(rgb1) blendedColorHex = row1State.color; else if(rgb2) blendedColorHex = row2State.color; } return { channelNumber: row1State.channelNumber, channelDescription: row1State.channelDescription, value: Math.round(combinedValue), color: blendedColorHex }; });
+    if (!this.row1States || !this.row2States || this.row1States.length !== this.row2States.length || this.row1States.length === 0 || this.row1States.length !== this.currentNumChannels ) {
+      this.combinedOutputStates = Array.from({length: this.currentNumChannels || 0}, (_, i) => {
+        const desc = this.channelSettingsService.getCurrentChannelDescriptions();
+        return { channelNumber: i + 1, channelDescription: (desc && desc[i]) || `Channel ${i+1}`, value: 0, color: '#000000' };
+      });
+      return;
+    }
+
+    this.combinedOutputStates = this.row1States.map((row1State, index) => {
+      const row2State = this.row2States[index];
+      const crossfadeS1Ratio = this.crossfaderValue / 100; // Scene 1's influence
+      const crossfadeS2Ratio = 1 - crossfadeS1Ratio;    // Scene 2's influence
+
+      // Calculate combined intensity (value) - remains unchanged
+      const combinedValue = (row1State.value * crossfadeS1Ratio) + (row2State.value * crossfadeS2Ratio);
+
+      // New color blending logic
+      let blendedColorHex = '#000000'; // Default to black
+      const intensity1 = row1State.value / 100.0; // Normalize to 0-1
+      const intensity2 = row2State.value / 100.0; // Normalize to 0-1
+
+      const color1_rgb = this.hexToRgb(row1State.color);
+      const color2_rgb = this.hexToRgb(row2State.color);
+
+      if (intensity1 > 0 && intensity2 <= 0) {
+        blendedColorHex = row1State.color;
+      } else if (intensity1 <= 0 && intensity2 > 0) {
+        blendedColorHex = row2State.color;
+      } else if (intensity1 > 0 && intensity2 > 0 && color1_rgb && color2_rgb) {
+        const weightedIntensity1 = intensity1 * crossfadeS1Ratio;
+        const weightedIntensity2 = intensity2 * crossfadeS2Ratio;
+        const totalEffectiveIntensityForColor = weightedIntensity1 + weightedIntensity2;
+
+        if (totalEffectiveIntensityForColor < 0.001) { // Threshold for effectively no color contribution
+          blendedColorHex = '#000000';
+        } else {
+          const blendRatioForColor1 = weightedIntensity1 / totalEffectiveIntensityForColor;
+          const blendRatioForColor2 = 1 - blendRatioForColor1; // Or weightedIntensity2 / totalEffectiveIntensityForColor
+
+          const blendedR = Math.round((color1_rgb.r * blendRatioForColor1) + (color2_rgb.r * blendRatioForColor2));
+          const blendedG = Math.round((color1_rgb.g * blendRatioForColor1) + (color2_rgb.g * blendRatioForColor2));
+          const blendedB = Math.round((color1_rgb.b * blendRatioForColor1) + (color2_rgb.b * blendRatioForColor2));
+          blendedColorHex = this.rgbToHex(blendedR, blendedG, blendedB);
+        }
+      } else { // Both intensities are 0, or one/both colors are invalid (hexToRgb returned null)
+        blendedColorHex = '#000000';
+      }
+
+      return {
+        channelNumber: row1State.channelNumber,
+        channelDescription: row1State.channelDescription,
+        value: Math.round(combinedValue),
+        color: blendedColorHex
+      };
+    });
   }
 
   onPotentiometerChange(): void { this.calculateCombinedOutputs(); if (this.currentBackendUrl && this.combinedOutputStates && this.combinedOutputStates.length > 0) { this.httpDataService.postCombinedOutput(this.currentBackendUrl, this.combinedOutputStates as CombinedOutputData[]).subscribe({ next: () => {}, error: (err) => { console.error('Error posting data:', err); } }); } }

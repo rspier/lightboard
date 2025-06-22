@@ -466,32 +466,91 @@ describe('App', () => {
     });
 
     it('should correctly blend values and colors with crossfader at 0 (full row2States)', () => {
-      app.crossfaderValue = 0;
+      app.crossfaderValue = 0; // Scene 2 is 100%, Scene 1 is 0% influence
       app.calculateCombinedOutputs();
-      expect(app.combinedOutputStates.length).toBe(2);
-      expect(app.combinedOutputStates[0].value).toBe(90);
+      // Channel 1: S1 val=10 (color #ff0000), S2 val=90 (color #00ff00).
+      // S1 intensity = 0.1, S2 intensity = 0.9.
+      // With XF=0, only S2 contributes. Effective S1 intensity = 0, S2 intensity = 0.9.
+      // Color comes from S2 only.
+      expect(app.combinedOutputStates[0].value).toBe(90); // (10*0) + (90*1)
       expect(app.combinedOutputStates[0].color).toBe('#00ff00');
-      expect(app.combinedOutputStates[1].value).toBe(20);
+      // Channel 2: S1 val=80 (color #0000ff), S2 val=20 (color #ffff00).
+      // S1 intensity = 0.8, S2 intensity = 0.2.
+      // With XF=0, only S2 contributes.
+      expect(app.combinedOutputStates[1].value).toBe(20); // (80*0) + (20*1)
       expect(app.combinedOutputStates[1].color).toBe('#ffff00');
     });
 
     it('should correctly blend values and colors with crossfader at 100 (full row1States)', () => {
-      app.crossfaderValue = 100;
+      app.crossfaderValue = 100; // Scene 1 is 100%, Scene 2 is 0% influence
       app.calculateCombinedOutputs();
-      expect(app.combinedOutputStates[0].value).toBe(10);
+      // Channel 1: S1 val=10 (color #ff0000), S2 val=90 (color #00ff00).
+      // With XF=100, only S1 contributes.
+      expect(app.combinedOutputStates[0].value).toBe(10); // (10*1) + (90*0)
       expect(app.combinedOutputStates[0].color).toBe('#ff0000');
-      expect(app.combinedOutputStates[1].value).toBe(80);
+      // Channel 2: S1 val=80 (color #0000ff), S2 val=20 (color #ffff00).
+      // With XF=100, only S1 contributes.
+      expect(app.combinedOutputStates[1].value).toBe(80); // (80*1) + (20*0)
       expect(app.combinedOutputStates[1].color).toBe('#0000ff');
     });
 
     it('should correctly blend values and colors with crossfader at 50 (midpoint)', () => {
       app.crossfaderValue = 50;
       app.calculateCombinedOutputs();
+      // Channel 1: S1 val=10 (#ff0000), S2 val=90 (#00ff00). XF=50.
+      // Combined Value = (10*0.5) + (90*0.5) = 5 + 45 = 50.
+      // Color: intensity1_norm = 0.1, intensity2_norm = 0.9
+      // w1 = 0.1 * 0.5 = 0.05. w2 = 0.9 * 0.5 = 0.45. totalW = 0.50.
+      // ratioS1 = 0.05/0.50 = 0.1. ratioS2 = 0.45/0.50 = 0.9.
+      // R = 255*0.1 + 0*0.9 = 25.5 -> 26 (#1a)
+      // G = 0*0.1 + 255*0.9 = 229.5 -> 230 (#e6)
+      // B = 0. Color = #1ae600
       expect(app.combinedOutputStates[0].value).toBe(50);
-      expect(app.combinedOutputStates[0].color).toBe('#808000');
+      expect(app.combinedOutputStates[0].color).toBe('#1ae600');
+
+      // Channel 2: S1 val=80 (#0000ff), S2 val=20 (#ffff00). XF=50
+      // Combined Value = (80*0.5) + (20*0.5) = 40 + 10 = 50.
+      // Color: intensity1_norm = 0.8, intensity2_norm = 0.2
+      // w1 = 0.8 * 0.5 = 0.4. w2 = 0.2 * 0.5 = 0.1. totalW = 0.5.
+      // ratioS1 = 0.4/0.5 = 0.8. ratioS2 = 0.1/0.5 = 0.2.
+      // R = 0*0.8 + 255*0.2 = 51 (#33)
+      // G = 0*0.8 + 255*0.2 = 51 (#33)
+      // B = 255*0.8 + 0*0.2 = 204 (#cc)
+      // Color = #3333cc
       expect(app.combinedOutputStates[1].value).toBe(50);
-      expect(app.combinedOutputStates[1].color).toBe('#808080');
+      expect(app.combinedOutputStates[1].color).toBe('#3333cc');
     });
+
+    it('should use S1 color if S2 intensity is 0, XF=50 (user example)', () => {
+      app.row1States = [{ channelNumber: 1, channelDescription: "Ch1", value: 100, color: '#ff0000' }];
+      app.row2States = [{ channelNumber: 1, channelDescription: "Ch1", value: 0, color: '#00ff00' }];
+      app['currentNumChannels'] = 1;
+      app.crossfaderValue = 50;
+      app.calculateCombinedOutputs();
+      expect(app.combinedOutputStates[0].value).toBe(50); // (100*0.5) + (0*0.5)
+      expect(app.combinedOutputStates[0].color).toBe('#ff0000');
+    });
+
+    it('should use S2 color if S1 intensity is 0, XF=50', () => {
+      app.row1States = [{ channelNumber: 1, channelDescription: "Ch1", value: 0, color: '#ff0000' }];
+      app.row2States = [{ channelNumber: 1, channelDescription: "Ch1", value: 100, color: '#00ff00' }];
+      app['currentNumChannels'] = 1;
+      app.crossfaderValue = 50;
+      app.calculateCombinedOutputs();
+      expect(app.combinedOutputStates[0].value).toBe(50); // (0*0.5) + (100*0.5)
+      expect(app.combinedOutputStates[0].color).toBe('#00ff00');
+    });
+
+    it('should be black if both S1 and S2 intensities are 0, XF=50', () => {
+      app.row1States = [{ channelNumber: 1, channelDescription: "Ch1", value: 0, color: '#ff0000' }];
+      app.row2States = [{ channelNumber: 1, channelDescription: "Ch1", value: 0, color: '#00ff00' }];
+      app['currentNumChannels'] = 1;
+      app.crossfaderValue = 50;
+      app.calculateCombinedOutputs();
+      expect(app.combinedOutputStates[0].value).toBe(0);
+      expect(app.combinedOutputStates[0].color).toBe('#000000');
+    });
+
   });
 
   // Helper function to dispatch keyboard events
