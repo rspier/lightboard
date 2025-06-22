@@ -216,20 +216,20 @@ input[type="range"].duration-slider::-moz-range-track {
 input[type="range"].duration-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  margin-top: -5px; /* (track-height - thumb-height) / 2 - border-width approx */
-  width: 18px;
-  height: 18px;
+  margin-top: -7px; /* Recalculated: (track_height(8) - thumb_height(20)) / 2 = -6. Border might affect slightly. */
+  width: 12px;  /* Narrower */
+  height: 20px; /* Taller */
   background: var(--slider-thumb-color, #3498db);
-  border-radius: 50%;
+  border-radius: 3px; /* Slightly rounded rectangle */
   border: 1px solid var(--slider-thumb-border-color, #2980b9);
   box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
 input[type="range"].duration-slider::-moz-range-thumb {
-  width: 16px; /* Slightly smaller to account for border */
-  height: 16px;
+  width: 12px;
+  height: 20px;
   background: var(--slider-thumb-color, #3498db);
-  border-radius: 50%;
+  border-radius: 3px; /* Slightly rounded rectangle */
   border: 1px solid var(--slider-thumb-border-color, #2980b9);
   box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }

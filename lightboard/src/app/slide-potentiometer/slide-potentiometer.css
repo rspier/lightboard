@@ -40,8 +40,69 @@ input[type="range"][orient="vertical"] {
   width: 20px;
   padding: 0 5px;
   margin-bottom: 10px;
-  /* Consider theming for track/thumb if needed later */
+  background: transparent; /* Remove default track background for custom styling */
 }
+
+/* Vertical Slider Track */
+input[type="range"][orient="vertical"]::-webkit-slider-runnable-track {
+  width: 8px; /* Width of the track */
+  height: 100%;
+  background: var(--slider-track-color, #ddd);
+  border-radius: 4px;
+  border: 1px solid var(--slider-track-border-color, #ccc);
+  margin: 0 auto; /* Center track if input is wider */
+}
+
+input[type="range"][orient="vertical"]::-moz-range-track {
+  width: 8px;
+  height: 100%;
+  background: var(--slider-track-color, #ddd);
+  border-radius: 4px;
+  border: 1px solid var(--slider-track-border-color, #ccc);
+  margin: 0 auto;
+}
+
+/* Vertical Slider Thumb */
+input[type="range"][orient="vertical"]::-webkit-slider-thumb {
+  -webkit-appearance: none; /* Override default appearance */
+  appearance: none;
+  width: 22px; /* Width of the thumb */
+  height: 12px; /* Height of the thumb */
+  background: var(--slider-thumb-color, #3498db);
+  border-radius: 3px; /* Slightly rounded rectangle */
+  border: 1px solid var(--slider-thumb-border-color, #2980b9);
+  cursor: grab;
+  /* Adjust margin to center on track if track width and input width are different */
+  /* margin-left needs careful calculation if track is narrower than input's effective area */
+}
+
+input[type="range"][orient="vertical"]::-moz-range-thumb {
+  width: 20px;
+  height: 10px;
+  background: var(--slider-thumb-color, #3498db);
+  border-radius: 3px;
+  border: 1px solid var(--slider-thumb-border-color, #2980b9);
+  cursor: grab;
+}
+
+/* Dark Theme adjustments for vertical sliders */
+:host-context(body.dark-theme) input[type="range"][orient="vertical"]::-webkit-slider-runnable-track {
+  background: var(--slider-track-color-dark, #555);
+  border-color: var(--slider-track-border-color-dark, #444);
+}
+:host-context(body.dark-theme) input[type="range"][orient="vertical"]::-moz-range-track {
+  background: var(--slider-track-color-dark, #555);
+  border-color: var(--slider-track-border-color-dark, #444);
+}
+:host-context(body.dark-theme) input[type="range"][orient="vertical"]::-webkit-slider-thumb {
+  background: var(--slider-thumb-color-dark, #5dade2);
+  border-color: var(--slider-thumb-border-color-dark, #4a90c2);
+}
+:host-context(body.dark-theme) input[type="range"][orient="vertical"]::-moz-range-thumb {
+  background: var(--slider-thumb-color-dark, #5dade2);
+  border-color: var(--slider-thumb-border-color-dark, #4a90c2);
+}
+
 
 .value-display-container {
   position: relative;
