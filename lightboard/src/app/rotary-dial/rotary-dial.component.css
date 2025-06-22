@@ -1,0 +1,83 @@
+.rotary-dial-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+  font-family: Arial, sans-serif;
+  user-select: none; /* Prevent text selection during drag */
+  width: 120px; /* Fixed width for the wrapper */
+  box-sizing: border-box;
+}
+
+.dial-label {
+  font-size: 0.8em;
+  color: var(--app-text-color, #666);
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.dial-container {
+  width: 80px; /* Diameter of the touch/mouse area */
+  height: 80px;
+  border-radius: 50%;
+  background-color: var(--slider-track-color, #e0e0e0);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  cursor: grab;
+  border: 2px solid var(--slider-thumb-border-color, #ccc);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.dial-container:active {
+  cursor: grabbing;
+}
+
+.dial {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  /* The background of the dial itself, if different from container */
+}
+
+.dial-indicator {
+  width: 4px; /* Width of the indicator line */
+  height: 50%; /* Length of the indicator line (from center to edge) */
+  background-color: var(--slider-thumb-color, #3498db);
+  position: absolute;
+  bottom: 50%; /* Start from the center */
+  left: 50%;
+  transform-origin: bottom center; /* Rotate around the bottom center point */
+  transform: translateX(-50%); /* Center the indicator line */
+  border-radius: 2px; /* Rounded ends for the indicator */
+}
+
+.dial-value-display {
+  position: absolute;
+  font-size: 0.9em;
+  color: var(--app-text-color, #333);
+  background-color: rgba(255, 255, 255, 0.7);
+  padding: 2px 5px;
+  border-radius: 3px;
+  pointer-events: none; /* So it doesn't interfere with mouse events on the dial */
+}
+
+/* Dark theme considerations (using variables from app.css) */
+:host-context(body.dark-theme) .dial-label {
+  color: var(--app-text-color, #ccc);
+}
+
+:host-context(body.dark-theme) .dial-container {
+  background-color: var(--slider-track-color, #555);
+  border: 2px solid var(--slider-thumb-border-color, #777);
+}
+
+:host-context(body.dark-theme) .dial-indicator {
+  background-color: var(--slider-thumb-color, #5dade2);
+}
+
+:host-context(body.dark-theme) .dial-value-display {
+  color: var(--app-text-color, #e0e0e0);
+  background-color: rgba(0, 0, 0, 0.6);
+}

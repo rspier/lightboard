@@ -15,12 +15,12 @@ export class SettingsModalComponent implements OnInit {
   numChannels: number = 4;
   descriptions: string[] = [];
   backendUrl: string = '';
-  crossfadeDurationSeconds: number = 0.5;
+  // crossfadeDurationSeconds: number = 0.5; // Removed
   darkMode: boolean = false; // New property
 
   // Validation error messages
   backendUrlError: string | null = null;
-  durationError: string | null = null;
+  // durationError: string | null = null; // Removed
   numChannelsError: string | null = null;
 
   @Output() close = new EventEmitter<void>();
@@ -34,7 +34,7 @@ export class SettingsModalComponent implements OnInit {
       currentSettings.channelDescriptions[i] || `Channel ${i + 1}`
     );
     this.backendUrl = currentSettings.backendUrl;
-    this.crossfadeDurationSeconds = currentSettings.crossfadeDurationSeconds;
+    // this.crossfadeDurationSeconds = currentSettings.crossfadeDurationSeconds; // Removed
     this.darkMode = currentSettings.darkMode; // Load darkMode
   }
 
@@ -59,7 +59,7 @@ export class SettingsModalComponent implements OnInit {
 
   saveSettings(): void {
     this.backendUrlError = null;
-    this.durationError = null;
+    // this.durationError = null; // Removed
     this.numChannelsError = null;
     let hasError = false;
 
@@ -74,11 +74,11 @@ export class SettingsModalComponent implements OnInit {
       hasError = true;
     }
 
-    const duration = Number(this.crossfadeDurationSeconds);
-    if (isNaN(duration) || duration <= 0 || duration > 300) {
-      this.durationError = 'Duration must be a positive number (e.g. 0.1) up to 300 seconds.';
-      hasError = true;
-    }
+    // const duration = Number(this.crossfadeDurationSeconds); // Removed
+    // if (isNaN(duration) || duration <= 0 || duration > 300) { // Removed
+    //   this.durationError = 'Duration must be a positive number (e.g. 0.1) up to 300 seconds.'; // Removed
+    //   hasError = true; // Removed
+    // } // Removed
 
     if (hasError) {
       return;
@@ -97,7 +97,7 @@ export class SettingsModalComponent implements OnInit {
     }
 
     this.channelSettingsService.updateBackendUrl(this.backendUrl);
-    this.channelSettingsService.updateCrossfadeDurationSeconds(duration);
+    // this.channelSettingsService.updateCrossfadeDurationSeconds(duration); // Removed
     this.channelSettingsService.updateDarkMode(this.darkMode); // Save darkMode setting
 
     this.close.emit();
@@ -116,11 +116,11 @@ export class SettingsModalComponent implements OnInit {
         defaults.channelDescriptions[i] || `Channel ${i + 1}`
       );
       this.backendUrl = defaults.backendUrl;
-      this.crossfadeDurationSeconds = defaults.crossfadeDurationSeconds;
+      // this.crossfadeDurationSeconds = defaults.crossfadeDurationSeconds; // Removed
       this.darkMode = defaults.darkMode; // Reset darkMode
 
       this.backendUrlError = null;
-      this.durationError = null;
+      // this.durationError = null; // Removed
       this.numChannelsError = null;
     }
   }

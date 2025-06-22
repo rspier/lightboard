@@ -648,4 +648,69 @@ describe('App', () => {
       runInhibitionTest('inputFocus');
     });
   });
+
+  describe('Rotary Dial Integration for Crossfade Duration', () => {
+    beforeEach(() => {
+      // Ensure initial app state for these specific tests
+      app.displayCrossfadeDurationSeconds = initialTestSettings.crossfadeDurationSeconds;
+      app['currentCrossfadeDurationMs'] = initialTestSettings.crossfadeDurationSeconds * 1000;
+      fixture.detectChanges(); // To render the dial if it's visible and update bindings
+    });
+
+    it('should initialize displayCrossfadeDurationSeconds from ChannelSettingsService', () => {
+      // This is implicitly tested by beforeEach of the main describe block
+      // and the constructor logic test for app component.
+      // Explicitly checking the value set in app component:
+      expect(app.displayCrossfadeDurationSeconds).toBe(initialTestSettings.crossfadeDurationSeconds);
+      const dialDebugElement = fixture.debugElement.query(By.css('app-rotary-dial'));
+      expect(dialDebugElement).toBeTruthy();
+      expect(dialDebugElement.componentInstance.value).toBe(initialTestSettings.crossfadeDurationSeconds);
+    });
+
+    it('onCrossfadeDurationChange should update duration in app and call service', () => {
+      const newDuration = 2.5;
+      spyOn(app['cdr'], 'detectChanges').and.callThrough(); // Spy on detectChanges
+
+      app.onCrossfadeDurationChange(newDuration);
+
+      expect(app.displayCrossfadeDurationSeconds).toBe(newDuration);
+      expect(app['currentCrossfadeDurationMs']).toBe(newDuration * 1000);
+      expect(mockChannelSettingsService.updateCrossfadeDurationSeconds).toHaveBeenCalledWith(newDuration);
+      expect(app['cdr'].detectChanges).toHaveBeenCalled(); // From within onCrossfadeDurationChange
+    });
+
+    it('animateCrossfader should use currentCrossfadeDurationMs updated by dial changes', () => {
+      const newDurationSeconds = 3.0;
+      app.onCrossfadeDurationChange(newDurationSeconds); // Simulate dial change
+
+      spyOn(window, 'setInterval').and.callThrough();
+      jasmine.clock().install(); // Install clock for this test
+
+      app.animateCrossfader(100); // Target value doesn't matter, only duration used by setInterval
+
+      const expectedInterval = (newDurationSeconds * 1000) / 25; // 25 steps
+      expect(window.setInterval).toHaveBeenCalledWith(jasmine.any(Function), expectedInterval);
+
+      jasmine.clock().tick(newDurationSeconds * 1000); // Run full animation
+      jasmine.clock().uninstall();
+    });
+
+    it('should update displayCrossfadeDurationSeconds if settings are reset via service', () => {
+      const defaultDurationFromService = 0.2; // Assume this is the default the service would reset to
+      const newSettingsAfterReset: AppSettings = {
+        ...initialTestSettings,
+        crossfadeDurationSeconds: defaultDurationFromService
+      };
+
+      // Simulate settings reset from service
+      appSettingsSubject.next(newSettingsAfterReset);
+      fixture.detectChanges(); // Process subscription
+
+      expect(app.displayCrossfadeDurationSeconds).toBe(defaultDurationFromService);
+      expect(app['currentCrossfadeDurationMs']).toBe(defaultDurationFromService * 1000);
+
+      const dialDebugElement = fixture.debugElement.query(By.css('app-rotary-dial'));
+      expect(dialDebugElement.componentInstance.value).toBe(defaultDurationFromService);
+    });
+  });
 });

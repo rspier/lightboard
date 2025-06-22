@@ -166,6 +166,12 @@
   color: var(--button-secondary-text-color);
 }
 
+.crossfade-duration-dial {
+  margin-top: 15px; /* Space below the Go button */
+  /* The rotary dial component itself has a fixed width,
+     so it will be centered by align-items: center on crossfader-column */
+}
+
 /* Styles for Scene Text Input Feature */
 /* .brain-icon class is removed */
 

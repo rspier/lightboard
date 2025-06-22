@@ -6,8 +6,9 @@ import { Subscription } from 'rxjs';
 import { SlidePotentiometerComponent } from './slide-potentiometer/slide-potentiometer';
 import { CombinedOutputDisplayComponent } from './combined-output-display/combined-output-display.component';
 import { SettingsModalComponent } from './settings-modal/settings-modal.component';
-import { KeyboardShortcutsModalComponent } from './keyboard-shortcuts-modal/keyboard-shortcuts-modal.component'; // Added
+import { KeyboardShortcutsModalComponent } from './keyboard-shortcuts-modal/keyboard-shortcuts-modal.component';
 import { SceneTextInputModalComponent } from './scene-text-input-modal/scene-text-input-modal.component';
+import { RotaryDialComponent } from './rotary-dial/rotary-dial.component'; // Added
 import { ChannelSettingsService, AppSettings } from './channel-settings.service';
 import { HttpDataService, CombinedOutputData } from './http-data.service';
 
@@ -34,7 +35,8 @@ interface ParsedCommand {
     CombinedOutputDisplayComponent,
     SettingsModalComponent,
     SceneTextInputModalComponent,
-    KeyboardShortcutsModalComponent // Added
+    KeyboardShortcutsModalComponent,
+    RotaryDialComponent // Added
   ],
   templateUrl: './app.html',
   styleUrl: './app.css'
@@ -49,8 +51,11 @@ export class App implements OnInit, OnDestroy {
   isAnimating: boolean = false;
   animationInterval: any = null;
   showSettingsModal: boolean = false;
-  showShortcutsModal: boolean = false; // Added
+  showShortcutsModal: boolean = false;
   private settingsSubscription: Subscription | undefined;
+
+  // Crossfade duration managed by app, controlled by rotary dial
+  displayCrossfadeDurationSeconds: number = 0.5; // Default, will be overwritten by service on init
 
   // State variables for Scene Text Input Modal
   showSceneTextInputModal: boolean = false;
@@ -79,7 +84,9 @@ export class App implements OnInit, OnDestroy {
     const initialSettings = this.channelSettingsService.getCurrentAppSettings();
     this.currentNumChannels = initialSettings.numChannels;
     this.currentBackendUrl = initialSettings.backendUrl;
-    this.currentCrossfadeDurationMs = initialSettings.crossfadeDurationSeconds * 1000;
+    // Initialize displayCrossfadeDurationSeconds from service, which then updates currentCrossfadeDurationMs
+    this.displayCrossfadeDurationSeconds = initialSettings.crossfadeDurationSeconds;
+    this.currentCrossfadeDurationMs = this.displayCrossfadeDurationSeconds * 1000;
     this.currentDarkMode = initialSettings.darkMode;
     this.initializeChannelStates(this.currentNumChannels, initialSettings.channelDescriptions);
     this.applyTheme(this.currentDarkMode);
@@ -110,7 +117,12 @@ export class App implements OnInit, OnDestroy {
         if(descriptionsActuallyChanged) channelsOrDescriptionsChanged = true;
       }
       this.currentBackendUrl = settings.backendUrl;
-      this.currentCrossfadeDurationMs = settings.crossfadeDurationSeconds * 1000;
+      // Update displayCrossfadeDurationSeconds if it changed in settings (e.g., due to reset)
+      // This will also update currentCrossfadeDurationMs via its setter or direct update.
+      if (this.displayCrossfadeDurationSeconds !== settings.crossfadeDurationSeconds) {
+        this.displayCrossfadeDurationSeconds = settings.crossfadeDurationSeconds;
+        this.currentCrossfadeDurationMs = this.displayCrossfadeDurationSeconds * 1000;
+      }
       if (this.currentDarkMode !== settings.darkMode) { this.currentDarkMode = settings.darkMode; this.applyTheme(this.currentDarkMode); }
       if (channelsOrDescriptionsChanged) { this.calculateCombinedOutputs(); }
       this.cdr.detectChanges();
@@ -203,6 +215,13 @@ export class App implements OnInit, OnDestroy {
   }
   public trackByCombinedState(index: number, item: PotentiometerState): number { return item.channelNumber; }
   public trackByState(index: number, item: PotentiometerState): number { return item.channelNumber; }
+
+  onCrossfadeDurationChange(newDuration: number): void {
+    this.displayCrossfadeDurationSeconds = newDuration;
+    this.currentCrossfadeDurationMs = newDuration * 1000;
+    this.channelSettingsService.updateCrossfadeDurationSeconds(newDuration);
+    this.cdr.detectChanges(); // Ensure UI updates if other components depend on this indirectly
+  }
 
   // Updated toggle function for modal
   toggleSceneTextInput(sceneNumber: 1 | 2): void {

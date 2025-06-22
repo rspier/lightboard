@@ -59,7 +59,7 @@ describe('SettingsModalComponent', () => {
     expect(component.numChannels).toBe(initialTestSettings.numChannels);
     expect(component.descriptions).toEqual(initialTestSettings.channelDescriptions);
     expect(component.backendUrl).toBe(initialTestSettings.backendUrl);
-    expect(component.crossfadeDurationSeconds).toBe(initialTestSettings.crossfadeDurationSeconds);
+    // expect(component.crossfadeDurationSeconds).toBe(initialTestSettings.crossfadeDurationSeconds); // Removed
     expect(component.darkMode).toBe(initialTestSettings.darkMode); // Test darkMode init
   });
 
@@ -107,7 +107,7 @@ describe('SettingsModalComponent', () => {
       component.numChannels = 3;
       component.descriptions = ['New1', 'New2', 'New3'];
       component.backendUrl = 'http://valid.url';
-      component.crossfadeDurationSeconds = 2;
+      // component.crossfadeDurationSeconds = 2; // Removed
       component.darkMode = true; // Set darkMode for test
 
       mockChannelSettingsService.getCurrentNumChannels.and.returnValue(initialTestSettings.numChannels); // Original num channels for comparison
@@ -120,12 +120,12 @@ describe('SettingsModalComponent', () => {
       expect(mockChannelSettingsService.updateNumChannels).toHaveBeenCalledWith(3);
       expect(mockChannelSettingsService.updateChannelDescriptions).toHaveBeenCalledWith(['New1', 'New2', 'New3']);
       expect(mockChannelSettingsService.updateBackendUrl).toHaveBeenCalledWith('http://valid.url');
-      expect(mockChannelSettingsService.updateCrossfadeDurationSeconds).toHaveBeenCalledWith(2);
+      // expect(mockChannelSettingsService.updateCrossfadeDurationSeconds).toHaveBeenCalledWith(2); // Removed
       expect(mockChannelSettingsService.updateDarkMode).toHaveBeenCalledWith(true); // Verify darkMode update
       expect(component.close.emit).toHaveBeenCalled();
       expect(component.numChannelsError).toBeNull();
       expect(component.backendUrlError).toBeNull();
-      expect(component.durationError).toBeNull();
+      // expect(component.durationError).toBeNull(); // Removed
     });
     // ... (other saveSettings validation tests remain the same)
     it('should show error and not save if numChannels is invalid', () => {
@@ -146,14 +146,14 @@ describe('SettingsModalComponent', () => {
       expect(component.close.emit).not.toHaveBeenCalled();
     });
 
-    it('should show error and not save if crossfadeDuration is invalid', () => {
-      spyOn(component.close, 'emit');
-      component.crossfadeDurationSeconds = 0;
-      component.saveSettings();
-      expect(component.durationError).toBeTruthy();
-      expect(mockChannelSettingsService.updateCrossfadeDurationSeconds).not.toHaveBeenCalled();
-      expect(component.close.emit).not.toHaveBeenCalled();
-    });
+    // it('should show error and not save if crossfadeDuration is invalid', () => { // Removed Test
+    //   spyOn(component.close, 'emit');
+    //   component.crossfadeDurationSeconds = 0;
+    //   component.saveSettings();
+    //   expect(component.durationError).toBeTruthy();
+    //   expect(mockChannelSettingsService.updateCrossfadeDurationSeconds).not.toHaveBeenCalled();
+    //   expect(component.close.emit).not.toHaveBeenCalled();
+    // });
 
   it('should bind darkMode to the checkbox and update component property', fakeAsync(() => { // Use fakeAsync
     component.darkMode = false;
@@ -232,11 +232,11 @@ describe('SettingsModalComponent', () => {
     expect(component.numChannels).toBe(newDefaultSettings.numChannels);
     expect(component.descriptions).toEqual(newDefaultSettings.channelDescriptions);
     expect(component.backendUrl).toBe(newDefaultSettings.backendUrl);
-    expect(component.crossfadeDurationSeconds).toBe(newDefaultSettings.crossfadeDurationSeconds);
+    // expect(component.crossfadeDurationSeconds).toBe(newDefaultSettings.crossfadeDurationSeconds); // Removed
     expect(component.darkMode).toBe(newDefaultSettings.darkMode); // Check darkMode reset
     expect(component.numChannelsError).toBeNull();
     expect(component.backendUrlError).toBeNull();
-    expect(component.durationError).toBeNull();
+    // expect(component.durationError).toBeNull(); // Removed
   });
 
   it('should bind darkMode to the checkbox', () => {
