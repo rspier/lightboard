@@ -24,7 +24,15 @@ export class SceneTextInputModalComponent implements OnChanges, AfterViewChecked
   textInputValue: string = '';
 
   ngOnChanges(changes: SimpleChanges): void {
+    // If initialValue itself changes, update textInputValue
     if (changes['initialValue']) {
+      this.textInputValue = this.initialValue;
+    }
+
+    // If the modal is becoming visible, always reset textInputValue from initialValue.
+    // This covers cases where initialValue might be the same as before (e.g., already empty)
+    // but we want to ensure the modal's internal state is fresh.
+    if (changes['isVisible'] && this.isVisible) {
       this.textInputValue = this.initialValue;
     }
   }
