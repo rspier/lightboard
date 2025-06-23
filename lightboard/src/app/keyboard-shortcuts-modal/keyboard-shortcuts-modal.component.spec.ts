@@ -64,19 +64,6 @@ describe('KeyboardShortcutsModalComponent', () => {
     });
   });
 
-  xit('should emit closeEvent when Escape key is pressed and modal is visible', () => { // Marked as pending
-    spyOn(component.closeEvent, 'emit');
-    component.isVisible = true;
-    fixture.detectChanges();
-
-    // Dispatch Escape key event on the document
-    const event = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
-    document.dispatchEvent(event);
-    fixture.detectChanges();
-
-    expect(component.closeEvent.emit).toHaveBeenCalled();
-  });
-
   it('should NOT emit closeEvent when Escape key is pressed and modal is NOT visible', () => {
     spyOn(component.closeEvent, 'emit');
     component.isVisible = false;

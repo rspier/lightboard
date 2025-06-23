@@ -385,19 +385,21 @@ describe('App', () => {
         app['currentCrossfadeDurationMs'] = 1000;
         const expectedInterval = 1000 / 25;
         spyOn(window, 'setInterval').and.callThrough();
-        jasmine.clock().install(); // Install here for this specific test
+        jasmine.clock().install();
         try {
           app.animateCrossfader(100);
           expect(window.setInterval).toHaveBeenCalledWith(jasmine.any(Function), expectedInterval);
-          jasmine.clock().tick(1000);
+          jasmine.clock().tick(1000); // Allow animation to complete or run its course
         } finally {
-          jasmine.clock().uninstall(); // Ensure uninstall
+          jasmine.clock().uninstall();
         }
       });
 
       xit('animateCrossfader should animate crossfader value from 0 to 100', () => { // Marked as pending
         spyOn(app, 'onPotentiometerChange').and.callThrough();
-        app.crossfaderValue = 0;
+        jasmine.clock().install(); // Install clock for this test
+        try {
+          app.crossfaderValue = 0;
         app['currentCrossfadeDurationMs'] = 500;
         const target = 100;
         const duration = app['currentCrossfadeDurationMs'];
@@ -415,6 +417,9 @@ describe('App', () => {
         expect(app.isAnimating).toBeFalse();
         expect(app.animationInterval).toBeNull();
         expect(app.onPotentiometerChange).toHaveBeenCalledTimes(steps);
+        } finally {
+          jasmine.clock().uninstall(); // Ensure uninstall
+        }
       });
 
       xit('animateCrossfader should animate crossfader value from 100 to 0', () => { // Marked as pending
