@@ -1,108 +1,44 @@
 :host {
-  display: inline-flex; /* Reverted to inline-flex for proper flex alignment of children */
-  position: relative;
-  flex-direction: column; /* Ensure children stack vertically */
-  align-items: center; /* Center children (like the slider) horizontally */
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
   padding: 10px;
-  padding-top: 25px; /* Add padding at the top to make space for the channel number */
-  border: 1px solid var(--slider-host-border-color);
+  border: 1px solid var(--slider-host-border-color); /* Use variable */
   border-radius: 4px;
+  /* font-family is inherited */
   min-width: 60px;
-  background-color: var(--slider-host-bg-color);
+  background-color: var(--slider-host-bg-color); /* Use variable */
 }
 
 .channel-info {
-  position: absolute;
-  top: 2px;
-  left: 3px;
-  padding: 0; /* Reset padding */
-  /* Remove properties that are no longer relevant for top-left positioning */
-  /* text-align: center; */
-  /* margin-bottom: 10px; */
-  /* border-bottom: 1px solid var(--slider-channel-info-border-color); */
-  /* width: 100%; */
-  z-index: 1; /* Ensure it's above other static content if any overlap could occur */
+  text-align: center;
+  margin-bottom: 10px;
+  padding: 5px;
+  border-bottom: 1px solid var(--slider-channel-info-border-color); /* Use variable */
+  width: 100%;
 }
 
 .channel-info h3 {
-  margin: 0; /* Reset margin */
-  font-size: 0.9em; /* Slightly smaller if needed to fit well */
+  margin: 0 0 5px 0;
+  font-size: 1em;
   font-weight: bold;
-  color: var(--slider-text-color);
-  line-height: 1; /* Adjust line height for compact display */
+  color: var(--slider-text-color); /* Use variable */
 }
 
-/* .channel-info small was removed as channelDescription is gone */
+.channel-info small {
+  font-size: 0.8em;
+  color: var(--slider-text-color); /* Use variable */
+  opacity: 0.8; /* Keep opacity for dimmer effect */
+}
 
 input[type="range"][orient="vertical"] {
   writing-mode: bt-lr;
   -webkit-appearance: slider-vertical;
-  width: 20px; /* Total width for the input area */
-  /* padding: 0 5px; */ /* Removed padding to simplify thumb positioning */
+  width: 20px;
+  padding: 0 5px;
   margin-bottom: 10px;
-  background: transparent;
+  /* Consider theming for track/thumb if needed later */
 }
-
-/* Vertical Slider Track */
-input[type="range"][orient="vertical"]::-webkit-slider-runnable-track {
-  width: 8px;
-  height: 100%;
-  background: var(--slider-track-color, #ddd);
-  border-radius: 4px;
-  border: 1px solid var(--slider-track-border-color, #ccc);
-  margin: 0 auto;
-}
-
-input[type="range"][orient="vertical"]::-moz-range-track {
-  width: 8px;
-  height: 100%;
-  background: var(--slider-track-color, #ddd);
-  border-radius: 4px;
-  border: 1px solid var(--slider-track-border-color, #ccc);
-  margin: 0 auto; /* Mozilla also needs this to center track in the input width */
-}
-
-/* Vertical Slider Thumb */
-input[type="range"][orient="vertical"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 16px; /* Start with a square */
-  height: 16px;
-  background: var(--slider-thumb-color, #3498db); /* Use shorthand */
-  border-radius: 3px; /* Slightly rounded square */
-  border: 1px solid var(--slider-thumb-border-color, #2980b9);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1); /* Match horizontal slider */
-  cursor: grab;
-}
-
-input[type="range"][orient="vertical"]::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
-  background: var(--slider-thumb-color, #3498db);
-  border-radius: 3px;
-  border: 1px solid var(--slider-thumb-border-color, #2980b9);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1); /* Match horizontal slider */
-  cursor: grab;
-}
-
-/* Dark Theme adjustments for vertical sliders */
-:host-context(body.dark-theme) input[type="range"][orient="vertical"]::-webkit-slider-runnable-track {
-  background: var(--slider-track-color-dark, #555);
-  border-color: var(--slider-track-border-color-dark, #444);
-}
-:host-context(body.dark-theme) input[type="range"][orient="vertical"]::-moz-range-track {
-  background: var(--slider-track-color-dark, #555);
-  border-color: var(--slider-track-border-color-dark, #444);
-}
-:host-context(body.dark-theme) input[type="range"][orient="vertical"]::-webkit-slider-thumb {
-  background: var(--slider-thumb-color-dark, #5dade2);
-  border-color: var(--slider-thumb-border-color-dark, #4a90c2);
-}
-:host-context(body.dark-theme) input[type="range"][orient="vertical"]::-moz-range-thumb {
-  background: var(--slider-thumb-color-dark, #5dade2);
-  border-color: var(--slider-thumb-border-color-dark, #4a90c2);
-}
-
 
 .value-display-container {
   position: relative;
