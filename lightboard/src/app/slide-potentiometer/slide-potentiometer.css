@@ -66,28 +66,23 @@ input[type="range"][orient="vertical"]::-moz-range-track {
 input[type="range"][orient="vertical"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  padding: 0; /* Reset padding */
-  border: none; /* Reset border before applying custom one */
-  background-clip: content-box; /* Or padding-box, test which works best */
-
-  width: 14px;
-  height: 20px;
-  background-color: var(--slider-thumb-color, #3498db);
-  border-radius: 0; /* Changed to 0 for sharp corners */
+  width: 16px; /* Start with a square */
+  height: 16px;
+  background: var(--slider-thumb-color, #3498db); /* Use shorthand */
+  border-radius: 3px; /* Slightly rounded square */
   border: 1px solid var(--slider-thumb-border-color, #2980b9);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1); /* Match horizontal slider */
   cursor: grab;
-  /* Vertical centering is implicit with slider-vertical and writing-mode.
-     Horizontal centering is on the track; thumb should align with track. */
 }
 
 input[type="range"][orient="vertical"]::-moz-range-thumb {
-  width: 14px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   background: var(--slider-thumb-color, #3498db);
-  border-radius: 0; /* Changed to 0 for sharp corners */
+  border-radius: 3px;
   border: 1px solid var(--slider-thumb-border-color, #2980b9);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1); /* Match horizontal slider */
   cursor: grab;
-  padding: 0; /* Reset padding */
 }
 
 /* Dark Theme adjustments for vertical sliders */
