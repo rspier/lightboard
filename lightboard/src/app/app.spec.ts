@@ -338,74 +338,83 @@ describe('App', () => {
       expect(cdrSpy).toHaveBeenCalled();
     });
 
-    it('Go button should update text with arrows and handle "Stop" state correctly', () => {
-      // Initial state: crossfaderValue is 50 by default in tests from initialTestSettings via constructor
-      fixture.detectChanges();
+    it('Go button should update text with arrows, handle "Stop", and reverse direction with Shift key', () => {
+      fixture.detectChanges(); // Initial state
       const goButton = fixture.debugElement.query(By.css('.go-button')).nativeElement;
-      expect(goButton.textContent.trim()).toBe('Go ↓'); // Initial text with down arrow (target 0)
-      expect(goButton.disabled).toBeFalse();
-
-      // Simulate clicking Go, which starts animation
-      spyOn(app, 'onGoButtonClick').and.callThrough();
       const animateCrossfaderSpy = spyOn(app, 'animateCrossfader').and.callFake(() => {
         app.isAnimating = true;
-        fixture.detectChanges(); // Simulate change detection that would occur
+        fixture.detectChanges(); // Mock CDR call that animateCrossfader's interval would do
       });
+      const onGoButtonClickSpy = spyOn(app, 'onGoButtonClick').and.callThrough();
 
-      goButton.click();
-      expect(app.onGoButtonClick).toHaveBeenCalled();
-      expect(animateCrossfaderSpy).toHaveBeenCalled();
-      expect(app.isAnimating).toBeTrue();
-      expect(goButton.textContent.trim()).toBe('Stop'); // Text changes to "Stop"
-      expect(goButton.disabled).toBeFalse(); // Still not disabled
-
-      // Simulate animation finishing
-      app.isAnimating = false;
-      fixture.detectChanges();
-      expect(goButton.textContent.trim()).toBe('Go ↓'); // Reverts to "Go ↓" (assuming crossfaderValue is still >= 50)
+      // Initial state (crossfaderValue = 50, isShiftPressed = false)
+      expect(app.getEffectiveGoTarget()).toBe(0); // Default target for >= 50 is 0
+      expect(goButton.textContent.trim()).toBe('Go ↓');
       expect(goButton.disabled).toBeFalse();
 
-      // Test with crossfaderValue < 50 for "Go ↑"
-      app.crossfaderValue = 30;
-      fixture.detectChanges();
-      expect(goButton.textContent.trim()).toBe('Go ↑'); // Text should be "Go ↑" (target 100)
+      // Simulate Shift key DOWN
+      app.isShiftPressed = true;
+      app['updateEffectiveGoTarget'](); // This calls detectChanges
+      expect(app.getEffectiveGoTarget()).toBe(100); // Target reverses
+      expect(goButton.textContent.trim()).toBe('Go ↑'); // Arrow reverses
 
-      // Click again to animate
-      goButton.click();
+      // Simulate Shift+Click
+      // Create a real MouseEvent with shiftKey: true
+      const shiftClickEvent = new MouseEvent('click', { shiftKey: true, bubbles: true, cancelable: true });
+      goButton.dispatchEvent(shiftClickEvent);
+      expect(onGoButtonClickSpy).toHaveBeenCalled(); // an event might not be passed if onGoButtonClick doesn't take it.
+                                                  // Let's assume onGoButtonClick uses this.isShiftPressed which is true.
+      expect(animateCrossfaderSpy).toHaveBeenCalledWith(100); // Target is 100 (reversed)
       expect(app.isAnimating).toBeTrue();
       expect(goButton.textContent.trim()).toBe('Stop');
 
-      // Revert for next test if any
-      app.isAnimating = false;
-      app.crossfaderValue = 50; // Reset to a common default if needed
-      fixture.detectChanges();
+      // Simulate Shift key UP while animating
+      app.isShiftPressed = false;
+      app['updateEffectiveGoTarget']();
+      expect(goButton.textContent.trim()).toBe('Stop'); // Should still be "Stop"
 
-      // Test Shift key functionality
-      // Scenario 1: crossfaderValue >= 50, Shift pressed, should target 100
-      app.crossfaderValue = 70; // current value >= 50, natural target 0
+      // Simulate animation finishing (e.g., crossfader moved to 100)
       app.isAnimating = false;
-      fixture.detectChanges();
-      expect(goButton.textContent.trim()).toBe('Go ↓');
+      app.crossfaderValue = 100; // Simulate new position
+      app['updateEffectiveGoTarget'](); // isShiftPressed is false
+      expect(app.getEffectiveGoTarget()).toBe(0); // New natural target is 0
+      expect(goButton.textContent.trim()).toBe('Go ↓'); // Arrow for new natural target
 
-      goButton.dispatchEvent(new MouseEvent('click', { shiftKey: true }));
-      expect(animateCrossfaderSpy).toHaveBeenCalledWith(100); // Reversed target
-      expect(app.isAnimating).toBeTrue(); // Set by spy
+      // Test normal click (crossfaderValue = 100, isShiftPressed = false, natural target 0)
+      goButton.click(); // Regular click, no shiftKey in event by default from .click()
+      expect(onGoButtonClickSpy).toHaveBeenCalledTimes(2);
+      expect(animateCrossfaderSpy).toHaveBeenCalledWith(0); // Target is 0
+      expect(app.isAnimating).toBeTrue();
       expect(goButton.textContent.trim()).toBe('Stop');
 
-      // Scenario 2: crossfaderValue < 50, Shift pressed, should target 0
-      app.crossfaderValue = 30; // current value < 50, natural target 100
-      app.isAnimating = false; // Reset from previous animation
-      fixture.detectChanges();
+      // Simulate animation finishing (e.g., crossfader moved to 0)
+      app.isAnimating = false;
+      app.crossfaderValue = 0;
+      app['updateEffectiveGoTarget']();
+      expect(app.getEffectiveGoTarget()).toBe(100); // New natural target is 100
       expect(goButton.textContent.trim()).toBe('Go ↑');
 
-      goButton.dispatchEvent(new MouseEvent('click', { shiftKey: true }));
-      expect(animateCrossfaderSpy).toHaveBeenCalledWith(0); // Reversed target
-      expect(app.isAnimating).toBeTrue(); // Set by spy
+      // Test Spacebar press with Shift
+      // Simulate Shift key DOWN
+      app.isShiftPressed = true;
+      app['updateEffectiveGoTarget']();
+      expect(goButton.textContent.trim()).toBe('Go ↓'); // Arrow reverses (crossfaderValue 0, shift -> target 0)
+
+      // Dispatch Spacebar keydown (Shift is already true on the component)
+      // We use the dispatchKeyboardEvent helper which targets mockDocument.body by default
+      // and ensure the event itself has shiftKey: true.
+      // The component's this.isShiftPressed should also be true for the getEffectiveGoTarget to work as expected.
+      dispatchKeyboardEvent(' ', 'Space', true); // true for shiftKey
+      expect(onGoButtonClickSpy).toHaveBeenCalledTimes(3); // Called via Spacebar
+      expect(animateCrossfaderSpy).toHaveBeenCalledWith(0); // Reversed target (0) because isShiftPressed is true and crossfaderValue is 0
+      expect(app.isAnimating).toBeTrue();
       expect(goButton.textContent.trim()).toBe('Stop');
 
-      // Reset state after shift tests
+      // Cleanup
+      app.isShiftPressed = false;
       app.isAnimating = false;
       app.crossfaderValue = 50;
+      app['updateEffectiveGoTarget']();
       fixture.detectChanges();
     });
 
