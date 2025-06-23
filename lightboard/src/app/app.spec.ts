@@ -338,36 +338,47 @@ describe('App', () => {
       expect(cdrSpy).toHaveBeenCalled();
     });
 
-    it('Go button should call onGoButtonClick, update text to "Stop", and not be disabled when isAnimating is true, then revert text', () => {
-      fixture.detectChanges(); // Initial state
+    it('Go button should update text with arrows and handle "Stop" state correctly', () => {
+      // Initial state: crossfaderValue is 50 by default in tests from initialTestSettings via constructor
+      fixture.detectChanges();
       const goButton = fixture.debugElement.query(By.css('.go-button')).nativeElement;
-      expect(goButton.textContent.trim()).toBe('Go'); // Check initial text
+      expect(goButton.textContent.trim()).toBe('Go ↓'); // Initial text with down arrow (target 0)
+      expect(goButton.disabled).toBeFalse();
 
+      // Simulate clicking Go, which starts animation
       spyOn(app, 'onGoButtonClick').and.callThrough();
       const animateCrossfaderSpy = spyOn(app, 'animateCrossfader').and.callFake(() => {
         app.isAnimating = true;
-        // Manually trigger change detection because the original animateCrossfader
-        // would call cdr.detectChanges() within its interval.
-        // Since we are faking it, we need to ensure the template updates.
-        fixture.detectChanges();
+        fixture.detectChanges(); // Simulate change detection that would occur
       });
 
-      goButton.click(); // This calls onGoButtonClick -> animateCrossfader (spy) -> sets app.isAnimating = true
-
+      goButton.click();
       expect(app.onGoButtonClick).toHaveBeenCalled();
-      expect(animateCrossfaderSpy).toHaveBeenCalled(); // Ensure our fake was called
-      expect(app.isAnimating).toBeTrue(); // State was changed by the spy
-
-      // fixture.detectChanges(); // Already called within the spy, but an extra one might be needed if spy didn't.
-                                 // Let's rely on the one in the spy for now.
-      expect(goButton.disabled).toBeFalse(); // Should NOT be disabled
-      expect(goButton.textContent.trim()).toBe('Stop'); // Text should be "Stop"
-
-      // Simulate animation finishing and isAnimating being set back to false
-      app.isAnimating = false;
-      fixture.detectChanges(); // Update template based on isAnimating = false
+      expect(animateCrossfaderSpy).toHaveBeenCalled();
+      expect(app.isAnimating).toBeTrue();
+      expect(goButton.textContent.trim()).toBe('Stop'); // Text changes to "Stop"
       expect(goButton.disabled).toBeFalse(); // Still not disabled
-      expect(goButton.textContent.trim()).toBe('Go'); // Text should revert to "Go"
+
+      // Simulate animation finishing
+      app.isAnimating = false;
+      fixture.detectChanges();
+      expect(goButton.textContent.trim()).toBe('Go ↓'); // Reverts to "Go ↓" (assuming crossfaderValue is still >= 50)
+      expect(goButton.disabled).toBeFalse();
+
+      // Test with crossfaderValue < 50 for "Go ↑"
+      app.crossfaderValue = 30;
+      fixture.detectChanges();
+      expect(goButton.textContent.trim()).toBe('Go ↑'); // Text should be "Go ↑" (target 100)
+
+      // Click again to animate
+      goButton.click();
+      expect(app.isAnimating).toBeTrue();
+      expect(goButton.textContent.trim()).toBe('Stop');
+
+      // Revert for next test if any
+      app.isAnimating = false;
+      app.crossfaderValue = 50; // Reset to a common default if needed
+      fixture.detectChanges();
     });
 
     // Nested describe for tests that specifically need Jasmine Clock
