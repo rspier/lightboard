@@ -73,7 +73,7 @@ input[type="range"][orient="vertical"]::-webkit-slider-thumb {
   width: 14px;
   height: 20px;
   background-color: var(--slider-thumb-color, #3498db);
-  border-radius: 3px;
+  border-radius: 0; /* Changed to 0 for sharp corners */
   border: 1px solid var(--slider-thumb-border-color, #2980b9);
   cursor: grab;
   /* Vertical centering is implicit with slider-vertical and writing-mode.
@@ -84,7 +84,7 @@ input[type="range"][orient="vertical"]::-moz-range-thumb {
   width: 14px;
   height: 20px;
   background: var(--slider-thumb-color, #3498db);
-  border-radius: 3px;
+  border-radius: 0; /* Changed to 0 for sharp corners */
   border: 1px solid var(--slider-thumb-border-color, #2980b9);
   cursor: grab;
   padding: 0; /* Reset padding */
