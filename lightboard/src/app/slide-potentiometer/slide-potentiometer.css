@@ -1,105 +1,108 @@
 :host {
   display: inline-flex;
+  position: relative;
   flex-direction: column;
   align-items: center;
   padding: 10px;
-  border: 1px solid var(--slider-host-border-color); /* Use variable */
+  padding-top: 25px;
+  border: 1px solid var(--slider-host-border-color);
   border-radius: 4px;
-  /* font-family is inherited */
   min-width: 60px;
-  background-color: var(--slider-host-bg-color); /* Use variable */
+  background-color: var(--slider-host-bg-color);
 }
 
 .channel-info {
-  text-align: center;
-  margin-bottom: 10px;
-  padding: 5px;
-  border-bottom: 1px solid var(--slider-channel-info-border-color); /* Use variable */
-  width: 100%;
+  position: absolute;
+  top: 2px;
+  left: 3px;
+  padding: 0;
+  z-index: 1;
 }
 
 .channel-info h3 {
-  margin: 0 0 5px 0;
-  font-size: 1em;
+  margin: 0;
+  font-size: 0.9em;
   font-weight: bold;
-  color: var(--slider-text-color); /* Use variable */
+  color: var(--slider-text-color);
+  line-height: 1;
 }
 
-.channel-info small {
-  font-size: 0.8em;
-  color: var(--slider-text-color); /* Use variable */
-  opacity: 0.8; /* Keep opacity for dimmer effect */
-}
+input[type="range"] { /* Selector changed, orient attribute removed from HTML */
+  -webkit-appearance: none; /* Remove default WebKit appearance */
+  appearance: none; /* Remove default appearance */
 
-input[type="range"][orient="vertical"] {
-  writing-mode: bt-lr;
-  -webkit-appearance: slider-vertical;
-  width: 20px;
-  /* padding: 0 5px; */ /* Keep padding removed from input for simpler box model */
+  writing-mode: vertical-lr;
+  direction: rtl;
+
+  /* Dimensions: input's height is now its visual length, width is its thickness. */
+  /* Height (length) is set dynamically by [style.height]="sliderHeight" from component TS */
+  width: 20px; /* This is the thickness of the slider input area */
+
+  margin-top: 0;
   margin-bottom: 10px;
-  background: transparent; /* Necessary for custom track */
+  background: transparent; /* To show custom track */
+  padding: 0;
+  cursor: grab;
 }
 
-/* Vertical Slider Track - Re-adding these as custom thumbs need custom tracks */
-input[type="range"][orient="vertical"]::-webkit-slider-runnable-track {
-  width: 8px;
-  height: 100%;
+/* Vertical Slider Track */
+input[type="range"]::-webkit-slider-runnable-track {
+  width: 8px; /* Thickness of the track */
+  height: 100%; /* Length of the track */
   background: var(--slider-track-color, #ddd);
   border-radius: 4px;
   border: 1px solid var(--slider-track-border-color, #ccc);
-  margin: 0 auto;
 }
 
-input[type="range"][orient="vertical"]::-moz-range-track {
-  width: 8px;
-  height: 100%;
+input[type="range"]::-moz-range-track {
+  width: 8px; /* Thickness of the track */
+  height: 100%; /* Length of the track */
   background: var(--slider-track-color, #ddd);
   border-radius: 4px;
   border: 1px solid var(--slider-track-border-color, #ccc);
-  margin: 0 auto;
 }
 
-/* Vertical Slider Thumb - Cleaned styles */
-input[type="range"][orient="vertical"]::-webkit-slider-thumb {
+/* Vertical Slider Thumb */
+input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 12px;
-  height: 20px;
+  /* With writing-mode: vertical-lr, width is along the track, height is thickness */
+  width: 20px;  /* Thumb's dimension ALONG the track (visual height of handle) */
+  height: 12px; /* Thumb's dimension ACROSS the track (visual width of handle) */
   background: var(--slider-thumb-color, #3498db);
   border: 1px solid var(--slider-thumb-border-color, #2980b9);
   border-radius: 3px;
   cursor: grab;
-  /* No box-shadow for this attempt, keeping it minimal like horizontal that worked */
 }
 
-input[type="range"][orient="vertical"]::-moz-range-thumb {
-  width: 12px;
-  height: 20px;
+input[type="range"]::-moz-range-thumb {
+  width: 20px;  /* Length of the thumb along the track */
+  height: 12px; /* Thickness of the thumb across the track */
   background: var(--slider-thumb-color, #3498db);
   border: 1px solid var(--slider-thumb-border-color, #2980b9);
   border-radius: 3px;
   cursor: grab;
-  /* No box-shadow */
 }
 
 /* Dark Theme adjustments for vertical sliders (Track and Thumb) */
-:host-context(body.dark-theme) input[type="range"][orient="vertical"]::-webkit-slider-runnable-track {
+:host-context(body.dark-theme) input[type="range"]::-webkit-slider-runnable-track {
   background: var(--slider-track-color-dark, #555);
   border-color: var(--slider-track-border-color-dark, #444);
 }
-:host-context(body.dark-theme) input[type="range"][orient="vertical"]::-moz-range-track {
+:host-context(body.dark-theme) input[type="range"]::-moz-range-track {
   background: var(--slider-track-color-dark, #555);
   border-color: var(--slider-track-border-color-dark, #444);
 }
-:host-context(body.dark-theme) input[type="range"][orient="vertical"]::-webkit-slider-thumb {
+:host-context(body.dark-theme) input[type="range"]::-webkit-slider-thumb {
   background: var(--slider-thumb-color-dark, #5dade2);
   border-color: var(--slider-thumb-border-color-dark, #4a90c2);
 }
-:host-context(body.dark-theme) input[type="range"][orient="vertical"]::-moz-range-thumb {
+:host-context(body.dark-theme) input[type="range"]::-moz-range-thumb {
   background: var(--slider-thumb-color-dark, #5dade2);
   border-color: var(--slider-thumb-border-color-dark, #4a90c2);
 }
 
+/* Preserved styles for value display and color input */
 .value-display-container {
   position: relative;
   min-width: 50px;
@@ -119,16 +122,16 @@ input[type="range"][orient="vertical"]::-moz-range-thumb {
   height: 100%;
   box-sizing: border-box;
   border-radius: 3px;
-  color: var(--slider-text-color); /* Use variable */
+  color: var(--slider-text-color);
 }
 
 .value-edit-input {
-  border: 1px solid var(--slider-value-edit-border-color); /* Use variable */
-  background-color: var(--app-bg-color); /* Use app background for input field */
+  border: 1px solid var(--slider-value-edit-border-color);
+  background-color: var(--app-bg-color);
   padding: 4px;
   font-family: inherit;
   font-size: inherit;
-  color: var(--app-text-color); /* Use app text color for input text */
+  color: var(--app-text-color);
   text-align: center;
   width: 100%;
   height: 100%;
@@ -158,7 +161,7 @@ input[type="range"][orient="vertical"]::-moz-range-thumb {
 .color-input-native {
   width: 40px;
   height: 20px;
-  border: 1px solid var(--slider-color-swatch-border-color); /* Use variable */
+  border: 1px solid var(--slider-color-swatch-border-color);
   padding: 0;
   cursor: pointer;
   background-color: transparent;
