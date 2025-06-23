@@ -52,6 +52,7 @@ input[type="range"]::-webkit-slider-runnable-track {
   background: var(--slider-track-color, #ddd);
   border-radius: 4px;
   border: 1px solid var(--slider-track-border-color, #ccc);
+  margin: 0 auto; /* Center the track within the input's thickness */
 }
 
 input[type="range"]::-moz-range-track {
@@ -60,6 +61,7 @@ input[type="range"]::-moz-range-track {
   background: var(--slider-track-color, #ddd);
   border-radius: 4px;
   border: 1px solid var(--slider-track-border-color, #ccc);
+  margin: 0 auto; /* Center the track */
 }
 
 /* Vertical Slider Thumb */
@@ -68,7 +70,7 @@ input[type="range"]::-webkit-slider-thumb {
   appearance: none;
   /* With writing-mode: vertical-lr, width is along the track, height is thickness */
   width: 20px;  /* Thumb's dimension ALONG the track (visual height of handle) */
-  height: 12px; /* Thumb's dimension ACROSS the track (visual width of handle) */
+  height: 16px; /* Thumb's dimension ACROSS the track (visual width/thickness of handle) - Increased */
   background: var(--slider-thumb-color, #3498db);
   border: 1px solid var(--slider-thumb-border-color, #2980b9);
   border-radius: 3px;
@@ -77,7 +79,7 @@ input[type="range"]::-webkit-slider-thumb {
 
 input[type="range"]::-moz-range-thumb {
   width: 20px;  /* Length of the thumb along the track */
-  height: 12px; /* Thickness of the thumb across the track */
+  height: 16px; /* Thickness of the thumb across the track - Increased */
   background: var(--slider-thumb-color, #3498db);
   border: 1px solid var(--slider-thumb-border-color, #2980b9);
   border-radius: 3px;
