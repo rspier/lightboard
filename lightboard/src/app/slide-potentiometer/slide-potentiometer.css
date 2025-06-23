@@ -75,6 +75,7 @@ input[type="range"]::-webkit-slider-thumb {
   border: 1px solid var(--slider-thumb-border-color, #2980b9);
   border-radius: 3px;
   cursor: grab;
+  margin-left: -4px; /* (TrackThickness 8px - ThumbThickness 16px) / 2 = -4px */
 }
 
 input[type="range"]::-moz-range-thumb {
@@ -84,6 +85,7 @@ input[type="range"]::-moz-range-thumb {
   border: 1px solid var(--slider-thumb-border-color, #2980b9);
   border-radius: 3px;
   cursor: grab;
+  margin-left: -4px; /* (TrackThickness 8px - ThumbThickness 16px) / 2 = -4px */
 }
 
 /* Dark Theme adjustments for vertical sliders (Track and Thumb) */
