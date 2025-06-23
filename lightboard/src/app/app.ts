@@ -123,7 +123,10 @@ export class App implements OnInit, OnDestroy {
         this.displayCrossfadeDurationSeconds = settings.crossfadeDurationSeconds;
         this.currentCrossfadeDurationMs = this.displayCrossfadeDurationSeconds * 1000;
       }
-      if (this.currentDarkMode !== settings.darkMode) { this.currentDarkMode = settings.darkMode; this.applyTheme(this.currentDarkMode); }
+      if (this.currentDarkMode !== settings.darkMode) {
+        this.currentDarkMode = settings.darkMode;
+        this.applyTheme(this.currentDarkMode);
+      }
       if (channelsOrDescriptionsChanged) { this.calculateCombinedOutputs(); }
       this.cdr.detectChanges();
     });
@@ -189,7 +192,9 @@ export class App implements OnInit, OnDestroy {
     if (this.unlistenKeyDown) { this.unlistenKeyDown(); } // Cleanup global listener
   }
 
-  private applyTheme(isDarkMode: boolean): void { if (isDarkMode) { this.renderer.addClass(this.document.body, 'dark-theme'); } else { this.renderer.removeClass(this.document.body, 'dark-theme'); } }
+  private applyTheme(isDarkMode: boolean): void {
+    if (isDarkMode) { this.renderer.addClass(this.document.body, 'dark-theme'); } else { this.renderer.removeClass(this.document.body, 'dark-theme'); }
+  }
   private hexToRgb(hex: string): { r: number; g: number; b: number } | null { const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex); return result ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) } : null; }
   private rgbToHex(r: number, g: number, b: number): string { return ("#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).padStart(6, '0')).toLowerCase(); }
 
