@@ -35,9 +35,69 @@ input[type="range"][orient="vertical"] {
   writing-mode: bt-lr;
   -webkit-appearance: slider-vertical;
   width: 20px;
-  padding: 0 5px;
+  /* padding: 0 5px; */ /* Keep padding removed from input for simpler box model */
   margin-bottom: 10px;
-  /* Consider theming for track/thumb if needed later */
+  background: transparent; /* Necessary for custom track */
+}
+
+/* Vertical Slider Track - Re-adding these as custom thumbs need custom tracks */
+input[type="range"][orient="vertical"]::-webkit-slider-runnable-track {
+  width: 8px;
+  height: 100%;
+  background: var(--slider-track-color, #ddd);
+  border-radius: 4px;
+  border: 1px solid var(--slider-track-border-color, #ccc);
+  margin: 0 auto;
+}
+
+input[type="range"][orient="vertical"]::-moz-range-track {
+  width: 8px;
+  height: 100%;
+  background: var(--slider-track-color, #ddd);
+  border-radius: 4px;
+  border: 1px solid var(--slider-track-border-color, #ccc);
+  margin: 0 auto;
+}
+
+/* Vertical Slider Thumb - Cleaned styles */
+input[type="range"][orient="vertical"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 20px;
+  background: var(--slider-thumb-color, #3498db);
+  border: 1px solid var(--slider-thumb-border-color, #2980b9);
+  border-radius: 3px;
+  cursor: grab;
+  /* No box-shadow for this attempt, keeping it minimal like horizontal that worked */
+}
+
+input[type="range"][orient="vertical"]::-moz-range-thumb {
+  width: 12px;
+  height: 20px;
+  background: var(--slider-thumb-color, #3498db);
+  border: 1px solid var(--slider-thumb-border-color, #2980b9);
+  border-radius: 3px;
+  cursor: grab;
+  /* No box-shadow */
+}
+
+/* Dark Theme adjustments for vertical sliders (Track and Thumb) */
+:host-context(body.dark-theme) input[type="range"][orient="vertical"]::-webkit-slider-runnable-track {
+  background: var(--slider-track-color-dark, #555);
+  border-color: var(--slider-track-border-color-dark, #444);
+}
+:host-context(body.dark-theme) input[type="range"][orient="vertical"]::-moz-range-track {
+  background: var(--slider-track-color-dark, #555);
+  border-color: var(--slider-track-border-color-dark, #444);
+}
+:host-context(body.dark-theme) input[type="range"][orient="vertical"]::-webkit-slider-thumb {
+  background: var(--slider-thumb-color-dark, #5dade2);
+  border-color: var(--slider-thumb-border-color-dark, #4a90c2);
+}
+:host-context(body.dark-theme) input[type="range"][orient="vertical"]::-moz-range-thumb {
+  background: var(--slider-thumb-color-dark, #5dade2);
+  border-color: var(--slider-thumb-border-color-dark, #4a90c2);
 }
 
 .value-display-container {
