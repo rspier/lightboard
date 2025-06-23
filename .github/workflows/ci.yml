@@ -14,11 +14,12 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '20' # Using a recent LTS version
+        cache: 'npm' # Enable caching for npm
+        cache-dependency-path: lightboard/package-lock.json # Specify path to package-lock.json
 
     - name: Install dependencies
-      run: |
-        cd lightboard
-        npm install --include=dev
+      working-directory: ./lightboard # Set working directory for this step
+      run: npm ci # Use npm ci for faster, more reliable CI builds
 
     - name: Set CHROME_BIN for Karma
       run: |
