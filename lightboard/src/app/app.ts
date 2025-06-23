@@ -266,6 +266,13 @@ export class App implements OnInit, OnDestroy {
   }
 
   getEffectiveGoTarget(): 0 | 100 {
+    if (this.crossfaderValue === 0) {
+      return 100; // Only one way to go: up
+    }
+    if (this.crossfaderValue === 100) {
+      return 0; // Only one way to go: down
+    }
+    // For intermediate values, Shift reverses the natural direction
     const naturalTargetValue = this.crossfaderValue >= 50 ? 0 : 100;
     return this.isShiftPressed ? (naturalTargetValue === 0 ? 100 : 0) : naturalTargetValue;
   }
