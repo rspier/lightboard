@@ -70,25 +70,38 @@ input[type="range"]::-webkit-slider-thumb {
   appearance: none;
   /* With writing-mode: vertical-lr, width is along the track, height is thickness */
   width: 20px;  /* Thumb's dimension ALONG the track (visual height of handle) */
-  height: 26px; /* Thumb's dimension ACROSS the track (visual width/thickness of handle) - Increased by ~60% from 16px */
+  height: 26px; /* Thumb's dimension ACROSS the track (visual width/thickness of handle) */
   background: var(--slider-thumb-color, #3498db);
-  border: 1px solid var(--slider-thumb-border-color, #2980b9);
   border-radius: 3px;
   cursor: grab;
   margin-left: -9px; /* (TrackThickness 8px - ThumbThickness 26px) / 2 = -9px */
+  /* Bevel border */
+  border-width: 1px;
+  border-style: solid;
+  border-top-color: var(--slider-thumb-bevel-highlight);
+  border-left-color: var(--slider-thumb-bevel-highlight);
+  border-bottom-color: var(--slider-thumb-bevel-shadow);
+  border-right-color: var(--slider-thumb-bevel-shadow);
 }
 
 input[type="range"]::-moz-range-thumb {
   width: 20px;  /* Length of the thumb along the track */
-  height: 26px; /* Thickness of the thumb across the track - Increased */
+  height: 26px; /* Thickness of the thumb across the track */
   background: var(--slider-thumb-color, #3498db);
-  border: 1px solid var(--slider-thumb-border-color, #2980b9);
   border-radius: 3px;
   cursor: grab;
   margin-left: -9px; /* (TrackThickness 8px - ThumbThickness 26px) / 2 = -9px */
+  /* Bevel border */
+  border-width: 1px;
+  border-style: solid;
+  border-top-color: var(--slider-thumb-bevel-highlight);
+  border-left-color: var(--slider-thumb-bevel-highlight);
+  border-bottom-color: var(--slider-thumb-bevel-shadow);
+  border-right-color: var(--slider-thumb-bevel-shadow);
 }
 
 /* Dark Theme adjustments for vertical sliders (Track and Thumb) */
+/* Thumb border colors will use the dark theme variables for bevel directly */
 :host-context(body.dark-theme) input[type="range"]::-webkit-slider-runnable-track {
   background: var(--slider-track-color-dark, #555);
   border-color: var(--slider-track-border-color-dark, #444);
