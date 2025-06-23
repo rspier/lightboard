@@ -68,7 +68,7 @@
             [showValueDisplay]="false"
             [showColorInput]="false">
           </app-slide-potentiometer>
-          <button (click)="onGoButtonClick()" class="go-button" [class.animating]="isAnimating">{{ isAnimating ? 'Stop' : (crossfaderValue >= 50 ? 'Go ↓' : 'Go ↑') }}</button>
+          <button (click)="onGoButtonClick($event)" class="go-button" [class.animating]="isAnimating">{{ isAnimating ? 'Stop' : (crossfaderValue >= 50 ? 'Go ↓' : 'Go ↑') }}</button>
           <div class="crossfade-slider-container">
             <label for="crossfade-duration-slider" class="duration-slider-label">X-Fade: {{ displayCrossfadeDurationSeconds }}s</label>
             <input type="range" id="crossfade-duration-slider" class="duration-slider"
