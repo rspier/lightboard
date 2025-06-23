@@ -1,5 +1,5 @@
 import { TestBed, ComponentFixture } from '@angular/core/testing';
-import { provideZonelessChangeDetection, Renderer2, ChangeDetectorRef } from '@angular/core'; // Removed NgZone, added ChangeDetectorRef
+import { Renderer2, ChangeDetectorRef } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { App } from './app';
 import { By } from '@angular/platform-browser';
@@ -9,13 +9,28 @@ import { BehaviorSubject, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { CombinedOutputDisplayComponent } from './combined-output-display/combined-output-display.component';
 
-
-interface PotentiometerState {
-  channelNumber: number;
-  channelDescription: string;
-  value: number;
-  color: string;
+// Helper function to dispatch keyboard events
+function dispatchKeyboardEvent(
+  key: string,
+  target: EventTarget,
+  code?: string,
+  shiftKey: boolean = false,
+  ctrlKey: boolean = false,
+  altKey: boolean = false
+) {
+  const event = new KeyboardEvent('keydown', {
+    key: key,
+    code: code || key,
+    bubbles: true,
+    cancelable: true,
+    shiftKey: shiftKey,
+    ctrlKey: ctrlKey,
+    altKey: altKey,
+  });
+  target.dispatchEvent(event);
+  // fixture.detectChanges(); // Removed from helper, should be called explicitly in tests where needed
 }
+
 
 describe('App', () => {
   let fixture: ComponentFixture<App>;
@@ -24,7 +39,7 @@ describe('App', () => {
   let appSettingsSubject: BehaviorSubject<AppSettings>;
   let mockHttpDataService: jasmine.SpyObj<HttpDataService>;
   let mockRenderer: jasmine.SpyObj<Renderer2>;
-  let mockDocument: Document; // Keep this, will be injected from fixture
+  let mockDocument: Document;
 
   const initialTestSettings: AppSettings = {
     numChannels: 4,
@@ -50,12 +65,14 @@ describe('App', () => {
     mockChannelSettingsService.getCurrentNumChannels.and.returnValue(initialTestSettings.numChannels);
     mockChannelSettingsService.getCurrentChannelDescriptions.and.returnValue([...initialTestSettings.channelDescriptions]);
     mockChannelSettingsService.getCurrentDarkMode.and.returnValue(initialTestSettings.darkMode);
-    mockChannelSettingsService.getDarkMode.and.returnValue(appSettingsSubject.pipe(map((s: AppSettings) => s.darkMode)));
+    mockChannelSettingsService.getDarkMode.and.returnValue(appSettingsSubject.pipe(map(s => s.darkMode)));
 
     mockHttpDataService = jasmine.createSpyObj('HttpDataService', ['postCombinedOutput']);
     mockHttpDataService.postCombinedOutput.and.returnValue(of({success: true}));
 
-    mockRenderer = jasmine.createSpyObj('Renderer2', ['addClass', 'removeClass']);
+    mockRenderer = jasmine.createSpyObj('Renderer2', ['addClass', 'removeClass', 'listen']);
+    mockRenderer.listen.and.returnValue(() => {});
+
 
     await TestBed.configureTestingModule({
       imports: [App],
@@ -63,13 +80,12 @@ describe('App', () => {
         { provide: ChannelSettingsService, useValue: mockChannelSettingsService },
         { provide: HttpDataService, useValue: mockHttpDataService },
         { provide: Renderer2, useValue: mockRenderer }
-        // provideZonelessChangeDetection() // Removed for testing Jasmine Clock compatibility
       ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(App);
     app = fixture.componentInstance;
-    mockDocument = fixture.debugElement.injector.get(DOCUMENT); // Get the actual document instance from the fixture
+    mockDocument = fixture.debugElement.injector.get(DOCUMENT);
   });
 
   afterEach(() => {
@@ -77,7 +93,9 @@ describe('App', () => {
       clearInterval(app.animationInterval);
       app.animationInterval = null;
     }
-    // No longer need to check for jasmine clock here, it will be handled by specific describe blocks
+    if (app['unlistenKeyDown']) { app['unlistenKeyDown'](); }
+    if (app['unlistenShiftDown']) { app['unlistenShiftDown'](); }
+    if (app['unlistenShiftUp']) { app['unlistenShiftUp'](); }
   });
 
   it('should create the app', () => {
@@ -91,21 +109,11 @@ describe('App', () => {
   });
 
   it('should initialize states based on ChannelSettingsService in constructor', () => {
-    // Constructor logic is tested when component is created in beforeEach.
-    // We verify the outcome here.
-    // getCurrentAppSettings is called in constructor, and its return value's channelDescriptions
-    // are passed to initializeChannelStates.
     expect(mockChannelSettingsService.getCurrentAppSettings).toHaveBeenCalled();
-    // initializeChannelStates is called by constructor.
-    // After refactor, initializeChannelStates receives descriptions as a parameter,
-    // so it no longer calls mockChannelSettingsService.getCurrentChannelDescriptions itself.
-    // The spyOn(app, 'initializeChannelStates') in relevant tests will check parameters.
-
     expect(app.row1States.length).toBe(initialTestSettings.numChannels);
     expect(app.row1States[0].channelDescription).toBe(initialTestSettings.channelDescriptions[0]);
     expect(app.row1States[0].value).toBe(0);
     expect(app.row1States[0].color).toBe(app['defaultColorsScene1'][0]);
-
     expect(app['currentNumChannels']).toBe(initialTestSettings.numChannels);
     expect(app['currentBackendUrl']).toBe(initialTestSettings.backendUrl);
     expect(app['currentCrossfadeDurationMs']).toBe(initialTestSettings.crossfadeDurationSeconds * 1000);
@@ -114,23 +122,21 @@ describe('App', () => {
 
 
   it('should populate combinedOutputStates on ngOnInit and reflect initial settings', () => {
-    fixture.detectChanges(); // ngOnInit runs
+    fixture.detectChanges();
     expect(app.combinedOutputStates.length).toBe(initialTestSettings.numChannels);
     expect(app.combinedOutputStates[0].value).toBe(50);
     expect(app.combinedOutputStates[0].channelDescription).toBe(initialTestSettings.channelDescriptions[0]);
-    expect(app.combinedOutputStates[0].color).toBe('#00ffff'); // Corrected expected color
+    expect(app.combinedOutputStates[0].color).toBe('#00ffff');
   });
 
-  // ... (CombinedOutputDisplay Rendering tests are fine) ...
-  // Test for SceneTextInputModal functionality
   describe('Scene Text Input Modal', () => {
     it('toggleSceneTextInput should show modal, set current scene, and clear texts', () => {
-      app.scene1CommandsString = "some old commands"; // Pre-fill to test clearing
+      app.scene1CommandsString = "some old commands";
       app.toggleSceneTextInput(1);
       expect(app.showSceneTextInputModal).toBeTrue();
       expect(app.currentSceneForModal).toBe(1);
       expect(app.modalInitialText).toBe('');
-      expect(app.scene1CommandsString).toBe(''); // Verify sceneXCommandsString is cleared
+      expect(app.scene1CommandsString).toBe('');
       expect(app.modalFeedbackMessages.length).toBe(0);
 
       app.scene2CommandsString = "other old commands";
@@ -138,9 +144,8 @@ describe('App', () => {
       expect(app.showSceneTextInputModal).toBeTrue();
       expect(app.currentSceneForModal).toBe(2);
       expect(app.modalInitialText).toBe('');
-      expect(app.scene2CommandsString).toBe(''); // Verify sceneXCommandsString is cleared
+      expect(app.scene2CommandsString).toBe('');
     });
-    // Other tests for handleCloseSceneTextInputModal, handleApplySceneCommandsFromModal remain the same
   });
 
   describe('CombinedOutputDisplay Rendering', () => {
@@ -164,7 +169,6 @@ describe('App', () => {
     });
   });
 
-  // ... (ChannelSettingsService Interaction tests are fine) ...
   describe('ChannelSettingsService Interaction on ngOnInit subscription', () => {
     it('should update states and re-initialize channels if numChannels changes', () => {
       fixture.detectChanges();
@@ -179,41 +183,37 @@ describe('App', () => {
         crossfadeDurationSeconds: 2,
         darkMode: false
       };
-      // No longer need to mock getCurrentChannelDescriptions here as initializeChannelStates takes descriptions directly
       appSettingsSubject.next(newSettings);
 
       expect(app['currentNumChannels']).toBe(2);
-      // Verify initializeChannelStates is called with new numChannels AND new descriptions
       expect(initSpy).toHaveBeenCalledWith(newSettings.numChannels, newSettings.channelDescriptions);
       expect(app.row1States.length).toBe(2);
-      expect(app.row1States[0].channelDescription).toBe('NewDesc1'); // This verifies the outcome of initializeChannelStates
+      expect(app.row1States[0].channelDescription).toBe('NewDesc1');
       expect(calcSpy).toHaveBeenCalled();
       expect(cdrSpy).toHaveBeenCalled();
     });
 
     it('should update descriptions and other settings if numChannels does not change', () => {
       fixture.detectChanges();
-      const initSpy = spyOn(app, 'initializeChannelStates').and.callThrough(); // Should not be called
+      const initSpy = spyOn(app, 'initializeChannelStates').and.callThrough();
       const calcSpy = spyOn(app, 'calculateCombinedOutputs').and.callThrough();
       const cdrSpy = spyOn(app['cdr'], 'detectChanges').and.callThrough();
 
       const newSettings: AppSettings = {
-        ...initialTestSettings, // numChannels remains the same
+        ...initialTestSettings,
         channelDescriptions: ['UpdatedA', 'UpdatedB', 'UpdatedC', 'UpdatedD'],
         backendUrl: 'http://another.url',
       };
       appSettingsSubject.next(newSettings);
 
-      expect(initSpy).not.toHaveBeenCalled(); // Because numChannels didn't change
-      // Descriptions should be updated directly in the ngOnInit subscription
+      expect(initSpy).not.toHaveBeenCalled();
       expect(app.row1States[0].channelDescription).toBe('UpdatedA');
-      expect(app.row2States[1].channelDescription).toBe('UpdatedB'); // Assuming row2States also updated
-      expect(calcSpy).toHaveBeenCalledTimes(1); // Once for initial, once for description update that triggers it.
-      expect(cdrSpy).toHaveBeenCalledTimes(1); // Or more, depending on how many times detectChanges is called by subscription
+      expect(app.row2States[1].channelDescription).toBe('UpdatedB');
+      expect(calcSpy).toHaveBeenCalledTimes(1);
+      expect(cdrSpy).toHaveBeenCalledTimes(1);
     });
   });
 
-  // ... (onPotentiometerChange tests are fine) ...
   describe('onPotentiometerChange', () => {
     beforeEach(() => {
         fixture.detectChanges();
@@ -239,27 +239,17 @@ describe('App', () => {
   });
 
   describe('Theme Initialization and Updates', () => {
-    // Helper to set up initial settings and create/initialize the component for theme tests
-    // initialTestSettings is the global one, currentTestSettings is for this specific describe block
     let currentTestSettings: AppSettings;
 
     function setupInitialSettingsAndCreateComponent(isDark: boolean) {
       currentTestSettings = { ...initialTestSettings, darkMode: isDark };
-
-      // Update the mocks that AppComponent will use in its constructor and ngOnInit
       mockChannelSettingsService.getCurrentAppSettings.and.returnValue(currentTestSettings);
-      // Re-initialize the subject for getAppSettings() to ensure it emits this specific setting first if needed
-      // and to isolate from other tests that might have modified the global appSettingsSubject
       appSettingsSubject = new BehaviorSubject<AppSettings>(currentTestSettings);
       mockChannelSettingsService.getAppSettings.and.returnValue(appSettingsSubject.asObservable());
-      mockChannelSettingsService.getCurrentDarkMode.and.returnValue(isDark); // For constructor
+      mockChannelSettingsService.getCurrentDarkMode.and.returnValue(isDark);
       mockChannelSettingsService.getDarkMode.and.returnValue(appSettingsSubject.pipe(map(s => s.darkMode)));
-
-      // Reset spies right before component creation and ngOnInit.
       mockRenderer.addClass.calls.reset();
       mockRenderer.removeClass.calls.reset();
-
-      // Create a new fixture and component instance for this test
       fixture = TestBed.createComponent(App);
       app = fixture.componentInstance;
       mockDocument = fixture.debugElement.injector.get(DOCUMENT);
@@ -267,51 +257,43 @@ describe('App', () => {
 
     it('should apply light theme on init if initial setting is false (constructor + ngOnInit)', () => {
       setupInitialSettingsAndCreateComponent(false);
-      fixture.detectChanges(); // Triggers constructor and ngOnInit which calls applyTheme
+      fixture.detectChanges();
       expect(mockDocument.body.classList.contains('dark-theme')).toBeFalse();
     });
 
     it('should apply dark theme on init if initial setting is true (constructor + ngOnInit)', () => {
       setupInitialSettingsAndCreateComponent(true);
-      fixture.detectChanges(); // Triggers constructor and ngOnInit which calls applyTheme
+      fixture.detectChanges();
       expect(mockDocument.body.classList.contains('dark-theme')).toBeTrue();
     });
 
     it('should switch to dark theme if setting changes to true via service', () => {
-      setupInitialSettingsAndCreateComponent(false); // Start with light theme
-      fixture.detectChanges(); // Initial applyTheme (removes class)
-      expect(mockDocument.body.classList.contains('dark-theme')).toBeFalse(); // Verify initial state
-
+      setupInitialSettingsAndCreateComponent(false);
+      fixture.detectChanges();
+      expect(mockDocument.body.classList.contains('dark-theme')).toBeFalse();
       const newSettings = { ...currentTestSettings, darkMode: true };
       appSettingsSubject.next(newSettings);
-      fixture.detectChanges(); // Process subscription and call applyTheme again
-
+      fixture.detectChanges();
       expect(mockDocument.body.classList.contains('dark-theme')).toBeTrue();
     });
 
     it('should switch to light theme if setting changes to false via service', () => {
-      setupInitialSettingsAndCreateComponent(true); // Start with dark theme
-      fixture.detectChanges(); // Initial applyTheme (adds class)
-      expect(mockDocument.body.classList.contains('dark-theme')).toBeTrue(); // Verify initial state
-
-      // Note: Spies are reset in setupInitialSettingsAndCreateComponent.
-      // For this specific test, if we want to ensure the transition from dark to light,
-      // the initial addClass call (from setup) should be ignored if we were still using spies.
-      // With direct DOM check, this is simpler.
+      setupInitialSettingsAndCreateComponent(true);
+      fixture.detectChanges();
+      expect(mockDocument.body.classList.contains('dark-theme')).toBeTrue();
       const newSettings = { ...currentTestSettings, darkMode: false };
       appSettingsSubject.next(newSettings);
       fixture.detectChanges();
-
       expect(mockDocument.body.classList.contains('dark-theme')).toBeFalse();
     });
   });
 
   describe('Go Button and Crossfader Animation', () => {
-    // Tests that don't need jasmine.clock()
     it('onGoButtonClick should call animateCrossfader if not already animating (target 0)', () => {
       spyOn(app, 'animateCrossfader');
       app.isAnimating = false;
-      app.crossfaderValue = 70; // Should target 0
+      app.crossfaderValue = 70;
+      app.isShiftPressed = false;
       app.onGoButtonClick();
       expect(app.animateCrossfader).toHaveBeenCalledWith(0);
     });
@@ -319,96 +301,102 @@ describe('App', () => {
     it('onGoButtonClick should call animateCrossfader if not already animating (target 100)', () => {
       spyOn(app, 'animateCrossfader');
       app.isAnimating = false;
-      app.crossfaderValue = 30; // Should target 100
+      app.crossfaderValue = 30;
+      app.isShiftPressed = false;
       app.onGoButtonClick();
       expect(app.animateCrossfader).toHaveBeenCalledWith(100);
     });
 
     it('onGoButtonClick should stop animation if already animating', () => {
       app.isAnimating = true;
-      app.animationInterval = 12345; // Mock an interval ID
+      app.animationInterval = 12345;
       spyOn(window, 'clearInterval');
       const cdrSpy = spyOn(app['cdr'], 'detectChanges');
-
       app.onGoButtonClick();
-
       expect(clearInterval).toHaveBeenCalledWith(12345);
       expect(app.animationInterval).toBeNull();
       expect(app.isAnimating).toBeFalse();
       expect(cdrSpy).toHaveBeenCalled();
     });
 
-    it('Go button should update text with arrows, handle "Stop", and reverse direction with Shift key', () => {
-      fixture.detectChanges(); // Initial state
-      const goButton = fixture.debugElement.query(By.css('.go-button')).nativeElement;
+    it('Go button should update text, arrows, handle "Stop", and reverse direction with Shift key correctly', () => {
+      fixture.detectChanges();
+      const goButton = fixture.debugElement.query(By.css('.go-button')).nativeElement as HTMLButtonElement;
       const animateCrossfaderSpy = spyOn(app, 'animateCrossfader').and.callFake(() => {
         app.isAnimating = true;
-        fixture.detectChanges(); // Mock CDR call that animateCrossfader's interval would do
+        fixture.detectChanges();
       });
       const onGoButtonClickSpy = spyOn(app, 'onGoButtonClick').and.callThrough();
 
-      // Initial state (crossfaderValue = 50, isShiftPressed = false)
-      expect(app.getEffectiveGoTarget()).toBe(0); // Default target for >= 50 is 0
-      expect(goButton.textContent.trim()).toBe('Go ↓');
-      expect(goButton.disabled).toBeFalse();
-
-      // Simulate Shift key DOWN
-      app.isShiftPressed = true;
-      app['updateEffectiveGoTarget'](); // This calls detectChanges
-      expect(app.getEffectiveGoTarget()).toBe(100); // Target reverses
-      expect(goButton.textContent.trim()).toBe('Go ↑'); // Arrow reverses
-
-      // Simulate Shift+Click
-      // Create a real MouseEvent with shiftKey: true
-      const shiftClickEvent = new MouseEvent('click', { shiftKey: true, bubbles: true, cancelable: true });
-      goButton.dispatchEvent(shiftClickEvent);
-      expect(onGoButtonClickSpy).toHaveBeenCalled(); // an event might not be passed if onGoButtonClick doesn't take it.
-                                                  // Let's assume onGoButtonClick uses this.isShiftPressed which is true.
-      expect(animateCrossfaderSpy).toHaveBeenCalledWith(100); // Target is 100 (reversed)
-      expect(app.isAnimating).toBeTrue();
-      expect(goButton.textContent.trim()).toBe('Stop');
-
-      // Simulate Shift key UP while animating
+      // Initial state: crossfaderValue = 50, isShiftPressed = false
+      app.crossfaderValue = 50;
       app.isShiftPressed = false;
       app['updateEffectiveGoTarget']();
-      expect(goButton.textContent.trim()).toBe('Stop'); // Should still be "Stop"
+      expect(goButton.textContent?.trim()).toBe('Go ↓');
 
-      // Simulate animation finishing (e.g., crossfader moved to 100)
-      app.isAnimating = false;
-      app.crossfaderValue = 100; // Simulate new position
-      app['updateEffectiveGoTarget'](); // isShiftPressed is false
-      expect(app.getEffectiveGoTarget()).toBe(0); // New natural target is 0
-      expect(goButton.textContent.trim()).toBe('Go ↓'); // Arrow for new natural target
+      // 1. Shift key DOWN - Arrow should change
+      app.isShiftPressed = true;
+      app['updateEffectiveGoTarget']();
+      expect(goButton.textContent?.trim()).toBe('Go ↑');
 
-      // Test normal click (crossfaderValue = 100, isShiftPressed = false, natural target 0)
-      goButton.click(); // Regular click, no shiftKey in event by default from .click()
-      expect(onGoButtonClickSpy).toHaveBeenCalledTimes(2);
-      expect(animateCrossfaderSpy).toHaveBeenCalledWith(0); // Target is 0
+      // 2. Shift+Click (crossfaderValue = 50, isShiftPressed = true)
+      goButton.click();
+      expect(onGoButtonClickSpy).toHaveBeenCalled();
+      expect(animateCrossfaderSpy).toHaveBeenCalledWith(100);
       expect(app.isAnimating).toBeTrue();
-      expect(goButton.textContent.trim()).toBe('Stop');
+      expect(goButton.textContent?.trim()).toBe('Stop');
 
-      // Simulate animation finishing (e.g., crossfader moved to 0)
+      // 3. Shift key UP while animating
+      app.isShiftPressed = false;
+      app['updateEffectiveGoTarget']();
+      expect(goButton.textContent?.trim()).toBe('Stop');
+
+      // 4. Simulate animation finishing (crossfader moved to 100)
+      app.isAnimating = false;
+      app.crossfaderValue = 100;
+      app['updateEffectiveGoTarget']();
+      expect(goButton.textContent?.trim()).toBe('Go ↓');
+
+      // 5. Normal click (no shift) - crossfaderValue = 100
+      goButton.click();
+      expect(animateCrossfaderSpy).toHaveBeenCalledWith(0);
+      expect(app.isAnimating).toBeTrue();
+      expect(goButton.textContent?.trim()).toBe('Stop');
+
+      // 6. Simulate animation finishing (crossfader moved to 0)
       app.isAnimating = false;
       app.crossfaderValue = 0;
       app['updateEffectiveGoTarget']();
-      expect(app.getEffectiveGoTarget()).toBe(100); // New natural target is 100
-      expect(goButton.textContent.trim()).toBe('Go ↑');
+      expect(goButton.textContent?.trim()).toBe('Go ↑');
 
-      // Test Spacebar press with Shift
-      // Simulate Shift key DOWN
+      // 7. Spacebar + Shift
       app.isShiftPressed = true;
       app['updateEffectiveGoTarget']();
-      expect(goButton.textContent.trim()).toBe('Go ↓'); // Arrow reverses (crossfaderValue 0, shift -> target 0)
+      expect(goButton.textContent?.trim()).toBe('Go ↑'); // crossfaderValue is 0, shift or not, target is 100 -> Go ↑
 
-      // Dispatch Spacebar keydown (Shift is already true on the component)
-      // We use the dispatchKeyboardEvent helper which targets mockDocument.body by default
-      // and ensure the event itself has shiftKey: true.
-      // The component's this.isShiftPressed should also be true for the getEffectiveGoTarget to work as expected.
-      dispatchKeyboardEvent(' ', 'Space', true); // true for shiftKey
-      expect(onGoButtonClickSpy).toHaveBeenCalledTimes(3); // Called via Spacebar
-      expect(animateCrossfaderSpy).toHaveBeenCalledWith(0); // Reversed target (0) because isShiftPressed is true and crossfaderValue is 0
+      dispatchKeyboardEvent(' ', mockDocument.body, 'Space', true);
+      expect(onGoButtonClickSpy).toHaveBeenCalled();
+      expect(animateCrossfaderSpy).toHaveBeenCalledWith(100); // Target 100
       expect(app.isAnimating).toBeTrue();
-      expect(goButton.textContent.trim()).toBe('Stop');
+      expect(goButton.textContent?.trim()).toBe('Stop');
+      app.isAnimating = false;
+
+      // 8. Shift key at extreme: crossfaderValue = 0, Shift pressed
+      app.crossfaderValue = 0;
+      app.isShiftPressed = true;
+      app['updateEffectiveGoTarget']();
+      expect(goButton.textContent?.trim()).toBe('Go ↑'); // Target 100
+      goButton.click();
+      expect(animateCrossfaderSpy).toHaveBeenCalledWith(100);
+      app.isAnimating = false;
+
+      // 9. Shift key at extreme: crossfaderValue = 100, Shift pressed
+      app.crossfaderValue = 100;
+      app.isShiftPressed = true;
+      app['updateEffectiveGoTarget']();
+      expect(goButton.textContent?.trim()).toBe('Go ↓'); // Target 0
+      goButton.click();
+      expect(animateCrossfaderSpy).toHaveBeenCalledWith(0);
 
       // Cleanup
       app.isShiftPressed = false;
@@ -420,15 +408,6 @@ describe('App', () => {
 
     // Nested describe for tests that specifically need Jasmine Clock
     describe('animateCrossfader method tests needing Jasmine Clock', () => {
-      // Temporarily skipping these tests due to conflicts with Jasmine Clock in the current env.
-      // beforeEach(() => {
-      //   jasmine.clock().install();
-      // });
-
-      // afterEach(() => {
-      //   jasmine.clock().uninstall();
-      // });
-
       xit('animateCrossfader should use currentCrossfadeDurationMs', () => { // Marked as pending
         app['currentCrossfadeDurationMs'] = 1000;
         const expectedInterval = 1000 / 25;
@@ -437,7 +416,7 @@ describe('App', () => {
         try {
           app.animateCrossfader(100);
           expect(window.setInterval).toHaveBeenCalledWith(jasmine.any(Function), expectedInterval);
-          jasmine.clock().tick(1000); // Allow animation to complete or run its course
+          jasmine.clock().tick(1000);
         } finally {
           jasmine.clock().uninstall();
         }
@@ -445,7 +424,7 @@ describe('App', () => {
 
       xit('animateCrossfader should animate crossfader value from 0 to 100', () => { // Marked as pending
         spyOn(app, 'onPotentiometerChange').and.callThrough();
-        jasmine.clock().install(); // Install clock for this test
+        jasmine.clock().install();
         try {
           app.crossfaderValue = 0;
         app['currentCrossfadeDurationMs'] = 500;
@@ -466,7 +445,7 @@ describe('App', () => {
         expect(app.animationInterval).toBeNull();
         expect(app.onPotentiometerChange).toHaveBeenCalledTimes(steps);
         } finally {
-          jasmine.clock().uninstall(); // Ensure uninstall
+          jasmine.clock().uninstall();
         }
       });
 
@@ -542,57 +521,28 @@ describe('App', () => {
     });
 
     it('should correctly blend values and colors with crossfader at 0 (full row2States)', () => {
-      app.crossfaderValue = 0; // Scene 2 is 100%, Scene 1 is 0% influence
+      app.crossfaderValue = 0;
       app.calculateCombinedOutputs();
-      // Channel 1: S1 val=10 (color #ff0000), S2 val=90 (color #00ff00).
-      // S1 intensity = 0.1, S2 intensity = 0.9.
-      // With XF=0, only S2 contributes. Effective S1 intensity = 0, S2 intensity = 0.9.
-      // Color comes from S2 only.
-      expect(app.combinedOutputStates[0].value).toBe(90); // (10*0) + (90*1)
+      expect(app.combinedOutputStates[0].value).toBe(90);
       expect(app.combinedOutputStates[0].color).toBe('#00ff00');
-      // Channel 2: S1 val=80 (color #0000ff), S2 val=20 (color #ffff00).
-      // S1 intensity = 0.8, S2 intensity = 0.2.
-      // With XF=0, only S2 contributes.
-      expect(app.combinedOutputStates[1].value).toBe(20); // (80*0) + (20*1)
+      expect(app.combinedOutputStates[1].value).toBe(20);
       expect(app.combinedOutputStates[1].color).toBe('#ffff00');
     });
 
     it('should correctly blend values and colors with crossfader at 100 (full row1States)', () => {
-      app.crossfaderValue = 100; // Scene 1 is 100%, Scene 2 is 0% influence
+      app.crossfaderValue = 100;
       app.calculateCombinedOutputs();
-      // Channel 1: S1 val=10 (color #ff0000), S2 val=90 (color #00ff00).
-      // With XF=100, only S1 contributes.
-      expect(app.combinedOutputStates[0].value).toBe(10); // (10*1) + (90*0)
+      expect(app.combinedOutputStates[0].value).toBe(10);
       expect(app.combinedOutputStates[0].color).toBe('#ff0000');
-      // Channel 2: S1 val=80 (color #0000ff), S2 val=20 (color #ffff00).
-      // With XF=100, only S1 contributes.
-      expect(app.combinedOutputStates[1].value).toBe(80); // (80*1) + (20*0)
+      expect(app.combinedOutputStates[1].value).toBe(80);
       expect(app.combinedOutputStates[1].color).toBe('#0000ff');
     });
 
     it('should correctly blend values and colors with crossfader at 50 (midpoint)', () => {
       app.crossfaderValue = 50;
       app.calculateCombinedOutputs();
-      // Channel 1: S1 val=10 (#ff0000), S2 val=90 (#00ff00). XF=50.
-      // Combined Value = (10*0.5) + (90*0.5) = 5 + 45 = 50.
-      // Color: intensity1_norm = 0.1, intensity2_norm = 0.9
-      // w1 = 0.1 * 0.5 = 0.05. w2 = 0.9 * 0.5 = 0.45. totalW = 0.50.
-      // ratioS1 = 0.05/0.50 = 0.1. ratioS2 = 0.45/0.50 = 0.9.
-      // R = 255*0.1 + 0*0.9 = 25.5 -> 26 (#1a)
-      // G = 0*0.1 + 255*0.9 = 229.5 -> 230 (#e6)
-      // B = 0. Color = #1ae600
       expect(app.combinedOutputStates[0].value).toBe(50);
       expect(app.combinedOutputStates[0].color).toBe('#1ae600');
-
-      // Channel 2: S1 val=80 (#0000ff), S2 val=20 (#ffff00). XF=50
-      // Combined Value = (80*0.5) + (20*0.5) = 40 + 10 = 50.
-      // Color: intensity1_norm = 0.8, intensity2_norm = 0.2
-      // w1 = 0.8 * 0.5 = 0.4. w2 = 0.2 * 0.5 = 0.1. totalW = 0.5.
-      // ratioS1 = 0.4/0.5 = 0.8. ratioS2 = 0.1/0.5 = 0.2.
-      // R = 0*0.8 + 255*0.2 = 51 (#33)
-      // G = 0*0.8 + 255*0.2 = 51 (#33)
-      // B = 255*0.8 + 0*0.2 = 204 (#cc)
-      // Color = #3333cc
       expect(app.combinedOutputStates[1].value).toBe(50);
       expect(app.combinedOutputStates[1].color).toBe('#3333cc');
     });
@@ -603,7 +553,7 @@ describe('App', () => {
       app['currentNumChannels'] = 1;
       app.crossfaderValue = 50;
       app.calculateCombinedOutputs();
-      expect(app.combinedOutputStates[0].value).toBe(50); // (100*0.5) + (0*0.5)
+      expect(app.combinedOutputStates[0].value).toBe(50);
       expect(app.combinedOutputStates[0].color).toBe('#ff0000');
     });
 
@@ -613,7 +563,7 @@ describe('App', () => {
       app['currentNumChannels'] = 1;
       app.crossfaderValue = 50;
       app.calculateCombinedOutputs();
-      expect(app.combinedOutputStates[0].value).toBe(50); // (0*0.5) + (100*0.5)
+      expect(app.combinedOutputStates[0].value).toBe(50);
       expect(app.combinedOutputStates[0].color).toBe('#00ff00');
     });
 
@@ -629,19 +579,6 @@ describe('App', () => {
 
   });
 
-  // Helper function to dispatch keyboard events
-  function dispatchKeyboardEvent(key: string, code?: string, shiftKey: boolean = false, target: EventTarget = mockDocument.body) {
-    const event = new KeyboardEvent('keydown', {
-      key: key,
-      code: code || key, // Use key if code is not provided (e.g. for '?')
-      bubbles: true,
-      cancelable: true,
-      shiftKey: shiftKey,
-    });
-    target.dispatchEvent(event);
-    fixture.detectChanges(); // Ensure component reacts to the event
-  }
-
   describe('Keyboard Shortcuts', () => {
     let onGoButtonClickSpy: jasmine.Spy;
     let toggleShortcutsModalSpy: jasmine.Spy;
@@ -651,7 +588,6 @@ describe('App', () => {
     let toggleSettingsModalSpy: jasmine.Spy;
 
     beforeEach(() => {
-      // Spies are attached to the 'app' instance from the outer describe block
       onGoButtonClickSpy = spyOn(app, 'onGoButtonClick').and.callThrough();
       toggleShortcutsModalSpy = spyOn(app, 'toggleShortcutsModal').and.callThrough();
       toggleSceneTextInputSpy = spyOn(app, 'toggleSceneTextInput').and.callThrough();
@@ -659,7 +595,6 @@ describe('App', () => {
       closeShortcutsModalSpy = spyOn(app, 'closeShortcutsModal').and.callThrough();
       toggleSettingsModalSpy = spyOn(app, 'toggleSettingsModal').and.callThrough();
 
-      // Ensure modals are closed and no input is focused initially for each test
       app.showShortcutsModal = false;
       app.showSceneTextInputModal = false;
       app.showSettingsModal = false;
@@ -670,22 +605,22 @@ describe('App', () => {
     });
 
     it('should call onGoButtonClick when Spacebar is pressed and no modal/input is active', () => {
-      dispatchKeyboardEvent(' ', 'Space');
+      dispatchKeyboardEvent(' ', mockDocument.body, 'Space');
       expect(onGoButtonClickSpy).toHaveBeenCalled();
     });
 
     it('should call toggleShortcutsModal when "?" is pressed and no modal/input is active', () => {
-      dispatchKeyboardEvent('?');
+      dispatchKeyboardEvent('?', mockDocument.body);
       expect(toggleShortcutsModalSpy).toHaveBeenCalled();
     });
 
     it('should call toggleSceneTextInput(1) when "q" is pressed', () => {
-      dispatchKeyboardEvent('q', 'KeyQ', false);
+      dispatchKeyboardEvent('q', mockDocument.body, 'KeyQ', false);
       expect(toggleSceneTextInputSpy).toHaveBeenCalledWith(1);
     });
 
     it('should call toggleSceneTextInput(2) when "w" is pressed', () => {
-      dispatchKeyboardEvent('w', 'KeyW', false);
+      dispatchKeyboardEvent('w', mockDocument.body, 'KeyW', false);
       expect(toggleSceneTextInputSpy).toHaveBeenCalledWith(2);
     });
 
@@ -693,7 +628,7 @@ describe('App', () => {
       it('should close shortcuts modal if open', () => {
         app.showShortcutsModal = true;
         fixture.detectChanges();
-        dispatchKeyboardEvent('Escape');
+        dispatchKeyboardEvent('Escape', mockDocument.body);
         expect(closeShortcutsModalSpy).toHaveBeenCalled();
         expect(app.showShortcutsModal).toBeFalse();
       });
@@ -701,7 +636,7 @@ describe('App', () => {
       it('should close scene text input modal if open (and shortcuts modal is not)', () => {
         app.showSceneTextInputModal = true;
         fixture.detectChanges();
-        dispatchKeyboardEvent('Escape');
+        dispatchKeyboardEvent('Escape', mockDocument.body);
         expect(handleCloseSceneTextInputModalSpy).toHaveBeenCalled();
         expect(app.showSceneTextInputModal).toBeFalse();
       });
@@ -709,8 +644,8 @@ describe('App', () => {
       it('should close settings modal if open (and other modals are not)', () => {
         app.showSettingsModal = true;
         fixture.detectChanges();
-        dispatchKeyboardEvent('Escape');
-        expect(toggleSettingsModalSpy).toHaveBeenCalled(); // toggleSettingsModal is used to close it
+        dispatchKeyboardEvent('Escape', mockDocument.body);
+        expect(toggleSettingsModalSpy).toHaveBeenCalled();
         expect(app.showSettingsModal).toBeFalse();
       });
 
@@ -718,22 +653,22 @@ describe('App', () => {
         app.showShortcutsModal = true;
         app.showSceneTextInputModal = true;
         fixture.detectChanges();
-        dispatchKeyboardEvent('Escape');
+        dispatchKeyboardEvent('Escape', mockDocument.body);
         expect(closeShortcutsModalSpy).toHaveBeenCalled();
         expect(handleCloseSceneTextInputModalSpy).not.toHaveBeenCalled();
         expect(app.showShortcutsModal).toBeFalse();
-        expect(app.showSceneTextInputModal).toBeTrue(); // Should still be open
+        expect(app.showSceneTextInputModal).toBeTrue();
       });
 
        it('should prioritize scene text input modal over settings modal for Escape', () => {
         app.showSceneTextInputModal = true;
         app.showSettingsModal = true;
         fixture.detectChanges();
-        dispatchKeyboardEvent('Escape');
+        dispatchKeyboardEvent('Escape', mockDocument.body);
         expect(handleCloseSceneTextInputModalSpy).toHaveBeenCalled();
         expect(toggleSettingsModalSpy).not.toHaveBeenCalled();
         expect(app.showSceneTextInputModal).toBeFalse();
-        expect(app.showSettingsModal).toBeTrue(); // Should still be open
+        expect(app.showSettingsModal).toBeTrue();
       });
     });
 
@@ -755,22 +690,21 @@ describe('App', () => {
               const input = mockDocument.createElement('input');
               mockDocument.body.appendChild(input);
               input.focus();
-              fixture.detectChanges(); // ensure focus is registered
-              dispatchKeyboardEvent(tc.key, tc.code, tc.shift, input);
-              mockDocument.body.removeChild(input); // cleanup
+              fixture.detectChanges();
+              dispatchKeyboardEvent(tc.key, input, tc.code, tc.shift);
+              mockDocument.body.removeChild(input);
               expect(tc.spy()).not.toHaveBeenCalled();
-              return; // exit after specific input test logic
+              return;
             }
 
             fixture.detectChanges();
-            dispatchKeyboardEvent(tc.key, tc.code, tc.shift);
+            dispatchKeyboardEvent(tc.key, mockDocument.body, tc.code, tc.shift);
             if (tc.args.length > 0) {
                  expect(tc.spy()).not.toHaveBeenCalledWith(...tc.args);
             } else {
                  expect(tc.spy()).not.toHaveBeenCalled();
             }
 
-            // Reset modal states for next iteration
             app.showSceneTextInputModal = false;
             app.showShortcutsModal = false;
             app.showSettingsModal = false;
@@ -825,7 +759,7 @@ describe('App', () => {
       spyOn(app['cdr'], 'detectChanges').and.callThrough();
 
       sliderElement.value = newDuration.toString();
-      sliderElement.dispatchEvent(new Event('input')); // Simulate input event
+      sliderElement.dispatchEvent(new Event('input'));
       fixture.detectChanges();
 
       expect(app.onCrossfadeDurationSliderChange).toHaveBeenCalled();
