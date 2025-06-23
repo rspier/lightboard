@@ -71,8 +71,13 @@ export class App implements OnInit, OnDestroy {
   private currentBackendUrl: string;
   private currentCrossfadeDurationMs: number;
   private currentDarkMode: boolean;
+  isShiftPressed: boolean = false; // For dynamic arrow and shift-action
+  // effectiveGoTarget will be determined by a method now
+
   private defaultColorsScene1: string[] = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ffa500', '#800080', '#a52a2a', '#808000', '#008080', '#800000'];
   private defaultColorsScene2: string[] = ['#00ffff', '#ff00ff', '#ffff00', '#0000ff', '#00ff00', '#ff0000', '#800080', '#ffa500', '#808000', '#a52a2a', '#800000', '#008080'];
+  private unlistenShiftDown: (() => void) | undefined;
+  private unlistenShiftUp: (() => void) | undefined;
 
   constructor(
     private cdr: ChangeDetectorRef,
@@ -131,7 +136,21 @@ export class App implements OnInit, OnDestroy {
       this.cdr.detectChanges();
     });
 
-    // Setup global keyboard listener for shortcuts
+    // Shift key listeners
+    this.unlistenShiftDown = this.renderer.listen('document', 'keydown', (event: KeyboardEvent) => {
+      if (event.key === 'Shift' && !this.isShiftPressed) {
+        this.isShiftPressed = true;
+        this.updateEffectiveGoTarget();
+      }
+    });
+    this.unlistenShiftUp = this.renderer.listen('document', 'keyup', (event: KeyboardEvent) => {
+      if (event.key === 'Shift' && this.isShiftPressed) {
+        this.isShiftPressed = false;
+        this.updateEffectiveGoTarget();
+      }
+    });
+
+    // Setup global keyboard listener for other shortcuts
     this.unlistenKeyDown = this.renderer.listen('document', 'keydown', (event: KeyboardEvent) => {
       const activeElement = document.activeElement as HTMLElement;
       const isInputFocused = activeElement &&
@@ -141,42 +160,30 @@ export class App implements OnInit, OnDestroy {
 
       // Handle Escape key for modals first
       if (event.key === 'Escape') {
-        if (this.showShortcutsModal) {
-          event.preventDefault();
-          this.closeShortcutsModal();
-          return; // Escape used for shortcuts modal, stop further processing
-        }
-        if (this.showSceneTextInputModal) {
-          event.preventDefault();
-          this.handleCloseSceneTextInputModal();
-          return; // Escape used for scene text input modal
-        }
-        if (this.showSettingsModal) {
-          event.preventDefault();
-          this.toggleSettingsModal(); // Close settings modal
+        if (this.showShortcutsModal) { event.preventDefault(); this.closeShortcutsModal(); return; }
+        if (this.showSceneTextInputModal) { event.preventDefault(); this.handleCloseSceneTextInputModal(); return; }
+        if (this.showSettingsModal) { event.preventDefault(); this.toggleSettingsModal(); return; }
+      }
+
+      // If Shift is pressed, it might be part of Space+Shift for Go button, or another Shift-modified shortcut (none currently)
+      // The primary check for other shortcuts not to activate when an input/modal is active:
+      if (isInputFocused || this.showSceneTextInputModal || this.showSettingsModal || this.showShortcutsModal) {
+        // Allow Shift key itself to pass through for its own state tracking, even if a modal is open.
+        // Otherwise, if a modal opens while Shift is held, 'isShiftPressed' might get stuck.
+        if (event.key !== 'Shift') {
           return;
         }
       }
 
-      // Prevent other shortcuts if any modal is open or an input is focused
-      // (and the key pressed was not Escape, as that's handled above)
-      if (isInputFocused || this.showSceneTextInputModal || this.showSettingsModal || this.showShortcutsModal) {
-        return;
-      }
-
       // Process other shortcuts
-      if (!event.shiftKey && event.key.toLowerCase() === 'q') {
+      // Note: event.shiftKey is used here for Q and W to ensure they are NOT triggered if Shift is held.
+      // For Spacebar, onGoButtonClick will use this.isShiftPressed internally.
+      if (!event.shiftKey && event.key.toLowerCase() === 'q') { event.preventDefault(); this.toggleSceneTextInput(1); }
+      else if (!event.shiftKey && event.key.toLowerCase() === 'w') { event.preventDefault(); this.toggleSceneTextInput(2); }
+      else if (event.key === '?') { event.preventDefault(); this.toggleShortcutsModal(); }
+      else if (event.code === 'Space' || event.key === ' ') {
         event.preventDefault();
-        this.toggleSceneTextInput(1);
-      } else if (!event.shiftKey && event.key.toLowerCase() === 'w') {
-        event.preventDefault();
-        this.toggleSceneTextInput(2);
-      } else if (event.key === '?') {
-        event.preventDefault();
-        this.toggleShortcutsModal();
-      } else if (event.code === 'Space' || event.key === ' ') { // Spacebar for Go button
-        event.preventDefault();
-        this.onGoButtonClick();
+        this.onGoButtonClick(); // onGoButtonClick will use this.isShiftPressed
       }
     });
 
@@ -189,7 +196,9 @@ export class App implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     if (this.animationInterval) { clearInterval(this.animationInterval); }
     if (this.settingsSubscription) { this.settingsSubscription.unsubscribe(); }
-    if (this.unlistenKeyDown) { this.unlistenKeyDown(); } // Cleanup global listener
+    if (this.unlistenKeyDown) { this.unlistenKeyDown(); }
+    if (this.unlistenShiftDown) { this.unlistenShiftDown(); }
+    if (this.unlistenShiftUp) { this.unlistenShiftUp(); }
   }
 
   private applyTheme(isDarkMode: boolean): void {
@@ -256,8 +265,13 @@ export class App implements OnInit, OnDestroy {
     });
   }
 
+  getEffectiveGoTarget(): 0 | 100 {
+    const naturalTargetValue = this.crossfaderValue >= 50 ? 0 : 100;
+    return this.isShiftPressed ? (naturalTargetValue === 0 ? 100 : 0) : naturalTargetValue;
+  }
+
   onPotentiometerChange(): void { this.calculateCombinedOutputs(); if (this.currentBackendUrl && this.combinedOutputStates && this.combinedOutputStates.length > 0) { this.httpDataService.postCombinedOutput(this.currentBackendUrl, this.combinedOutputStates as CombinedOutputData[]).subscribe({ next: () => {}, error: (err) => { console.error('Error posting data:', err); } }); } }
-  onGoButtonClick(event?: MouseEvent): void {
+  onGoButtonClick(event?: MouseEvent): void { // event is passed but isShiftPressed property is now the source of truth for shift state affecting action
     if (this.isAnimating) {
       if (this.animationInterval) {
         clearInterval(this.animationInterval);
@@ -266,16 +280,18 @@ export class App implements OnInit, OnDestroy {
       this.isAnimating = false;
       this.cdr.detectChanges();
     } else {
-      let naturalTargetValue = this.crossfaderValue >= 50 ? 0 : 100;
-      let actualTargetValue = naturalTargetValue;
-
-      if (event && event.shiftKey) {
-        actualTargetValue = naturalTargetValue === 0 ? 100 : 0;
-      }
-      this.animateCrossfader(actualTargetValue);
+      this.animateCrossfader(this.getEffectiveGoTarget());
     }
   }
   animateCrossfader(targetValue: number): void { this.isAnimating = true; if (this.animationInterval) clearInterval(this.animationInterval); const totalDuration = this.currentCrossfadeDurationMs; const steps = 25; const intervalDuration = Math.max(1, totalDuration / steps); const initialValue = this.crossfaderValue; const stepSize = (targetValue - initialValue) / steps; let currentStep = 0; this.animationInterval = setInterval(() => { currentStep++; if (currentStep >= steps) { this.crossfaderValue = targetValue; clearInterval(this.animationInterval); this.animationInterval = null; this.isAnimating = false; } else { this.crossfaderValue = initialValue + (stepSize * currentStep); } this.crossfaderValue = Math.max(0, Math.min(100, this.crossfaderValue)); this.onPotentiometerChange(); this.cdr.detectChanges(); }, intervalDuration); }
+
+  private updateEffectiveGoTarget(): void {
+    // This method is called on Shift keydown/keyup to update UI if needed
+    // For now, button text relies on getEffectiveGoTarget directly,
+    // but cdr.detectChanges() ensures Shift state change is reflected.
+    this.cdr.detectChanges();
+  }
+
   toggleSettingsModal(): void {
     this.showSettingsModal = !this.showSettingsModal;
     this.cdr.detectChanges(); // Ensure UI updates
