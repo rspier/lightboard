@@ -257,7 +257,24 @@ export class App implements OnInit, OnDestroy {
   }
 
   onPotentiometerChange(): void { this.calculateCombinedOutputs(); if (this.currentBackendUrl && this.combinedOutputStates && this.combinedOutputStates.length > 0) { this.httpDataService.postCombinedOutput(this.currentBackendUrl, this.combinedOutputStates as CombinedOutputData[]).subscribe({ next: () => {}, error: (err) => { console.error('Error posting data:', err); } }); } }
-  onGoButtonClick(): void { if (this.isAnimating) { if (this.animationInterval) { clearInterval(this.animationInterval); this.animationInterval = null; } this.isAnimating = false; this.cdr.detectChanges(); } else { const targetValue = this.crossfaderValue >= 50 ? 0 : 100; this.animateCrossfader(targetValue); } }
+  onGoButtonClick(event?: MouseEvent): void {
+    if (this.isAnimating) {
+      if (this.animationInterval) {
+        clearInterval(this.animationInterval);
+        this.animationInterval = null;
+      }
+      this.isAnimating = false;
+      this.cdr.detectChanges();
+    } else {
+      let naturalTargetValue = this.crossfaderValue >= 50 ? 0 : 100;
+      let actualTargetValue = naturalTargetValue;
+
+      if (event && event.shiftKey) {
+        actualTargetValue = naturalTargetValue === 0 ? 100 : 0;
+      }
+      this.animateCrossfader(actualTargetValue);
+    }
+  }
   animateCrossfader(targetValue: number): void { this.isAnimating = true; if (this.animationInterval) clearInterval(this.animationInterval); const totalDuration = this.currentCrossfadeDurationMs; const steps = 25; const intervalDuration = Math.max(1, totalDuration / steps); const initialValue = this.crossfaderValue; const stepSize = (targetValue - initialValue) / steps; let currentStep = 0; this.animationInterval = setInterval(() => { currentStep++; if (currentStep >= steps) { this.crossfaderValue = targetValue; clearInterval(this.animationInterval); this.animationInterval = null; this.isAnimating = false; } else { this.crossfaderValue = initialValue + (stepSize * currentStep); } this.crossfaderValue = Math.max(0, Math.min(100, this.crossfaderValue)); this.onPotentiometerChange(); this.cdr.detectChanges(); }, intervalDuration); }
   toggleSettingsModal(): void {
     this.showSettingsModal = !this.showSettingsModal;

@@ -29,6 +29,6 @@ jobs:
     - name: Run tests
       run: |
         cd lightboard
-        npm test -- --no-watch --no-progress --browsers=ChromeHeadlessCI
+        npm test -- --no-watch --no-progress --browsers=ChromeHeadless
       env:
         CHROME_BIN: ${{ env.CHROME_BIN }}

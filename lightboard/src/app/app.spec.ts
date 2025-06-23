@@ -379,6 +379,34 @@ describe('App', () => {
       app.isAnimating = false;
       app.crossfaderValue = 50; // Reset to a common default if needed
       fixture.detectChanges();
+
+      // Test Shift key functionality
+      // Scenario 1: crossfaderValue >= 50, Shift pressed, should target 100
+      app.crossfaderValue = 70; // current value >= 50, natural target 0
+      app.isAnimating = false;
+      fixture.detectChanges();
+      expect(goButton.textContent.trim()).toBe('Go ↓');
+
+      goButton.dispatchEvent(new MouseEvent('click', { shiftKey: true }));
+      expect(animateCrossfaderSpy).toHaveBeenCalledWith(100); // Reversed target
+      expect(app.isAnimating).toBeTrue(); // Set by spy
+      expect(goButton.textContent.trim()).toBe('Stop');
+
+      // Scenario 2: crossfaderValue < 50, Shift pressed, should target 0
+      app.crossfaderValue = 30; // current value < 50, natural target 100
+      app.isAnimating = false; // Reset from previous animation
+      fixture.detectChanges();
+      expect(goButton.textContent.trim()).toBe('Go ↑');
+
+      goButton.dispatchEvent(new MouseEvent('click', { shiftKey: true }));
+      expect(animateCrossfaderSpy).toHaveBeenCalledWith(0); // Reversed target
+      expect(app.isAnimating).toBeTrue(); // Set by spy
+      expect(goButton.textContent.trim()).toBe('Stop');
+
+      // Reset state after shift tests
+      app.isAnimating = false;
+      app.crossfaderValue = 50;
+      fixture.detectChanges();
     });
 
     // Nested describe for tests that specifically need Jasmine Clock
