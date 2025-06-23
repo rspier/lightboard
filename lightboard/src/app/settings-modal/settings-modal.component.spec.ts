@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing'; // Import fakeAsync, tick
+import { ComponentFixture, TestBed, waitForAsync, tick } from '@angular/core/testing'; // Import waitForAsync, tick
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { SettingsModalComponent } from './settings-modal.component';
@@ -212,31 +212,35 @@ describe('SettingsModalComponent', () => {
     // expect(component.durationError).toBeNull(); // Removed
   });
 
-  it('should bind darkMode to the checkbox and reflect user interactions', fakeAsync(() => {
+  it('should bind darkMode to the checkbox and reflect user interactions', waitForAsync(() => {
     const checkbox = fixture.debugElement.query(By.css('#dark-mode-toggle')).nativeElement as HTMLInputElement;
 
     // Test component property to view binding
     component.darkMode = true;
     fixture.detectChanges();
-    tick(); // Ensure model is stable
-    expect(checkbox.checked).toBeTrue();
+    fixture.whenStable().then(() => {
+      expect(checkbox.checked).toBeTrue();
 
-    component.darkMode = false;
-    fixture.detectChanges();
-    tick(); // Ensure model is stable
-    expect(checkbox.checked).toBeFalse();
+      component.darkMode = false;
+      fixture.detectChanges();
+      return fixture.whenStable();
+    }).then(() => {
+      expect(checkbox.checked).toBeFalse();
 
-    // Test view to component property binding (simulating user interaction)
-    checkbox.checked = true;
-    checkbox.dispatchEvent(new Event('change'));
-    fixture.detectChanges();
-    tick(); // Allow ngModel to propagate the change
-    expect(component.darkMode).toBeTrue();
+      // Test view to component property binding (simulating user interaction)
+      checkbox.checked = true;
+      checkbox.dispatchEvent(new Event('change'));
+      fixture.detectChanges();
+      return fixture.whenStable();
+    }).then(() => {
+      expect(component.darkMode).toBeTrue();
 
-    checkbox.checked = false;
-    checkbox.dispatchEvent(new Event('change'));
-    fixture.detectChanges();
-    tick(); // Allow ngModel to propagate the change
-    expect(component.darkMode).toBeFalse();
+      checkbox.checked = false;
+      checkbox.dispatchEvent(new Event('change'));
+      fixture.detectChanges();
+      return fixture.whenStable();
+    }).then(() => {
+      expect(component.darkMode).toBeFalse();
+    });
   }));
 });
