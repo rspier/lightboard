@@ -33,6 +33,10 @@
   --button-secondary-hover-bg-color: #545b62;
   --button-disabled-bg-color: #cccccc;
   --button-disabled-text-color: #666666;
+
+  /* Variables for slider thumb bevel effect */
+  --slider-thumb-bevel-highlight: rgba(255, 255, 255, 0.7);
+  --slider-thumb-bevel-shadow: rgba(0, 0, 0, 0.3);
 }
 
 body.dark-theme { /* Or just .dark-theme if class applied to app-root */
@@ -69,6 +73,10 @@ body.dark-theme { /* Or just .dark-theme if class applied to app-root */
   --button-secondary-hover-bg-color: #495057;
   --button-disabled-bg-color: #444444;
   --button-disabled-text-color: #888888;
+
+  /* Dark theme variables for slider thumb bevel effect */
+  --slider-thumb-bevel-highlight: rgba(255, 255, 255, 0.15); /* Less intense on dark backgrounds */
+  --slider-thumb-bevel-shadow: rgba(0, 0, 0, 0.4);       /* Can be a bit more pronounced */
 }
 
 /* Apply base background and text color to body */
