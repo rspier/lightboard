@@ -1,0 +1,34 @@
+name: Angular CI
+
+on: [push]
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20' # Using a recent LTS version
+
+    - name: Install dependencies
+      run: |
+        cd lightboard
+        npm install --include=dev
+
+    - name: Set CHROME_BIN for Karma
+      run: |
+        cd lightboard
+        export CHROME_BIN=$(node -p -e "require('puppeteer').executablePath()")
+        echo "CHROME_BIN=${CHROME_BIN}" >> $GITHUB_ENV
+
+    - name: Run tests
+      run: |
+        cd lightboard
+        npm test -- --no-watch --no-progress --browsers=ChromeHeadlessCI
+      env:
+        CHROME_BIN: ${{ env.CHROME_BIN }}
