@@ -230,6 +230,11 @@ input[type="range"]::-moz-range-thumb {
   background-color: var(--slider-tick-end-color, #222); /* Slightly different dark color for 100% tick */
 }
 
+.tick-mark-start {
+  height: 2.5px; /* Make the 0% tick also prominent */
+  background-color: var(--slider-tick-start-color, #222); /* Same as end-color by default, can be different */
+}
+
 /* Adjust dark theme variables for ticks */
 :host-context(body.dark-theme) .tick-mark {
   background-color: var(--slider-tick-color-dark, #666);
@@ -241,4 +246,8 @@ input[type="range"]::-moz-range-thumb {
 
 :host-context(body.dark-theme) .tick-mark-end {
   background-color: var(--slider-tick-end-color-dark, #ddd);
+}
+
+:host-context(body.dark-theme) .tick-mark-start {
+  background-color: var(--slider-tick-start-color-dark, #ddd); /* Same as end-color dark by default */
 }
