@@ -66,7 +66,7 @@ export class CombinedOutputDisplayComponent {
       const color2Str = this.rgbToHex(finalR2, finalG2, finalB2);
 
       // Simpler checkerboard pattern
-      const size = '10px'; // Size of each square in the checkerboard
+      const size = '20px'; // Size of each square in the checkerboard - Increased from 10px
       return {
         'background-image': `repeating-conic-gradient(${color1Str} 0% 25%, ${color2Str} 25% 50%)`,
         'background-size': `${size} ${size}`,

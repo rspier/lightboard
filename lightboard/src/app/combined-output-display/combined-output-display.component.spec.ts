@@ -97,7 +97,7 @@ describe('CombinedOutputDisplayComponent', () => {
     fixture.detectChanges();
     const styles = component.displayStyle;
     expect(styles['background-image']).toContain('repeating-conic-gradient(#ff0000 0% 25%, #0000ff 25% 50%)');
-    expect(styles['background-size']).toBe('10px 10px');
+    expect(styles['background-size']).toBe('20px 20px'); // Updated expectation
     // Text color will depend on average luminance of #ff0000 and #0000ff
     // (0.2126 * 255 + 0.0722 * 255) / 2 / 255 = (0.2126 + 0.0722) / 2 = 0.2848 / 2 = 0.1424. Luminance < 0.5 -> white text
     expect(styles['color']).toBe('#ffffff');
@@ -110,7 +110,7 @@ describe('CombinedOutputDisplayComponent', () => {
     fixture.detectChanges();
     const styles = component.displayStyle;
     expect(styles['background-image']).toContain('repeating-conic-gradient(#800000 0% 25%, #000080 25% 50%)');
-    expect(styles['background-size']).toBe('10px 10px');
+    expect(styles['background-size']).toBe('20px 20px');  // Updated expectation
     // Avg luminance of #800000 and #000080 will also be low, text white.
     expect(styles['color']).toBe('#ffffff');
   });
