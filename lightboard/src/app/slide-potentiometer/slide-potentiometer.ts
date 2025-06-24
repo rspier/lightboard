@@ -89,4 +89,9 @@ export class SlidePotentiometerComponent {
     const valueForLength = this.invertTickMarkLogic ? (100 - physicalTickPosition) : physicalTickPosition;
     return valueForLength === 50;
   }
+
+  public isEffectiveEndPoint(physicalTickPosition: number): boolean {
+    const valueForLength = this.invertTickMarkLogic ? (100 - physicalTickPosition) : physicalTickPosition;
+    return valueForLength === 100;
+  }
 }

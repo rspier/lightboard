@@ -205,24 +205,13 @@ input[type="range"]::-moz-range-thumb {
 
 .tick-marks-left {
   /* Positioned such that its right edge aligns with the left edge of the slider track area */
-  /* Slider input width 20px, track width 8px. Track starts at (20-8)/2 = 6px from left of input. */
-  /* To place left ticks extending leftwards from track: container_left_edge = input_left_edge + track_start_offset - container_width */
-  /* left: calc(6px - 15px); /* This would be -9px, places left edge of container */
-  /* Let's try to make the ticks appear to emanate from the center of where the track would be visually. */
-  /* The input is 20px wide. The .slider-wrapper will be ~20px wide. */
-  /* To place the 15px wide tick container to the left of the input: */
-  left: -17px; /* (15px width of ticks + 2px gap) */
+  left: -17px; /* (15px width of ticks + 2px gap from input edge) */
+  align-items: flex-end; /* Makes individual ticks align to the right (end) of this container */
 }
 
 .tick-marks-right {
-  /* To place the 15px wide tick container to the right of the input: */
-  right: -17px; /* (15px width of ticks + 2px gap) */
-  /* Individual ticks will have their width set dynamically.
-     If ticks should visually grow from track outwards:
-     .tick-marks-right .tick-mark { align-self: flex-start; }
-     .tick-marks-left .tick-mark { align-self: flex-end; }
-     This is handled by the container's alignment for now.
-  */
+  right: -17px; /* (15px width of ticks + 2px gap from input edge) */
+  align-items: flex-start; /* Makes individual ticks align to the left (start) of this container (default) */
 }
 
 .tick-mark {
@@ -233,7 +222,12 @@ input[type="range"]::-moz-range-thumb {
 
 .tick-mark-mid {
   height: 2px; /* Make the 50% tick thicker */
-  background-color: var(--slider-tick-mid-color, #555); /* Darker/more prominent color for 50% tick */
+  background-color: var(--slider-tick-mid-color, #555);
+}
+
+.tick-mark-end {
+  height: 2px; /* Make the 100% tick also thicker, same as 50% or slightly different */
+  background-color: var(--slider-tick-end-color, #333); /* Distinct color for 100% tick */
 }
 
 /* Adjust dark theme variables for ticks */
@@ -243,4 +237,8 @@ input[type="range"]::-moz-range-thumb {
 
 :host-context(body.dark-theme) .tick-mark-mid {
   background-color: var(--slider-tick-mid-color-dark, #bbb);
+}
+
+:host-context(body.dark-theme) .tick-mark-end {
+  background-color: var(--slider-tick-end-color-dark, #ddd);
 }

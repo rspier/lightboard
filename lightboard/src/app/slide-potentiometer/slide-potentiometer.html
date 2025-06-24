@@ -16,6 +16,7 @@
     <div *ngFor="let physicalTickPosition of [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]"
          class="tick-mark"
          [class.tick-mark-mid]="isEffectiveMidPoint(physicalTickPosition)"
+         [class.tick-mark-end]="isEffectiveEndPoint(physicalTickPosition)"
          [style.width.px]="getEffectiveTickWidth(physicalTickPosition)">
     </div>
   </div>
@@ -23,6 +24,7 @@
     <div *ngFor="let physicalTickPosition of [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]"
          class="tick-mark"
          [class.tick-mark-mid]="isEffectiveMidPoint(physicalTickPosition)"
+         [class.tick-mark-end]="isEffectiveEndPoint(physicalTickPosition)"
          [style.width.px]="getEffectiveTickWidth(physicalTickPosition)">
     </div>
   </div>
