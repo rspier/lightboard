@@ -11,9 +11,14 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular/build:application",
+          "builder": "@angular-builders/custom-webpack:browser",
           "options": {
-            "browser": "src/main.ts",
+            "customWebpackConfig": {
+              "path": "./custom-webpack.config.js"
+            },
+            "main": "src/main.ts", // For :browser, this is typically 'main' not 'browser'
+            "index": "src/index.html", // :browser needs an index
+            "outputPath": "dist/lightboard", // Explicitly define outputPath
             "tsConfig": "tsconfig.app.json",
             "assets": [
               {
@@ -50,7 +55,7 @@
           "defaultConfiguration": "production"
         },
         "serve": {
-          "builder": "@angular/build:dev-server",
+          "builder": "@angular-builders/custom-webpack:dev-server",
           "configurations": {
             "production": {
               "buildTarget": "lightboard:build:production"

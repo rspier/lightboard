@@ -4,8 +4,6 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "generate-version": "node scripts/generate-version.js",
-    "prebuild": "npm run generate-version",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
@@ -22,11 +20,13 @@
     "tslib": "^2.3.0"
   },
   "devDependencies": {
+    "@angular-builders/custom-webpack": "20.0.0-beta.0",
     "@angular/build": "^20.0.3",
     "@angular/cli": "^20.0.3",
     "@angular/compiler-cli": "^20.0.0",
     "@angular/platform-browser-dynamic": "^20.0.4",
     "@types/jasmine": "~5.1.0",
+    "git-revision-webpack-plugin": "^5.0.0",
     "jasmine-core": "~5.7.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
@@ -35,6 +35,7 @@
     "karma-jasmine-html-reporter": "~2.1.0",
     "puppeteer": "^24.10.2",
     "typescript": "~5.8.2",
+    "webpack": "^5.0.0",
     "zone.js": "^0.15.1"
   }
 }

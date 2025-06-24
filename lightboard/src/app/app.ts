@@ -11,7 +11,9 @@ import { SceneTextInputModalComponent } from './scene-text-input-modal/scene-tex
 // import { RotaryDialComponent } from './rotary-dial/rotary-dial.component'; // Removed
 import { ChannelSettingsService, AppSettings } from './channel-settings.service';
 import { HttpDataService, CombinedOutputData } from './http-data.service';
-import { GIT_COMMIT_HASH } from '../environments/version';
+
+// Declare process to access environment variables injected by webpack
+declare var process: any;
 
 interface PotentiometerState {
   channelNumber: number;
@@ -44,7 +46,7 @@ interface ParsedCommand {
 })
 export class App implements OnInit, OnDestroy {
   protected title = 'lightboard';
-  public gitCommitHash: string = GIT_COMMIT_HASH;
+  public gitCommitHash: string = process.env.GIT_COMMIT_HASH;
 
   row1States: PotentiometerState[] = [];
   row2States: PotentiometerState[] = [];
