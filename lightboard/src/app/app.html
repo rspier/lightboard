@@ -19,9 +19,9 @@
                 *ngFor="let state of row1States; trackBy: trackByState"
                 [channelNumber]="state.channelNumber"
                 [(value)]="state.value"
-                (valueChange)="onPotentiometerChange()"
+                (valueChange)="updateAudioEngineAndPostData()"
                 [color]="state.color"
-                (colorChange)="state.color = $event; onPotentiometerChange()"
+                (colorChange)="state.color = $event; updateAudioEngineAndPostData()"
                 [showChannelInfo]="true">
               </app-slide-potentiometer>
             </div>
@@ -46,9 +46,9 @@
                 *ngFor="let state of row2States; trackBy: trackByState"
                 [channelNumber]="state.channelNumber"
                 [(value)]="state.value"
-                (valueChange)="onPotentiometerChange()"
+                (valueChange)="updateAudioEngineAndPostData()"
                 [color]="state.color"
-                (colorChange)="state.color = $event; onPotentiometerChange()"
+                (colorChange)="state.color = $event; updateAudioEngineAndPostData()"
                 [showChannelInfo]="true">
               </app-slide-potentiometer>
             </div>
@@ -57,17 +57,35 @@
 
         </div>
         <div class="crossfader-column">
-          <app-slide-potentiometer
-            id="crossfader"
-            [channelNumber]="0"
-            channelDescription="X-Fader"
-            [(value)]="crossfaderValue"
-            (valueChange)="onPotentiometerChange()"
-            [sliderHeight]="'320px'"
-            [showChannelInfo]="false"
-            [showValueDisplay]="false"
-            [showColorInput]="false">
-          </app-slide-potentiometer>
+          <div class="fader-container">
+            <div class="fader-wrapper">
+              <label for="scene1Fader" class="fader-label">Scene 1</label>
+              <app-slide-potentiometer
+                id="scene1Fader"
+                [channelNumber]="0"
+                [(value)]="scene1FaderValue"
+                (valueChange)="onScene1FaderManualChange()"
+                [sliderHeight]="'280px'"
+                [showChannelInfo]="false"
+                [showValueDisplay]="false"
+                [showColorInput]="false">
+              </app-slide-potentiometer>
+            </div>
+            <div class="fader-wrapper">
+              <label for="scene2Fader" class="fader-label">Scene 2</label>
+              <app-slide-potentiometer
+                id="scene2Fader"
+                [channelNumber]="0"
+                [(value)]="scene2FaderValue"
+                (valueChange)="onScene2FaderManualChange()"
+                [sliderHeight]="'280px'"
+                [showChannelInfo]="false"
+                [showValueDisplay]="false"
+                [showColorInput]="false">
+              </app-slide-potentiometer>
+            </div>
+          </div>
+          <button (click)="toggleFaderLink()" class="link-faders-button">{{ fadersLinked ? 'Unlink Faders' : 'Link Faders' }}</button>
           <button (click)="onGoButtonClick($event)" class="go-button" [class.animating]="isAnimating">{{ isAnimating ? 'Stop' : (getEffectiveGoTarget() === 0 ? 'Go ↓' : 'Go ↑') }}</button>
           <div class="crossfade-slider-container">
             <label for="crossfade-duration-slider" class="duration-slider-label">X-Fade: {{ displayCrossfadeDurationSeconds }}s</label>

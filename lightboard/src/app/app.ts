@@ -46,7 +46,9 @@ export class App implements OnInit, OnDestroy {
 
   row1States: PotentiometerState[] = [];
   row2States: PotentiometerState[] = [];
-  crossfaderValue: number = 50;
+  scene1FaderValue: number = 50; // Renamed from crossfaderValue
+  scene2FaderValue: number = 50; // New fader for Scene 2 (linked to scene1FaderValue by default)
+  fadersLinked: boolean = true;    // To toggle linked behavior
   combinedOutputStates: PotentiometerState[] = [];
   isAnimating: boolean = false;
   animationInterval: any = null;
@@ -218,7 +220,7 @@ export class App implements OnInit, OnDestroy {
 
     this.combinedOutputStates = this.row1States.map((row1State, index) => {
       const row2State = this.row2States[index];
-      const crossfadeS1Ratio = this.crossfaderValue / 100; // Scene 1's influence
+      const crossfadeS1Ratio = this.scene1FaderValue / 100; // Scene 1's influence (using scene1FaderValue)
       const crossfadeS2Ratio = 1 - crossfadeS1Ratio;    // Scene 2's influence
 
       // Calculate combined intensity (value) - remains unchanged
@@ -266,18 +268,60 @@ export class App implements OnInit, OnDestroy {
   }
 
   getEffectiveGoTarget(): 0 | 100 {
-    if (this.crossfaderValue === 0) {
+    if (this.scene1FaderValue === 0) { // Changed from crossfaderValue
       return 100; // Only one way to go: up
     }
-    if (this.crossfaderValue === 100) {
+    if (this.scene1FaderValue === 100) { // Changed from crossfaderValue
       return 0; // Only one way to go: down
     }
     // For intermediate values, Shift reverses the natural direction
-    const naturalTargetValue = this.crossfaderValue >= 50 ? 0 : 100;
+    const naturalTargetValue = this.scene1FaderValue >= 50 ? 0 : 100; // Changed from crossfaderValue
     return this.isShiftPressed ? (naturalTargetValue === 0 ? 100 : 0) : naturalTargetValue;
   }
 
-  onPotentiometerChange(): void { this.calculateCombinedOutputs(); if (this.currentBackendUrl && this.combinedOutputStates && this.combinedOutputStates.length > 0) { this.httpDataService.postCombinedOutput(this.currentBackendUrl, this.combinedOutputStates as CombinedOutputData[]).subscribe({ next: () => {}, error: (err) => { console.error('Error posting data:', err); } }); } }
+  // Renamed from onPotentiometerChange
+  updateAudioEngineAndPostData(): void {
+    this.calculateCombinedOutputs();
+    if (this.currentBackendUrl && this.combinedOutputStates && this.combinedOutputStates.length > 0) {
+      this.httpDataService.postCombinedOutput(this.currentBackendUrl, this.combinedOutputStates as CombinedOutputData[]).subscribe({
+        next: () => {},
+        error: (err) => { console.error('Error posting data:', err); }
+      });
+    }
+  }
+
+  onScene1FaderManualChange(): void {
+    // scene1FaderValue is already updated by [(ngModel)]
+    if (this.fadersLinked) {
+      this.scene2FaderValue = 100 - this.scene1FaderValue;
+    }
+    this.updateAudioEngineAndPostData();
+  }
+
+  onScene2FaderManualChange(): void {
+    // scene2FaderValue is already updated by [(ngModel)]
+    // This slider effectively controls scene1FaderValue inversely.
+    this.scene1FaderValue = 100 - this.scene2FaderValue;
+    // If faders are linked, this change in scene1FaderValue would be reflected back to scene2FaderValue
+    // by onScene1FaderManualChange if it were called. But we are in scene2's handler.
+    // The key is that scene1FaderValue, the canonical source, is now updated.
+    // If linked, scene2FaderValue should already be what it is.
+    // If they became unlinked and then scene2 was moved, scene1 gets updated, and scene2 is where user put it.
+    this.updateAudioEngineAndPostData();
+  }
+
+  toggleFaderLink(): void {
+    this.fadersLinked = !this.fadersLinked;
+    if (this.fadersLinked) {
+      // When linking, Scene 1 fader takes precedence and Scene 2 fader syncs to it.
+      this.scene2FaderValue = 100 - this.scene1FaderValue;
+      // Potentially call updateAudioEngineAndPostData if scene2FaderValue changed and it needs to be reflected,
+      // but the audio engine depends on scene1FaderValue which hasn't changed here.
+      // However, if scene2FaderValue's visual display needs to update via change detection, cdr might be needed.
+      this.cdr.detectChanges(); // Ensure UI for scene2FaderValue updates if it changed.
+    }
+  }
+
   onGoButtonClick(event?: MouseEvent): void { // event is passed but isShiftPressed property is now the source of truth for shift state affecting action
     if (this.isAnimating) {
       if (this.animationInterval) {
@@ -290,7 +334,41 @@ export class App implements OnInit, OnDestroy {
       this.animateCrossfader(this.getEffectiveGoTarget());
     }
   }
-  animateCrossfader(targetValue: number): void { this.isAnimating = true; if (this.animationInterval) clearInterval(this.animationInterval); const totalDuration = this.currentCrossfadeDurationMs; const steps = 25; const intervalDuration = Math.max(1, totalDuration / steps); const initialValue = this.crossfaderValue; const stepSize = (targetValue - initialValue) / steps; let currentStep = 0; this.animationInterval = setInterval(() => { currentStep++; if (currentStep >= steps) { this.crossfaderValue = targetValue; clearInterval(this.animationInterval); this.animationInterval = null; this.isAnimating = false; } else { this.crossfaderValue = initialValue + (stepSize * currentStep); } this.crossfaderValue = Math.max(0, Math.min(100, this.crossfaderValue)); this.onPotentiometerChange(); this.cdr.detectChanges(); }, intervalDuration); }
+  animateCrossfader(targetScene1Value: number): void {
+    this.isAnimating = true;
+    if (this.animationInterval) clearInterval(this.animationInterval);
+    const totalDuration = this.currentCrossfadeDurationMs;
+    const steps = 25;
+    const intervalDuration = Math.max(1, totalDuration / steps);
+    const initialScene1Value = this.scene1FaderValue;
+    const stepSize = (targetScene1Value - initialScene1Value) / steps;
+    let currentStep = 0;
+
+    this.animationInterval = setInterval(() => {
+      currentStep++;
+      if (currentStep >= steps) {
+        this.scene1FaderValue = targetScene1Value;
+        if (this.fadersLinked) {
+          this.scene2FaderValue = 100 - this.scene1FaderValue;
+        }
+        clearInterval(this.animationInterval);
+        this.animationInterval = null;
+        this.isAnimating = false;
+      } else {
+        this.scene1FaderValue = initialScene1Value + (stepSize * currentStep);
+        if (this.fadersLinked) {
+          this.scene2FaderValue = 100 - this.scene1FaderValue;
+        }
+      }
+      this.scene1FaderValue = Math.max(0, Math.min(100, this.scene1FaderValue));
+      // Ensure scene2FaderValue is also clamped if derived and linked
+      if (this.fadersLinked) {
+        this.scene2FaderValue = Math.max(0, Math.min(100, this.scene2FaderValue));
+      }
+      this.updateAudioEngineAndPostData();
+      this.cdr.detectChanges();
+    }, intervalDuration);
+  }
 
   private updateEffectiveGoTarget(): void {
     // This method is called on Shift keydown/keyup to update UI if needed
@@ -389,7 +467,7 @@ export class App implements OnInit, OnDestroy {
       if (!applicationErrorOccurred) {
         if (targetScene === 1) { this.row1States = newStates; } else { this.row2States = newStates; }
         this.calculateCombinedOutputs();
-        this.onPotentiometerChange();
+        this.updateAudioEngineAndPostData(); // Changed from this.onPotentiometerChange()
         this.modalFeedbackMessages.push({ text: `Applied ${commands.length} command(s) successfully to Scene ${targetScene}.`, type: 'success'});
         this.showSceneTextInputModal = false;
         this.currentSceneForModal = null;

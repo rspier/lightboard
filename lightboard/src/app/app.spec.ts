@@ -214,26 +214,26 @@ describe('App', () => {
     });
   });
 
-  describe('onPotentiometerChange', () => {
+  describe('updateAudioEngineAndPostData', () => {
     beforeEach(() => {
         fixture.detectChanges();
     });
 
     it('should call calculateCombinedOutputs', () => {
       spyOn(app, 'calculateCombinedOutputs').and.callThrough();
-      app.onPotentiometerChange();
+      app.updateAudioEngineAndPostData();
       expect(app.calculateCombinedOutputs).toHaveBeenCalled();
     });
 
     it('should post data via HttpDataService if backendUrl is configured', () => {
       app['currentBackendUrl'] = 'http://test.com';
-      app.onPotentiometerChange();
+      app.updateAudioEngineAndPostData();
       expect(mockHttpDataService.postCombinedOutput).toHaveBeenCalledWith('http://test.com', app.combinedOutputStates as CombinedOutputData[]);
     });
 
     it('should not post data if backendUrl is empty', () => {
       app['currentBackendUrl'] = '';
-      app.onPotentiometerChange();
+      app.updateAudioEngineAndPostData();
       expect(mockHttpDataService.postCombinedOutput).not.toHaveBeenCalled();
     });
   });
@@ -292,7 +292,7 @@ describe('App', () => {
     it('onGoButtonClick should call animateCrossfader if not already animating (target 0)', () => {
       spyOn(app, 'animateCrossfader');
       app.isAnimating = false;
-      app.crossfaderValue = 70;
+      app.scene1FaderValue = 70; // Changed from crossfaderValue
       app.isShiftPressed = false;
       app.onGoButtonClick();
       expect(app.animateCrossfader).toHaveBeenCalledWith(0);
@@ -301,7 +301,7 @@ describe('App', () => {
     it('onGoButtonClick should call animateCrossfader if not already animating (target 100)', () => {
       spyOn(app, 'animateCrossfader');
       app.isAnimating = false;
-      app.crossfaderValue = 30;
+      app.scene1FaderValue = 30; // Changed from crossfaderValue
       app.isShiftPressed = false;
       app.onGoButtonClick();
       expect(app.animateCrossfader).toHaveBeenCalledWith(100);
@@ -328,18 +328,20 @@ describe('App', () => {
       });
       const onGoButtonClickSpy = spyOn(app, 'onGoButtonClick').and.callThrough();
 
-      // Initial state: crossfaderValue = 50, isShiftPressed = false
-      app.crossfaderValue = 50;
+      // Initial state: scene1FaderValue = 50, isShiftPressed = false
+      app.scene1FaderValue = 50;
       app.isShiftPressed = false;
-      app['updateEffectiveGoTarget']();
+      app['updateEffectiveGoTarget'](); // This will call getEffectiveGoTarget which now uses scene1FaderValue
+      fixture.detectChanges(); // Ensure button text updates
       expect(goButton.textContent?.trim()).toBe('Go ↓');
 
       // 1. Shift key DOWN - Arrow should change
       app.isShiftPressed = true;
       app['updateEffectiveGoTarget']();
+      fixture.detectChanges();
       expect(goButton.textContent?.trim()).toBe('Go ↑');
 
-      // 2. Shift+Click (crossfaderValue = 50, isShiftPressed = true)
+      // 2. Shift+Click (scene1FaderValue = 50, isShiftPressed = true)
       goButton.click();
       expect(onGoButtonClickSpy).toHaveBeenCalled();
       expect(animateCrossfaderSpy).toHaveBeenCalledWith(100);
@@ -349,30 +351,34 @@ describe('App', () => {
       // 3. Shift key UP while animating
       app.isShiftPressed = false;
       app['updateEffectiveGoTarget']();
+      fixture.detectChanges();
       expect(goButton.textContent?.trim()).toBe('Stop');
 
-      // 4. Simulate animation finishing (crossfader moved to 100)
+      // 4. Simulate animation finishing (scene1FaderValue moved to 100)
       app.isAnimating = false;
-      app.crossfaderValue = 100;
+      app.scene1FaderValue = 100;
       app['updateEffectiveGoTarget']();
+      fixture.detectChanges();
       expect(goButton.textContent?.trim()).toBe('Go ↓');
 
-      // 5. Normal click (no shift) - crossfaderValue = 100
+      // 5. Normal click (no shift) - scene1FaderValue = 100
       goButton.click();
       expect(animateCrossfaderSpy).toHaveBeenCalledWith(0);
       expect(app.isAnimating).toBeTrue();
       expect(goButton.textContent?.trim()).toBe('Stop');
 
-      // 6. Simulate animation finishing (crossfader moved to 0)
+      // 6. Simulate animation finishing (scene1FaderValue moved to 0)
       app.isAnimating = false;
-      app.crossfaderValue = 0;
+      app.scene1FaderValue = 0;
       app['updateEffectiveGoTarget']();
+      fixture.detectChanges();
       expect(goButton.textContent?.trim()).toBe('Go ↑');
 
       // 7. Spacebar + Shift
       app.isShiftPressed = true;
       app['updateEffectiveGoTarget']();
-      expect(goButton.textContent?.trim()).toBe('Go ↑'); // crossfaderValue is 0, shift or not, target is 100 -> Go ↑
+      fixture.detectChanges();
+      expect(goButton.textContent?.trim()).toBe('Go ↑'); // scene1FaderValue is 0, shift or not, target is 100 -> Go ↑
 
       dispatchKeyboardEvent(' ', mockDocument.body, 'Space', true);
       expect(onGoButtonClickSpy).toHaveBeenCalled();
@@ -381,19 +387,21 @@ describe('App', () => {
       expect(goButton.textContent?.trim()).toBe('Stop');
       app.isAnimating = false;
 
-      // 8. Shift key at extreme: crossfaderValue = 0, Shift pressed
-      app.crossfaderValue = 0;
+      // 8. Shift key at extreme: scene1FaderValue = 0, Shift pressed
+      app.scene1FaderValue = 0;
       app.isShiftPressed = true;
       app['updateEffectiveGoTarget']();
+      fixture.detectChanges();
       expect(goButton.textContent?.trim()).toBe('Go ↑'); // Target 100
       goButton.click();
       expect(animateCrossfaderSpy).toHaveBeenCalledWith(100);
       app.isAnimating = false;
 
-      // 9. Shift key at extreme: crossfaderValue = 100, Shift pressed
-      app.crossfaderValue = 100;
+      // 9. Shift key at extreme: scene1FaderValue = 100, Shift pressed
+      app.scene1FaderValue = 100;
       app.isShiftPressed = true;
       app['updateEffectiveGoTarget']();
+      fixture.detectChanges();
       expect(goButton.textContent?.trim()).toBe('Go ↓'); // Target 0
       goButton.click();
       expect(animateCrossfaderSpy).toHaveBeenCalledWith(0);
@@ -401,7 +409,7 @@ describe('App', () => {
       // Cleanup
       app.isShiftPressed = false;
       app.isAnimating = false;
-      app.crossfaderValue = 50;
+      app.scene1FaderValue = 50;
       app['updateEffectiveGoTarget']();
       fixture.detectChanges();
     });
@@ -414,7 +422,7 @@ describe('App', () => {
         spyOn(window, 'setInterval').and.callThrough();
         jasmine.clock().install();
         try {
-          app.animateCrossfader(100);
+          app.animateCrossfader(100); // Target for scene1FaderValue
           expect(window.setInterval).toHaveBeenCalledWith(jasmine.any(Function), expectedInterval);
           jasmine.clock().tick(1000);
         } finally {
@@ -422,11 +430,12 @@ describe('App', () => {
         }
       });
 
-      xit('animateCrossfader should animate crossfader value from 0 to 100', () => { // Marked as pending
-        spyOn(app, 'onPotentiometerChange').and.callThrough();
+      xit('animateCrossfader should animate scene1FaderValue from 0 to 100', () => { // Marked as pending
+        spyOn(app, 'updateAudioEngineAndPostData').and.callThrough(); // Changed
         jasmine.clock().install();
         try {
-          app.crossfaderValue = 0;
+          app.scene1FaderValue = 0; // Changed
+          app.fadersLinked = false; // Test unlinked behavior first for simplicity of checking one fader
         app['currentCrossfadeDurationMs'] = 500;
         const target = 100;
         const duration = app['currentCrossfadeDurationMs'];
@@ -440,18 +449,20 @@ describe('App', () => {
           jasmine.clock().tick(intervalDuration);
         }
 
-        expect(app.crossfaderValue).toBe(target);
+        expect(app.scene1FaderValue).toBe(target); // Changed
         expect(app.isAnimating).toBeFalse();
         expect(app.animationInterval).toBeNull();
-        expect(app.onPotentiometerChange).toHaveBeenCalledTimes(steps);
+        expect(app.updateAudioEngineAndPostData).toHaveBeenCalledTimes(steps); // Changed
         } finally {
           jasmine.clock().uninstall();
         }
       });
 
-      xit('animateCrossfader should animate crossfader value from 100 to 0', () => { // Marked as pending
-        spyOn(app, 'onPotentiometerChange').and.callThrough();
-        app.crossfaderValue = 100;
+      xit('animateCrossfader should animate scene1FaderValue from 100 to 0 and update scene2FaderValue if linked', () => { // Marked as pending
+        spyOn(app, 'updateAudioEngineAndPostData').and.callThrough(); // Changed
+        app.scene1FaderValue = 100; // Changed
+        app.scene2FaderValue = 0;
+        app.fadersLinked = true; // Test linked behavior
         app['currentCrossfadeDurationMs'] = 500;
         const target = 0;
         const duration = app['currentCrossfadeDurationMs'];
@@ -462,12 +473,13 @@ describe('App', () => {
           app.animateCrossfader(target);
           expect(app.isAnimating).toBeTrue();
 
-          jasmine.clock().tick(duration);
+          jasmine.clock().tick(duration); // Fast-forward through animation
 
-          expect(app.crossfaderValue).toBe(target);
+          expect(app.scene1FaderValue).toBe(target); // Changed
+          expect(app.scene2FaderValue).toBe(100 - target); // Check linked fader
           expect(app.isAnimating).toBeFalse();
           expect(app.animationInterval).toBeNull();
-          expect(app.onPotentiometerChange).toHaveBeenCalledTimes(steps);
+          expect(app.updateAudioEngineAndPostData).toHaveBeenCalledTimes(steps); // Changed
         } finally {
           jasmine.clock().uninstall();
         }
@@ -520,8 +532,8 @@ describe('App', () => {
       app['currentNumChannels'] = 2;
     });
 
-    it('should correctly blend values and colors with crossfader at 0 (full row2States)', () => {
-      app.crossfaderValue = 0;
+    it('should correctly blend values and colors with scene1FaderValue at 0 (full row2States)', () => {
+      app.scene1FaderValue = 0; // Changed
       app.calculateCombinedOutputs();
       expect(app.combinedOutputStates[0].value).toBe(90);
       expect(app.combinedOutputStates[0].color).toBe('#00ff00');
@@ -529,8 +541,8 @@ describe('App', () => {
       expect(app.combinedOutputStates[1].color).toBe('#ffff00');
     });
 
-    it('should correctly blend values and colors with crossfader at 100 (full row1States)', () => {
-      app.crossfaderValue = 100;
+    it('should correctly blend values and colors with scene1FaderValue at 100 (full row1States)', () => {
+      app.scene1FaderValue = 100; // Changed
       app.calculateCombinedOutputs();
       expect(app.combinedOutputStates[0].value).toBe(10);
       expect(app.combinedOutputStates[0].color).toBe('#ff0000');
@@ -538,8 +550,8 @@ describe('App', () => {
       expect(app.combinedOutputStates[1].color).toBe('#0000ff');
     });
 
-    it('should correctly blend values and colors with crossfader at 50 (midpoint)', () => {
-      app.crossfaderValue = 50;
+    it('should correctly blend values and colors with scene1FaderValue at 50 (midpoint)', () => {
+      app.scene1FaderValue = 50; // Changed
       app.calculateCombinedOutputs();
       expect(app.combinedOutputStates[0].value).toBe(50);
       expect(app.combinedOutputStates[0].color).toBe('#1ae600');
@@ -547,31 +559,31 @@ describe('App', () => {
       expect(app.combinedOutputStates[1].color).toBe('#3333cc');
     });
 
-    it('should use S1 color if S2 intensity is 0, XF=50 (user example)', () => {
+    it('should use S1 color if S2 intensity is 0, scene1FaderValue=50 (user example)', () => {
       app.row1States = [{ channelNumber: 1, channelDescription: "Ch1", value: 100, color: '#ff0000' }];
       app.row2States = [{ channelNumber: 1, channelDescription: "Ch1", value: 0, color: '#00ff00' }];
       app['currentNumChannels'] = 1;
-      app.crossfaderValue = 50;
+      app.scene1FaderValue = 50; // Changed
       app.calculateCombinedOutputs();
       expect(app.combinedOutputStates[0].value).toBe(50);
       expect(app.combinedOutputStates[0].color).toBe('#ff0000');
     });
 
-    it('should use S2 color if S1 intensity is 0, XF=50', () => {
+    it('should use S2 color if S1 intensity is 0, scene1FaderValue=50', () => {
       app.row1States = [{ channelNumber: 1, channelDescription: "Ch1", value: 0, color: '#ff0000' }];
       app.row2States = [{ channelNumber: 1, channelDescription: "Ch1", value: 100, color: '#00ff00' }];
       app['currentNumChannels'] = 1;
-      app.crossfaderValue = 50;
+      app.scene1FaderValue = 50; // Changed
       app.calculateCombinedOutputs();
       expect(app.combinedOutputStates[0].value).toBe(50);
       expect(app.combinedOutputStates[0].color).toBe('#00ff00');
     });
 
-    it('should be black if both S1 and S2 intensities are 0, XF=50', () => {
+    it('should be black if both S1 and S2 intensities are 0, scene1FaderValue=50', () => {
       app.row1States = [{ channelNumber: 1, channelDescription: "Ch1", value: 0, color: '#ff0000' }];
       app.row2States = [{ channelNumber: 1, channelDescription: "Ch1", value: 0, color: '#00ff00' }];
       app['currentNumChannels'] = 1;
-      app.crossfaderValue = 50;
+      app.scene1FaderValue = 50; // Changed
       app.calculateCombinedOutputs();
       expect(app.combinedOutputStates[0].value).toBe(0);
       expect(app.combinedOutputStates[0].color).toBe('#000000');

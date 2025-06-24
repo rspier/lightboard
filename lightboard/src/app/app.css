@@ -133,8 +133,45 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* align-self: stretch; /* Make crossfader column same height as channel-slider-rows */
-  /* This might need adjustment depending on the desired vertical alignment of the crossfader itself. */
+  gap: 10px; /* Add some gap between elements in the column */
+}
+
+.fader-container {
+  display: flex; /* Arrange fader-wrapper elements (label + slider) side-by-side */
+  justify-content: center;
+  align-items: flex-start; /* Align tops of fader wrappers */
+  gap: 15px; /* Space between the two fader sections */
+  width: 100%; /* Allow container to span the width of crossfader-column */
+}
+
+.fader-wrapper {
+  display: flex;
+  flex-direction: column; /* Stack label on top of slider */
+  align-items: center;
+  gap: 5px; /* Space between label and slider */
+}
+
+.fader-label {
+  font-size: 0.9em;
+  font-weight: bold;
+  color: var(--app-text-color);
+  margin-bottom: 3px; /* Small space above the slider */
+}
+
+.link-faders-button {
+  padding: 8px 12px;
+  font-size: 0.9em;
+  color: var(--button-secondary-text-color); /* Using secondary button colors for less emphasis than Go */
+  background-color: var(--button-secondary-bg-color);
+  border: 1px solid var(--button-secondary-border-color, transparent); /* Optional border */
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 5px; /* Space above the Go button */
+  margin-bottom: 5px; /* Space below the fader container */
+}
+
+.link-faders-button:hover {
+  background-color: var(--button-secondary-hover-bg-color);
 }
 
 .go-button {
