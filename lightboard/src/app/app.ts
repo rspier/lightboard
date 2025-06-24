@@ -16,7 +16,15 @@ interface PotentiometerState {
   channelNumber: number;
   channelDescription: string;
   value: number;
-  color: string;
+  color: string; // Used for row1States and row2States
+}
+
+interface CombinedDisplayState {
+  channelNumber: number;
+  channelDescription: string;
+  value: number; // Combined value
+  colorScene1: string;
+  colorScene2: string;
 }
 
 interface ParsedCommand {
@@ -47,7 +55,7 @@ export class App implements OnInit, OnDestroy {
   row1States: PotentiometerState[] = [];
   row2States: PotentiometerState[] = [];
   crossfaderValue: number = 50;
-  combinedOutputStates: PotentiometerState[] = [];
+  combinedOutputStates: CombinedDisplayState[] = [];
   isAnimating: boolean = false;
   animationInterval: any = null;
   showSettingsModal: boolean = false;
@@ -208,10 +216,16 @@ export class App implements OnInit, OnDestroy {
   private rgbToHex(r: number, g: number, b: number): string { return ("#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).padStart(6, '0')).toLowerCase(); }
 
   calculateCombinedOutputs(): void {
-    if (!this.row1States || !this.row2States || this.row1States.length !== this.row2States.length || this.row1States.length === 0 || this.row1States.length !== this.currentNumChannels ) {
-      this.combinedOutputStates = Array.from({length: this.currentNumChannels || 0}, (_, i) => {
+    if (!this.row1States || !this.row2States || this.row1States.length !== this.row2States.length || this.row1States.length === 0 || this.row1States.length !== this.currentNumChannels) {
+      this.combinedOutputStates = Array.from({ length: this.currentNumChannels || 0 }, (_, i) => {
         const desc = this.channelSettingsService.getCurrentChannelDescriptions();
-        return { channelNumber: i + 1, channelDescription: (desc && desc[i]) || `Channel ${i+1}`, value: 0, color: '#000000' };
+        return {
+          channelNumber: i + 1,
+          channelDescription: (desc && desc[i]) || `Channel ${i + 1}`,
+          value: 0,
+          colorScene1: '#000000', // Default color
+          colorScene2: '#000000'  // Default color
+        };
       });
       return;
     }
@@ -221,48 +235,23 @@ export class App implements OnInit, OnDestroy {
       const crossfadeS1Ratio = this.crossfaderValue / 100; // Scene 1's influence
       const crossfadeS2Ratio = 1 - crossfadeS1Ratio;    // Scene 2's influence
 
-      // Calculate combined intensity (value) - remains unchanged
+      // Calculate combined intensity (value)
       const combinedValue = (row1State.value * crossfadeS1Ratio) + (row2State.value * crossfadeS2Ratio);
 
-      // New color blending logic
-      let blendedColorHex = '#000000'; // Default to black
-      const intensity1 = row1State.value / 100.0; // Normalize to 0-1
-      const intensity2 = row2State.value / 100.0; // Normalize to 0-1
-
-      const color1_rgb = this.hexToRgb(row1State.color);
-      const color2_rgb = this.hexToRgb(row2State.color);
-
-      if (intensity1 > 0 && intensity2 <= 0) {
-        blendedColorHex = row1State.color;
-      } else if (intensity1 <= 0 && intensity2 > 0) {
-        blendedColorHex = row2State.color;
-      } else if (intensity1 > 0 && intensity2 > 0 && color1_rgb && color2_rgb) {
-        const weightedIntensity1 = intensity1 * crossfadeS1Ratio;
-        const weightedIntensity2 = intensity2 * crossfadeS2Ratio;
-        const totalEffectiveIntensityForColor = weightedIntensity1 + weightedIntensity2;
-
-        if (totalEffectiveIntensityForColor < 0.001) { // Threshold for effectively no color contribution
-          blendedColorHex = '#000000';
-        } else {
-          const blendRatioForColor1 = weightedIntensity1 / totalEffectiveIntensityForColor;
-          const blendRatioForColor2 = 1 - blendRatioForColor1; // Or weightedIntensity2 / totalEffectiveIntensityForColor
-
-          const blendedR = Math.round((color1_rgb.r * blendRatioForColor1) + (color2_rgb.r * blendRatioForColor2));
-          const blendedG = Math.round((color1_rgb.g * blendRatioForColor1) + (color2_rgb.g * blendRatioForColor2));
-          const blendedB = Math.round((color1_rgb.b * blendRatioForColor1) + (color2_rgb.b * blendRatioForColor2));
-          blendedColorHex = this.rgbToHex(blendedR, blendedG, blendedB);
-        }
-      } else { // Both intensities are 0, or one/both colors are invalid (hexToRgb returned null)
-        blendedColorHex = '#000000';
-      }
-
+      // The combined output display will now receive the original scene colors
+      // and its own 'value' (intensity). It will then decide how to display them.
       return {
         channelNumber: row1State.channelNumber,
         channelDescription: row1State.channelDescription,
         value: Math.round(combinedValue),
-        color: blendedColorHex
+        colorScene1: row1State.color,
+        colorScene2: row2State.color
       };
     });
+
+    // The HTTP data posting might still need a single blended color.
+    // For now, this is out of scope for the display change.
+    // If needed, we would calculate blendedColorHex as before and add it to a different data structure for posting.
   }
 
   getEffectiveGoTarget(): 0 | 100 {
@@ -277,7 +266,58 @@ export class App implements OnInit, OnDestroy {
     return this.isShiftPressed ? (naturalTargetValue === 0 ? 100 : 0) : naturalTargetValue;
   }
 
-  onPotentiometerChange(): void { this.calculateCombinedOutputs(); if (this.currentBackendUrl && this.combinedOutputStates && this.combinedOutputStates.length > 0) { this.httpDataService.postCombinedOutput(this.currentBackendUrl, this.combinedOutputStates as CombinedOutputData[]).subscribe({ next: () => {}, error: (err) => { console.error('Error posting data:', err); } }); } }
+  onPotentiometerChange(): void {
+    this.calculateCombinedOutputs();
+    if (this.currentBackendUrl && this.combinedOutputStates && this.combinedOutputStates.length > 0) {
+      // Prepare data for HTTP POST, which expects a single 'color' field (blended)
+      const dataToPost: CombinedOutputData[] = this.combinedOutputStates.map(state => {
+        // Re-implement color blending logic here specifically for posting
+        // This is a simplified version. A more robust solution might involve a dedicated function.
+        const row1State = this.row1States.find(r1s => r1s.channelNumber === state.channelNumber);
+        const row2State = this.row2States.find(r2s => r2s.channelNumber === state.channelNumber);
+        let blendedColorHex = '#000000'; // Default
+
+        if (row1State && row2State) {
+            const crossfadeS1Ratio = this.crossfaderValue / 100;
+            const crossfadeS2Ratio = 1 - crossfadeS1Ratio;
+            const intensity1 = row1State.value / 100.0;
+            const intensity2 = row2State.value / 100.0;
+            const color1_rgb = this.hexToRgb(row1State.color);
+            const color2_rgb = this.hexToRgb(row2State.color);
+
+            if (intensity1 > 0 && intensity2 <= 0) {
+                blendedColorHex = row1State.color;
+            } else if (intensity1 <= 0 && intensity2 > 0) {
+                blendedColorHex = row2State.color;
+            } else if (intensity1 > 0 && intensity2 > 0 && color1_rgb && color2_rgb) {
+                const weightedIntensity1 = intensity1 * crossfadeS1Ratio;
+                const weightedIntensity2 = intensity2 * crossfadeS2Ratio;
+                const totalEffectiveIntensityForColor = weightedIntensity1 + weightedIntensity2;
+
+                if (totalEffectiveIntensityForColor >= 0.001) {
+                    const blendRatioForColor1 = weightedIntensity1 / totalEffectiveIntensityForColor;
+                    const blendRatioForColor2 = 1 - blendRatioForColor1;
+                    const blendedR = Math.round((color1_rgb.r * blendRatioForColor1) + (color2_rgb.r * blendRatioForColor2));
+                    const blendedG = Math.round((color1_rgb.g * blendRatioForColor1) + (color2_rgb.g * blendRatioForColor2));
+                    const blendedB = Math.round((color1_rgb.b * blendRatioForColor1) + (color2_rgb.b * blendRatioForColor2));
+                    blendedColorHex = this.rgbToHex(blendedR, blendedG, blendedB);
+                }
+            }
+        }
+
+        return {
+          channelNumber: state.channelNumber,
+          channelDescription: state.channelDescription,
+          value: state.value,
+          color: blendedColorHex // Use the blended color for posting
+        };
+      });
+      this.httpDataService.postCombinedOutput(this.currentBackendUrl, dataToPost).subscribe({
+        next: () => {},
+        error: (err) => { console.error('Error posting data:', err); }
+      });
+    }
+  }
   onGoButtonClick(event?: MouseEvent): void { // event is passed but isShiftPressed property is now the source of truth for shift state affecting action
     if (this.isAnimating) {
       if (this.animationInterval) {
@@ -311,7 +351,7 @@ export class App implements OnInit, OnDestroy {
     this.showShortcutsModal = false;
     this.cdr.detectChanges(); // Ensure UI updates
   }
-  public trackByCombinedState(index: number, item: PotentiometerState): number { return item.channelNumber; }
+  public trackByCombinedState(index: number, item: CombinedDisplayState): number { return item.channelNumber; }
   public trackByState(index: number, item: PotentiometerState): number { return item.channelNumber; }
 
   onCrossfadeDurationSliderChange(event: Event): void {

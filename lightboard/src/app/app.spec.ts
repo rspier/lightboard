@@ -124,9 +124,11 @@ describe('App', () => {
   it('should populate combinedOutputStates on ngOnInit and reflect initial settings', () => {
     fixture.detectChanges();
     expect(app.combinedOutputStates.length).toBe(initialTestSettings.numChannels);
-    expect(app.combinedOutputStates[0].value).toBe(50);
+    expect(app.combinedOutputStates[0].value).toBe(50); // (0 * 0.5) + (100 * 0.5)
     expect(app.combinedOutputStates[0].channelDescription).toBe(initialTestSettings.channelDescriptions[0]);
-    expect(app.combinedOutputStates[0].color).toBe('#00ffff');
+    // Default colors: row1State[0].color = '#ff0000', row2State[0].color = '#00ffff'
+    expect(app.combinedOutputStates[0].colorScene1).toBe(app.row1States[0].color);
+    expect(app.combinedOutputStates[0].colorScene2).toBe(app.row2States[0].color);
   });
 
   describe('Scene Text Input Modal', () => {
@@ -164,7 +166,8 @@ describe('App', () => {
         const displayComponentInstance = displayElements[index].componentInstance as CombinedOutputDisplayComponent;
         expect(displayComponentInstance.description).toBe(state.channelDescription);
         expect(displayComponentInstance.value).toBe(state.value);
-        expect(displayComponentInstance.color).toBe(state.color);
+        expect(displayComponentInstance.colorScene1).toBe(state.colorScene1);
+        expect(displayComponentInstance.colorScene2).toBe(state.colorScene2);
       });
     });
   });
@@ -225,10 +228,23 @@ describe('App', () => {
       expect(app.calculateCombinedOutputs).toHaveBeenCalled();
     });
 
-    it('should post data via HttpDataService if backendUrl is configured', () => {
+    it('should post correctly mapped data via HttpDataService if backendUrl is configured', () => {
       app['currentBackendUrl'] = 'http://test.com';
-      app.onPotentiometerChange();
-      expect(mockHttpDataService.postCombinedOutput).toHaveBeenCalledWith('http://test.com', app.combinedOutputStates as CombinedOutputData[]);
+      // Ensure states are initialized for the mapping logic
+      app.row1States = [{ channelNumber: 1, channelDescription: 'Ch1', value: 100, color: '#ff0000' }];
+      app.row2States = [{ channelNumber: 1, channelDescription: 'Ch1', value: 0, color: '#00ff00' }];
+      app['currentNumChannels'] = 1;
+      app.crossfaderValue = 50; // This will result in value: 50, color: #ff0000 (from row1State)
+
+      app.onPotentiometerChange(); // This calls calculateCombinedOutputs and then posts
+
+      const expectedDataToPost: CombinedOutputData[] = [{
+        channelNumber: 1,
+        channelDescription: 'Ch1',
+        value: 50, // (100 * 0.5) + (0 * 0.5)
+        color: '#ff0000' // S1 color because S2 intensity is 0
+      }];
+      expect(mockHttpDataService.postCombinedOutput).toHaveBeenCalledWith('http://test.com', expectedDataToPost);
     });
 
     it('should not post data if backendUrl is empty', () => {
@@ -520,61 +536,64 @@ describe('App', () => {
       app['currentNumChannels'] = 2;
     });
 
-    it('should correctly blend values and colors with crossfader at 0 (full row2States)', () => {
+    it('should correctly set values and scene colors with crossfader at 0 (full row2States)', () => {
       app.crossfaderValue = 0;
       app.calculateCombinedOutputs();
       expect(app.combinedOutputStates[0].value).toBe(90);
-      expect(app.combinedOutputStates[0].color).toBe('#00ff00');
+      expect(app.combinedOutputStates[0].colorScene1).toBe(app.row1States[0].color); // #ff0000
+      expect(app.combinedOutputStates[0].colorScene2).toBe(app.row2States[0].color); // #00ff00
       expect(app.combinedOutputStates[1].value).toBe(20);
-      expect(app.combinedOutputStates[1].color).toBe('#ffff00');
+      expect(app.combinedOutputStates[1].colorScene1).toBe(app.row1States[1].color); // #0000ff
+      expect(app.combinedOutputStates[1].colorScene2).toBe(app.row2States[1].color); // #ffff00
     });
 
-    it('should correctly blend values and colors with crossfader at 100 (full row1States)', () => {
+    it('should correctly set values and scene colors with crossfader at 100 (full row1States)', () => {
       app.crossfaderValue = 100;
       app.calculateCombinedOutputs();
       expect(app.combinedOutputStates[0].value).toBe(10);
-      expect(app.combinedOutputStates[0].color).toBe('#ff0000');
+      expect(app.combinedOutputStates[0].colorScene1).toBe(app.row1States[0].color);
+      expect(app.combinedOutputStates[0].colorScene2).toBe(app.row2States[0].color);
       expect(app.combinedOutputStates[1].value).toBe(80);
-      expect(app.combinedOutputStates[1].color).toBe('#0000ff');
+      expect(app.combinedOutputStates[1].colorScene1).toBe(app.row1States[1].color);
+      expect(app.combinedOutputStates[1].colorScene2).toBe(app.row2States[1].color);
     });
 
-    it('should correctly blend values and colors with crossfader at 50 (midpoint)', () => {
+    it('should correctly set values and scene colors with crossfader at 50 (midpoint)', () => {
       app.crossfaderValue = 50;
       app.calculateCombinedOutputs();
-      expect(app.combinedOutputStates[0].value).toBe(50);
-      expect(app.combinedOutputStates[0].color).toBe('#1ae600');
-      expect(app.combinedOutputStates[1].value).toBe(50);
-      expect(app.combinedOutputStates[1].color).toBe('#3333cc');
+      expect(app.combinedOutputStates[0].value).toBe(50); // (10 * 0.5) + (90 * 0.5)
+      expect(app.combinedOutputStates[0].colorScene1).toBe(app.row1States[0].color);
+      expect(app.combinedOutputStates[0].colorScene2).toBe(app.row2States[0].color);
+      expect(app.combinedOutputStates[1].value).toBe(50); // (80 * 0.5) + (20 * 0.5)
+      expect(app.combinedOutputStates[1].colorScene1).toBe(app.row1States[1].color);
+      expect(app.combinedOutputStates[1].colorScene2).toBe(app.row2States[1].color);
     });
 
-    it('should use S1 color if S2 intensity is 0, XF=50 (user example)', () => {
+    // The following tests were for blended color logic that is now part of onPotentiometerChange's mapping.
+    // calculateCombinedOutputs itself just passes through raw scene colors.
+    // We can keep these scenarios but check colorScene1 and colorScene2.
+
+    it('should pass through S1 and S2 colors, XF=50', () => {
       app.row1States = [{ channelNumber: 1, channelDescription: "Ch1", value: 100, color: '#ff0000' }];
       app.row2States = [{ channelNumber: 1, channelDescription: "Ch1", value: 0, color: '#00ff00' }];
       app['currentNumChannels'] = 1;
       app.crossfaderValue = 50;
       app.calculateCombinedOutputs();
       expect(app.combinedOutputStates[0].value).toBe(50);
-      expect(app.combinedOutputStates[0].color).toBe('#ff0000');
+      expect(app.combinedOutputStates[0].colorScene1).toBe('#ff0000');
+      expect(app.combinedOutputStates[0].colorScene2).toBe('#00ff00');
     });
 
-    it('should use S2 color if S1 intensity is 0, XF=50', () => {
-      app.row1States = [{ channelNumber: 1, channelDescription: "Ch1", value: 0, color: '#ff0000' }];
-      app.row2States = [{ channelNumber: 1, channelDescription: "Ch1", value: 100, color: '#00ff00' }];
-      app['currentNumChannels'] = 1;
-      app.crossfaderValue = 50;
-      app.calculateCombinedOutputs();
-      expect(app.combinedOutputStates[0].value).toBe(50);
-      expect(app.combinedOutputStates[0].color).toBe('#00ff00');
-    });
 
-    it('should be black if both S1 and S2 intensities are 0, XF=50', () => {
+    it('should pass through S1 and S2 colors even if intensities are 0, XF=50', () => {
       app.row1States = [{ channelNumber: 1, channelDescription: "Ch1", value: 0, color: '#ff0000' }];
       app.row2States = [{ channelNumber: 1, channelDescription: "Ch1", value: 0, color: '#00ff00' }];
       app['currentNumChannels'] = 1;
       app.crossfaderValue = 50;
       app.calculateCombinedOutputs();
       expect(app.combinedOutputStates[0].value).toBe(0);
-      expect(app.combinedOutputStates[0].color).toBe('#000000');
+      expect(app.combinedOutputStates[0].colorScene1).toBe('#ff0000');
+      expect(app.combinedOutputStates[0].colorScene2).toBe('#00ff00');
     });
 
   });

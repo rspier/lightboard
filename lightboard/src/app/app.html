@@ -33,7 +33,8 @@
               *ngFor="let state of combinedOutputStates; trackBy: trackByCombinedState"
               [description]="state.channelDescription"
               [value]="state.value"
-              [color]="state.color">
+              [colorScene1]="state.colorScene1"
+              [colorScene2]="state.colorScene2">
             </app-combined-output-display>
           </div>
 
