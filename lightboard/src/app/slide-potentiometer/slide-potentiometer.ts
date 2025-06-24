@@ -71,10 +71,13 @@ export class SlidePotentiometerComponent {
   private readonly baseTickWidthPx = 1.5; // Base unit for tick length scaling.
 
   private calculateWidthFromPercentage(percentageValue: number): number {
-    // Tick length = ((percentage value / 10) + 1) * baseUnit
-    // Example: 0% -> (0/10 + 1) * 1.5 = 1.5px
-    // Example: 100% -> (100/10 + 1) * 1.5 = (10 + 1) * 1.5 = 16.5px
-    return ((percentageValue / 10) + 1) * this.baseTickWidthPx;
+    // Standard behavior desired: 0% value = LONGEST, 100% value = SHORTEST (but visible)
+    // percentageValue is the true semantic value (0-100) this tick represents.
+    const invertedPercentage = 100 - percentageValue; // 0 becomes 100, 100 becomes 0.
+    // Now apply the (value/10 + 1) * base logic using this invertedPercentage.
+    // So, for original 0% (now invertedPercentage 100), length is ((100/10)+1)*base = 11*base (longest).
+    // For original 100% (now invertedPercentage 0), length is ((0/10)+1)*base = 1*base (shortest).
+    return ((invertedPercentage / 10) + 1) * this.baseTickWidthPx;
   }
 
   public getEffectiveTickWidth(physicalTickPosition: number): number {
