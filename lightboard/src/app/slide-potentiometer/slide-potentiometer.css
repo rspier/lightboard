@@ -201,7 +201,7 @@ input[type="range"]::-moz-range-thumb {
   /* For vertical-lr sliders written rtl, this will appear on the "start" side, which is visually left. */
   /* Let's try positioning it absolutely to the left of the slider's visual track */
   position: absolute;
-  left: -10px; /* (slider width 20px / 2) - (track width 8px / 2) = 6px from center to edge of track. Then position ticks to left of that. */
+  /* left: -10px; */ /* REMOVED: This was the base positioning, now handled by specific classes */
                /* (20px input width - 8px track width)/2 = 6px space on each side of track. */
                /* Position ticks just outside the input area. Input width is 20px. Ticks 6px wide. */
                /* If slider track is centered, its left edge is at (20-8)/2 = 6px from input edge. */
