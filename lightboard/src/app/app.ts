@@ -46,7 +46,8 @@ interface ParsedCommand {
 })
 export class App implements OnInit, OnDestroy {
   protected title = 'lightboard';
-  public gitCommitHash: string = process.env.GIT_COMMIT_HASH;
+  public gitCommitHash: string = process.env.GIT_COMMIT_HASH || 'N/A';
+  public gitLastCommitDateTime: string = process.env.GIT_LAST_COMMIT_DATETIME || 'N/A';
 
   row1States: PotentiometerState[] = [];
   row2States: PotentiometerState[] = [];

@@ -16,6 +16,7 @@ module.exports = (config, options, targetOptions) => { // Adjusted to match expe
   config.plugins.push(
     new webpack.DefinePlugin({
       'process.env.GIT_COMMIT_HASH': JSON.stringify(gitRevisionPlugin.commithash()),
+      'process.env.GIT_LAST_COMMIT_DATETIME': JSON.stringify(gitRevisionPlugin.lastcommitdatetime())
       // 'process.env.GIT_VERSION': JSON.stringify(gitRevisionPlugin.version()), // Example: if full version string is needed
       // 'process.env.GIT_BRANCH': JSON.stringify(gitRevisionPlugin.branch()),    // Example: if branch name is needed
     })
