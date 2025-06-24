@@ -1,5 +1,5 @@
 import { TestBed, ComponentFixture } from '@angular/core/testing';
-import { Renderer2, ChangeDetectorRef } from '@angular/core';
+import { Renderer2 } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { App } from './app';
 import { By } from '@angular/platform-browser';
@@ -14,9 +14,9 @@ function dispatchKeyboardEvent(
   key: string,
   target: EventTarget,
   code?: string,
-  shiftKey: boolean = false,
-  ctrlKey: boolean = false,
-  altKey: boolean = false
+  shiftKey = false,
+  ctrlKey = false,
+  altKey = false
 ) {
   const event = new KeyboardEvent('keydown', {
     key: key,

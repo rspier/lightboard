@@ -18,15 +18,15 @@ export class HttpDataService {
 
   constructor(private http: HttpClient) { }
 
-  postCombinedOutput(url: string, data: CombinedOutputData[]): Observable<any> {
+  postCombinedOutput(url: string, data: CombinedOutputData[]): Observable<unknown> {
     if (!url) {
       // console.warn('HttpDataService: Backend URL is not configured. Skipping POST.');
       return throwError(() => new Error('Backend URL not configured.')); // Or return of(null) or EMPTY if you don't want an error
     }
 
     // console.log('HttpDataService: Posting to', url, data); // For debugging
-    return this.http.post<any>(url, data).pipe(
-      tap(response => {
+    return this.http.post<unknown>(url, data).pipe(
+      tap(_response => {
         // console.log('HttpDataService: Successfully posted data.', response);
       }),
       catchError((error: HttpErrorResponse) => {
