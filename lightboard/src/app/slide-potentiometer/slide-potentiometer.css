@@ -196,37 +196,39 @@ input[type="range"]::-moz-range-thumb {
   display: flex;
   flex-direction: column; /* Arrange ticks top-to-bottom */
   justify-content: space-between; /* Distribute ticks evenly */
-  width: 6px; /* How far the ticks extend horizontally */
-  /* margin-left: 4px; /* Space between slider and ticks. The slider track is 8px wide, centered in a 20px input. Ticks are to the left. */
-  /* For vertical-lr sliders written rtl, this will appear on the "start" side, which is visually left. */
-  /* Let's try positioning it absolutely to the left of the slider's visual track */
+  width: 15px; /* Accommodate the longest tick (100% = 10 * 1.5px = 15px) */
   position: absolute;
-  /* left: -10px; */ /* REMOVED: This was the base positioning, now handled by specific classes */
-               /* (20px input width - 8px track width)/2 = 6px space on each side of track. */
-               /* Position ticks just outside the input area. Input width is 20px. Ticks 6px wide. */
-               /* If slider track is centered, its left edge is at (20-8)/2 = 6px from input edge. */
-               /* We want ticks to be to the left of the track. */
-  top: 0; /* Align with top of the slider's height */
-  bottom: 0; /* Align with bottom of the slider's height */
-  /* Height is dynamically set by [style.height]="sliderHeight" on this element in HTML */
-  pointer-events: none; /* So it doesn't interfere with slider interaction */
+  top: 0;
+  bottom: 0;
+  pointer-events: none;
 }
 
 .tick-marks-left {
-  left: -10px; /* Position to the left of the slider input area */
+  /* Positioned such that its right edge aligns with the left edge of the slider track area */
+  /* Slider input width 20px, track width 8px. Track starts at (20-8)/2 = 6px from left of input. */
+  /* To place left ticks extending leftwards from track: container_left_edge = input_left_edge + track_start_offset - container_width */
+  /* left: calc(6px - 15px); /* This would be -9px, places left edge of container */
+  /* Let's try to make the ticks appear to emanate from the center of where the track would be visually. */
+  /* The input is 20px wide. The .slider-wrapper will be ~20px wide. */
+  /* To place the 15px wide tick container to the left of the input: */
+  left: -17px; /* (15px width of ticks + 2px gap) */
 }
 
 .tick-marks-right {
-  right: -10px; /* Position to the right of the slider input area */
-  /* To make ticks draw from right to left (if width of container is for the lines) */
-  /* If ticks are just points/short lines, align-items might be enough. */
-  /* For now, assuming .tick-mark width:100% handles it. */
+  /* To place the 15px wide tick container to the right of the input: */
+  right: -17px; /* (15px width of ticks + 2px gap) */
+  /* Individual ticks will have their width set dynamically.
+     If ticks should visually grow from track outwards:
+     .tick-marks-right .tick-mark { align-self: flex-start; }
+     .tick-marks-left .tick-mark { align-self: flex-end; }
+     This is handled by the container's alignment for now.
+  */
 }
 
 .tick-mark {
-  width: 100%; /* Tick mark takes full width of its container (e.g., 6px) */
+  /* width is now set by inline style [style.width.px] */
   height: 1px; /* Thickness of the tick mark */
-  background-color: var(--slider-tick-color, #aaa); /* Default tick color */
+  background-color: var(--slider-tick-color, #aaa);
 }
 
 .tick-mark-mid {

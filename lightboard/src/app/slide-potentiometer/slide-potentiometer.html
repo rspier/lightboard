@@ -13,15 +13,17 @@
   (ngModelChange)="onSliderValueChange()"
   [style.height]="sliderHeight">
   <div class="tick-marks-container tick-marks-left" [style.height]="sliderHeight">
-    <div *ngFor="let tick of [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]"
+    <div *ngFor="let tickValue of [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]"
          class="tick-mark"
-         [class.tick-mark-mid]="tick === 50">
+         [class.tick-mark-mid]="tickValue === 50"
+         [style.width.px]="getTickMarkWidthPx(tickValue)">
     </div>
   </div>
   <div class="tick-marks-container tick-marks-right" [style.height]="sliderHeight">
-    <div *ngFor="let tick of [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]"
+    <div *ngFor="let tickValue of [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]"
          class="tick-mark"
-         [class.tick-mark-mid]="tick === 50">
+         [class.tick-mark-mid]="tickValue === 50"
+         [style.width.px]="getTickMarkWidthPx(tickValue)">
     </div>
   </div>
 </div>
