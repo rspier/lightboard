@@ -347,3 +347,20 @@ input[type="range"].duration-slider::-moz-range-thumb {
 }
 
 /* Removed .global-command-feedback styles as the element is removed */
+
+.git-commit-hash {
+  position: fixed;
+  bottom: 5px;
+  left: 5px;
+  font-size: 0.7em;
+  color: var(--app-text-color-low-contrast, #aaaaaa); /* Default to light grey */
+  background-color: var(--app-bg-color-low-contrast- επίσης, rgba(0,0,0,0.1)); /* Optional: slight background for readability */
+  padding: 2px 4px;
+  border-radius: 3px;
+  z-index: 1000; /* Ensure it's above most content but can be below modals */
+}
+
+:host-context(body.dark-theme) .git-commit-hash {
+  color: var(--app-text-color-low-contrast-dark, #555555); /* Darker grey for dark theme */
+  background-color: var(--app-bg-color-low-contrast-dark- επίσης, rgba(255,255,255,0.1)); /* Optional: slight light background for dark theme */
+}
