@@ -68,30 +68,30 @@ export class SlidePotentiometerComponent {
   // 100% tick should be 10x the 10% tick.
   // Let 10% tick be 1.5px wide. Then 100% tick is 15px wide.
   // 0% tick can be 0px or minimal.
-  private readonly baseTickWidthPx = 1.5; // Width of the 10% tick mark
-  // private readonly maxTickWidthMultiplier = 10; // Not directly used, implied by (100/10)
+  private readonly baseTickWidthPx = 1.5; // Base unit for tick length scaling.
 
-  private calculateWidthFromPercentage(percentage: number): number {
-    if (percentage === 0) {
-      return 0;
-    }
-    // For percentage (10, 20, ..., 100)
-    // The width is (percentage / 10) * baseTickWidthPx
-    return (percentage / 10) * this.baseTickWidthPx;
+  private calculateWidthFromPercentage(percentageValue: number): number {
+    // Tick length = ((percentage value / 10) + 1) * baseUnit
+    // Example: 0% -> (0/10 + 1) * 1.5 = 1.5px
+    // Example: 100% -> (100/10 + 1) * 1.5 = (10 + 1) * 1.5 = 16.5px
+    return ((percentageValue / 10) + 1) * this.baseTickWidthPx;
   }
 
   public getEffectiveTickWidth(physicalTickPosition: number): number {
-    const valueForLength = this.invertTickMarkLogic ? (100 - physicalTickPosition) : physicalTickPosition;
-    return this.calculateWidthFromPercentage(valueForLength);
+    // physicalTickPosition is 0 for bottom-most tick, 100 for top-most tick.
+    // For standard sliders (invertTickMarkLogic=false), physicalTickPosition is the value.
+    // For inverted sliders (Scene 2, invertTickMarkLogic=true), the value is (100 - physicalTickPosition).
+    const valueRepresented = this.invertTickMarkLogic ? (100 - physicalTickPosition) : physicalTickPosition;
+    return this.calculateWidthFromPercentage(valueRepresented);
   }
 
   public isEffectiveMidPoint(physicalTickPosition: number): boolean {
-    const valueForLength = this.invertTickMarkLogic ? (100 - physicalTickPosition) : physicalTickPosition;
-    return valueForLength === 50;
+    const valueRepresented = this.invertTickMarkLogic ? (100 - physicalTickPosition) : physicalTickPosition;
+    return valueRepresented === 50;
   }
 
   public isEffectiveEndPoint(physicalTickPosition: number): boolean {
-    const valueForLength = this.invertTickMarkLogic ? (100 - physicalTickPosition) : physicalTickPosition;
-    return valueForLength === 100;
+    const valueRepresented = this.invertTickMarkLogic ? (100 - physicalTickPosition) : physicalTickPosition;
+    return valueRepresented === 100;
   }
 }
