@@ -4,13 +4,21 @@
     <!-- <small>{{ channelDescription }}</small> Removed -->
   </div>
 </ng-container>
-<input
-  type="range"
-  min="0"
+<div class="slider-wrapper">
+  <input
+    type="range"
+    min="0"
   max="100"
   [(ngModel)]="value"
   (ngModelChange)="onSliderValueChange()"
   [style.height]="sliderHeight">
+  <div class="tick-marks-container" [style.height]="sliderHeight">
+    <div *ngFor="let tick of [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]"
+         class="tick-mark"
+         [class.tick-mark-mid]="tick === 50">
+    </div>
+  </div>
+</div>
 <ng-container *ngIf="showValueDisplay">
   <div class="value-display-container">
     <span *ngIf="!isEditing" (click)="startEditing()" class="value-text">{{ value }}</span>

@@ -183,3 +183,51 @@ input[type="range"]::-moz-range-thumb {
   cursor: pointer;
   background-color: transparent;
 }
+
+.slider-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  /* The input[type=range] has margin-bottom: 10px, which provides space below this wrapper */
+  /* The height of this wrapper will be determined by the sliderHeight for the input and tick-marks-container */
+}
+
+.tick-marks-container {
+  display: flex;
+  flex-direction: column; /* Arrange ticks top-to-bottom */
+  justify-content: space-between; /* Distribute ticks evenly */
+  width: 6px; /* How far the ticks extend horizontally */
+  /* margin-left: 4px; /* Space between slider and ticks. The slider track is 8px wide, centered in a 20px input. Ticks are to the left. */
+  /* For vertical-lr sliders written rtl, this will appear on the "start" side, which is visually left. */
+  /* Let's try positioning it absolutely to the left of the slider's visual track */
+  position: absolute;
+  left: -10px; /* (slider width 20px / 2) - (track width 8px / 2) = 6px from center to edge of track. Then position ticks to left of that. */
+               /* (20px input width - 8px track width)/2 = 6px space on each side of track. */
+               /* Position ticks just outside the input area. Input width is 20px. Ticks 6px wide. */
+               /* If slider track is centered, its left edge is at (20-8)/2 = 6px from input edge. */
+               /* We want ticks to be to the left of the track. */
+  top: 0; /* Align with top of the slider's height */
+  bottom: 0; /* Align with bottom of the slider's height */
+  /* Height is dynamically set by [style.height]="sliderHeight" on this element in HTML */
+  pointer-events: none; /* So it doesn't interfere with slider interaction */
+}
+
+.tick-mark {
+  width: 100%; /* Tick mark takes full width of its container (e.g., 6px) */
+  height: 1px; /* Thickness of the tick mark */
+  background-color: var(--slider-tick-color, #aaa); /* Default tick color */
+}
+
+.tick-mark-mid {
+  height: 2px; /* Make the 50% tick thicker */
+  background-color: var(--slider-tick-mid-color, #555); /* Darker/more prominent color for 50% tick */
+}
+
+/* Adjust dark theme variables for ticks */
+:host-context(body.dark-theme) .tick-mark {
+  background-color: var(--slider-tick-color-dark, #666);
+}
+
+:host-context(body.dark-theme) .tick-mark-mid {
+  background-color: var(--slider-tick-mid-color-dark, #bbb);
+}
