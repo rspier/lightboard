@@ -212,6 +212,17 @@ input[type="range"]::-moz-range-thumb {
   pointer-events: none; /* So it doesn't interfere with slider interaction */
 }
 
+.tick-marks-left {
+  left: -10px; /* Position to the left of the slider input area */
+}
+
+.tick-marks-right {
+  right: -10px; /* Position to the right of the slider input area */
+  /* To make ticks draw from right to left (if width of container is for the lines) */
+  /* If ticks are just points/short lines, align-items might be enough. */
+  /* For now, assuming .tick-mark width:100% handles it. */
+}
+
 .tick-mark {
   width: 100%; /* Tick mark takes full width of its container (e.g., 6px) */
   height: 1px; /* Thickness of the tick mark */
