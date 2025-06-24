@@ -46,9 +46,9 @@ export class App implements OnInit, OnDestroy {
 
   row1States: PotentiometerState[] = [];
   row2States: PotentiometerState[] = [];
-  scene1FaderValue: number = 50; // Renamed from crossfaderValue
-  scene2FaderValue: number = 50; // New fader for Scene 2 (linked to scene1FaderValue by default)
-  fadersLinked: boolean = true;    // To toggle linked behavior
+  scene1FaderValue: number = 50; // 0=bottom (0% S1 influence), 100=top (100% S1 influence)
+  scene2FaderValue: number = 50; // Represents Scene 2 influence: 0=top (0% S2 influence), 100=bottom (100% S2 influence)
+  fadersLinked: boolean = true;
   combinedOutputStates: PotentiometerState[] = [];
   isAnimating: boolean = false;
   animationInterval: any = null;
@@ -210,52 +210,87 @@ export class App implements OnInit, OnDestroy {
   private rgbToHex(r: number, g: number, b: number): string { return ("#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).padStart(6, '0')).toLowerCase(); }
 
   calculateCombinedOutputs(): void {
-    if (!this.row1States || !this.row2States || this.row1States.length !== this.row2States.length || this.row1States.length === 0 || this.row1States.length !== this.currentNumChannels ) {
-      this.combinedOutputStates = Array.from({length: this.currentNumChannels || 0}, (_, i) => {
+    if (!this.row1States || !this.row2States || this.row1States.length !== this.row2States.length || this.row1States.length === 0 || this.row1States.length !== this.currentNumChannels) {
+      this.combinedOutputStates = Array.from({ length: this.currentNumChannels || 0 }, (_, i) => {
         const desc = this.channelSettingsService.getCurrentChannelDescriptions();
-        return { channelNumber: i + 1, channelDescription: (desc && desc[i]) || `Channel ${i+1}`, value: 0, color: '#000000' };
+        return { channelNumber: i + 1, channelDescription: (desc && desc[i]) || `Channel ${i + 1}`, value: 0, color: '#000000' };
       });
       return;
     }
 
+    const scene1Influence = this.scene1FaderValue / 100; // 0-1, S1 influence (0=bottom, 1=top)
+    const scene2Influence = this.scene2FaderValue / 100; // 0-1, S2 influence (0=top, 1=bottom)
+
     this.combinedOutputStates = this.row1States.map((row1State, index) => {
       const row2State = this.row2States[index];
-      const crossfadeS1Ratio = this.scene1FaderValue / 100; // Scene 1's influence (using scene1FaderValue)
-      const crossfadeS2Ratio = 1 - crossfadeS1Ratio;    // Scene 2's influence
+      let combinedValue: number;
+      let blendedColorHex = '#000000';
 
-      // Calculate combined intensity (value) - remains unchanged
-      const combinedValue = (row1State.value * crossfadeS1Ratio) + (row2State.value * crossfadeS2Ratio);
+      const s1ChanValueNorm = row1State.value / 100.0; // Normalized channel value for S1
+      const s2ChanValueNorm = row2State.value / 100.0; // Normalized channel value for S2
 
-      // New color blending logic
-      let blendedColorHex = '#000000'; // Default to black
-      const intensity1 = row1State.value / 100.0; // Normalize to 0-1
-      const intensity2 = row2State.value / 100.0; // Normalize to 0-1
+      if (this.fadersLinked) {
+        // scene2Influence is effectively (1 - scene1Influence) because scene2FaderValue = 100 - scene1FaderValue
+        combinedValue = (row1State.value * scene1Influence) + (row2State.value * scene2Influence);
 
-      const color1_rgb = this.hexToRgb(row1State.color);
-      const color2_rgb = this.hexToRgb(row2State.color);
+        // Color blending for linked faders (original logic is fine here as influences sum to 1)
+        const color1_rgb = this.hexToRgb(row1State.color);
+        const color2_rgb = this.hexToRgb(row2State.color);
 
-      if (intensity1 > 0 && intensity2 <= 0) {
-        blendedColorHex = row1State.color;
-      } else if (intensity1 <= 0 && intensity2 > 0) {
-        blendedColorHex = row2State.color;
-      } else if (intensity1 > 0 && intensity2 > 0 && color1_rgb && color2_rgb) {
-        const weightedIntensity1 = intensity1 * crossfadeS1Ratio;
-        const weightedIntensity2 = intensity2 * crossfadeS2Ratio;
-        const totalEffectiveIntensityForColor = weightedIntensity1 + weightedIntensity2;
+        if (s1ChanValueNorm > 0 && s2ChanValueNorm <= 0) { // S1 on, S2 off
+          blendedColorHex = row1State.color;
+        } else if (s1ChanValueNorm <= 0 && s2ChanValueNorm > 0) { // S1 off, S2 on
+          blendedColorHex = row2State.color;
+        } else if (s1ChanValueNorm > 0 && s2ChanValueNorm > 0 && color1_rgb && color2_rgb) {
+          // Both scenes have some intensity, and colors are valid. Blend based on their fader influence.
+          const weightedIntensity1 = s1ChanValueNorm * scene1Influence;
+          const weightedIntensity2 = s2ChanValueNorm * scene2Influence;
+          const totalEffectiveIntensityForColor = weightedIntensity1 + weightedIntensity2;
 
-        if (totalEffectiveIntensityForColor < 0.001) { // Threshold for effectively no color contribution
+          if (totalEffectiveIntensityForColor < 0.001) {
+            blendedColorHex = '#000000';
+          } else {
+            const blendRatioForColor1 = weightedIntensity1 / totalEffectiveIntensityForColor;
+            // blendRatioForColor2 is 1 - blendRatioForColor1 because influences sum to 1 here.
+            const blendedR = Math.round((color1_rgb.r * blendRatioForColor1) + (color2_rgb.r * (1 - blendRatioForColor1)));
+            const blendedG = Math.round((color1_rgb.g * blendRatioForColor1) + (color2_rgb.g * (1 - blendRatioForColor1)));
+            const blendedB = Math.round((color1_rgb.b * blendRatioForColor1) + (color2_rgb.b * (1 - blendRatioForColor1)));
+            blendedColorHex = this.rgbToHex(blendedR, blendedG, blendedB);
+          }
+        } else { // Both scenes 0 intensity or invalid colors
           blendedColorHex = '#000000';
-        } else {
-          const blendRatioForColor1 = weightedIntensity1 / totalEffectiveIntensityForColor;
-          const blendRatioForColor2 = 1 - blendRatioForColor1; // Or weightedIntensity2 / totalEffectiveIntensityForColor
-
-          const blendedR = Math.round((color1_rgb.r * blendRatioForColor1) + (color2_rgb.r * blendRatioForColor2));
-          const blendedG = Math.round((color1_rgb.g * blendRatioForColor1) + (color2_rgb.g * blendRatioForColor2));
-          const blendedB = Math.round((color1_rgb.b * blendRatioForColor1) + (color2_rgb.b * blendRatioForColor2));
-          blendedColorHex = this.rgbToHex(blendedR, blendedG, blendedB);
         }
-      } else { // Both intensities are 0, or one/both colors are invalid (hexToRgb returned null)
-        blendedColorHex = '#000000';
+      } else { // Faders Unlinked
+        combinedValue = (row1State.value * scene1Influence) + (row2State.value * scene2Influence);
+        combinedValue = Math.min(100, combinedValue); // Clamp value at 100
+
+        // Color blending for unlinked faders
+        const color1_rgb = this.hexToRgb(row1State.color);
+        const color2_rgb = this.hexToRgb(row2State.color);
+
+        const s1EffectiveIntensity = s1ChanValueNorm * scene1Influence;
+        const s2EffectiveIntensity = s2ChanValueNorm * scene2Influence;
+
+        if (s1EffectiveIntensity > 0 && s2EffectiveIntensity <= 0.001) { // S1 primarily active
+          blendedColorHex = row1State.color;
+        } else if (s1EffectiveIntensity <= 0.001 && s2EffectiveIntensity > 0) { // S2 primarily active
+          blendedColorHex = row2State.color;
+        } else if (s1EffectiveIntensity > 0 && s2EffectiveIntensity > 0 && color1_rgb && color2_rgb) {
+          // Both active, blend based on their effective contributions
+          const totalEffectiveIntensityForColor = s1EffectiveIntensity + s2EffectiveIntensity;
+          if (totalEffectiveIntensityForColor < 0.001) { // Effectively black
+            blendedColorHex = '#000000';
+          } else {
+            const blendRatioS1 = s1EffectiveIntensity / totalEffectiveIntensityForColor;
+            const blendRatioS2 = s2EffectiveIntensity / totalEffectiveIntensityForColor; // Or 1 - blendRatioS1
+            const blendedR = Math.round((color1_rgb.r * blendRatioS1) + (color2_rgb.r * blendRatioS2));
+            const blendedG = Math.round((color1_rgb.g * blendRatioS1) + (color2_rgb.g * blendRatioS2));
+            const blendedB = Math.round((color1_rgb.b * blendRatioS1) + (color2_rgb.b * blendRatioS2));
+            blendedColorHex = this.rgbToHex(blendedR, blendedG, blendedB);
+          }
+        } else { // Both effectively off or invalid colors
+          blendedColorHex = '#000000';
+        }
       }
 
       return {
@@ -290,35 +325,61 @@ export class App implements OnInit, OnDestroy {
     }
   }
 
-  onScene1FaderManualChange(): void {
-    // scene1FaderValue is already updated by [(ngModel)]
+  get displayScene2SliderBindingValue(): number {
+    // scene2FaderValue: 0=top (0% S2 influence), 100=bottom (100% S2 influence)
+    // Slider component: 0=bottom, 100=top
+    return 100 - this.scene2FaderValue;
+  }
+
+  set displayScene2SliderBindingValue(sliderVal: number) {
+    // sliderVal is 0=bottom, 100=top from the component
+    this.scene2FaderValue = 100 - sliderVal; // Convert to 0=top, 100=bottom for scene2FaderValue
+
+    // This setter is called when the Scene 2 slider is manually moved.
+    // Now, handle linking and update engine.
     if (this.fadersLinked) {
-      this.scene2FaderValue = 100 - this.scene1FaderValue;
+      this.scene1FaderValue = 100 - this.scene2FaderValue; // which is `sliderVal`
     }
     this.updateAudioEngineAndPostData();
   }
 
-  onScene2FaderManualChange(): void {
-    // scene2FaderValue is already updated by [(ngModel)]
-    // This slider effectively controls scene1FaderValue inversely.
-    this.scene1FaderValue = 100 - this.scene2FaderValue;
-    // If faders are linked, this change in scene1FaderValue would be reflected back to scene2FaderValue
-    // by onScene1FaderManualChange if it were called. But we are in scene2's handler.
-    // The key is that scene1FaderValue, the canonical source, is now updated.
-    // If linked, scene2FaderValue should already be what it is.
-    // If they became unlinked and then scene2 was moved, scene1 gets updated, and scene2 is where user put it.
+  onScene1FaderManualChange(): void {
+    // scene1FaderValue is already updated by [(ngModel)]
+    if (this.fadersLinked) {
+      // scene2FaderValue should be the inverse of scene1FaderValue
+      // (e.g. S1=100 -> S2=0; S1=70 -> S2=30)
+      this.scene2FaderValue = 100 - this.scene1FaderValue;
+      // displayScene2SliderBindingValue will update automatically via its getter for the UI.
+    }
     this.updateAudioEngineAndPostData();
+  }
+
+  // This explicit handler for Scene 2 slider might not be needed if ngModel uses the setter correctly.
+  // However, having an explicit (valueChange) handler in HTML can be clearer.
+  // If used, it would call: this.displayScene2SliderBindingValue = $event; (which triggers the setter).
+  // Let's remove the old onScene2FaderManualChange as its logic is now in the setter.
+  // onScene2FaderManualChange(): void {
+  //   // This logic is now part of the displayScene2SliderBindingValue setter
+  // }
+
+  // Explicit handler for (valueChange) from Scene 2 slider component
+  onDisplayScene2SliderBindingValueChange(newValueFromSlider: number): void {
+    // newValueFromSlider is the raw value from the app-slide-potentiometer (0=bottom, 100=top)
+    // Assigning to this.displayScene2SliderBindingValue will trigger its setter.
+    this.displayScene2SliderBindingValue = newValueFromSlider;
   }
 
   toggleFaderLink(): void {
     this.fadersLinked = !this.fadersLinked;
     if (this.fadersLinked) {
-      // When linking, Scene 1 fader takes precedence and Scene 2 fader syncs to it.
+      // When linking, Scene 1 fader's current value determines Scene 2 fader's value.
+      // scene2FaderValue is 0=top (0% influence), 100=bottom (100% influence)
+      // scene1FaderValue is 0=bottom (0% influence), 100=top (100% influence)
+      // So if S1 is 100 (top), S2 should be 0 (top).
+      // If S1 is 0 (bottom), S2 should be 100 (bottom).
       this.scene2FaderValue = 100 - this.scene1FaderValue;
-      // Potentially call updateAudioEngineAndPostData if scene2FaderValue changed and it needs to be reflected,
-      // but the audio engine depends on scene1FaderValue which hasn't changed here.
-      // However, if scene2FaderValue's visual display needs to update via change detection, cdr might be needed.
-      this.cdr.detectChanges(); // Ensure UI for scene2FaderValue updates if it changed.
+      // The displayScene2SliderBindingValue will be updated automatically by its getter for the UI via change detection.
+      this.cdr.detectChanges();
     }
   }
 
@@ -334,7 +395,7 @@ export class App implements OnInit, OnDestroy {
       this.animateCrossfader(this.getEffectiveGoTarget());
     }
   }
-  animateCrossfader(targetScene1Value: number): void {
+  animateCrossfader(targetScene1Value: number): void { // targetScene1Value is 0=bottom, 100=top
     this.isAnimating = true;
     if (this.animationInterval) clearInterval(this.animationInterval);
     const totalDuration = this.currentCrossfadeDurationMs;
@@ -348,23 +409,24 @@ export class App implements OnInit, OnDestroy {
       currentStep++;
       if (currentStep >= steps) {
         this.scene1FaderValue = targetScene1Value;
-        if (this.fadersLinked) {
-          this.scene2FaderValue = 100 - this.scene1FaderValue;
-        }
-        clearInterval(this.animationInterval);
+        clearInterval(this.animationInterval); // Clear interval before final update
         this.animationInterval = null;
         this.isAnimating = false;
       } else {
         this.scene1FaderValue = initialScene1Value + (stepSize * currentStep);
-        if (this.fadersLinked) {
-          this.scene2FaderValue = 100 - this.scene1FaderValue;
-        }
       }
+
       this.scene1FaderValue = Math.max(0, Math.min(100, this.scene1FaderValue));
-      // Ensure scene2FaderValue is also clamped if derived and linked
+
       if (this.fadersLinked) {
+        // scene2FaderValue is 0=top (0% influence), 100=bottom (100% influence)
+        // It should be inverse of scene1FaderValue's scale.
+        this.scene2FaderValue = 100 - this.scene1FaderValue;
+        // Ensure scene2FaderValue is also clamped (though it should be by definition if scene1FaderValue is)
         this.scene2FaderValue = Math.max(0, Math.min(100, this.scene2FaderValue));
       }
+      // Note: displayScene2SliderBindingValue will update in the UI via its getter during change detection.
+
       this.updateAudioEngineAndPostData();
       this.cdr.detectChanges();
     }, intervalDuration);

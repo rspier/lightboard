@@ -166,8 +166,8 @@
   border: 1px solid var(--button-secondary-border-color, transparent); /* Optional border */
   border-radius: 4px;
   cursor: pointer;
-  margin-top: 5px; /* Space above the Go button */
-  margin-bottom: 5px; /* Space below the fader container */
+  margin-top: 10px; /* Ensure some space above it, now that it's at the bottom of the column */
+  /* margin-bottom is not strictly necessary if it's the last item, or column gap handles it */
 }
 
 .link-faders-button:hover {

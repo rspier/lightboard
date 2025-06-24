@@ -76,8 +76,8 @@
               <app-slide-potentiometer
                 id="scene2Fader"
                 [channelNumber]="0"
-                [(value)]="scene2FaderValue"
-                (valueChange)="onScene2FaderManualChange()"
+                [(value)]="displayScene2SliderBindingValue"
+                (valueChange)="onDisplayScene2SliderBindingValueChange($event)"
                 [sliderHeight]="'280px'"
                 [showChannelInfo]="false"
                 [showValueDisplay]="false"
@@ -85,7 +85,6 @@
               </app-slide-potentiometer>
             </div>
           </div>
-          <button (click)="toggleFaderLink()" class="link-faders-button">{{ fadersLinked ? 'Unlink Faders' : 'Link Faders' }}</button>
           <button (click)="onGoButtonClick($event)" class="go-button" [class.animating]="isAnimating">{{ isAnimating ? 'Stop' : (getEffectiveGoTarget() === 0 ? 'Go ↓' : 'Go ↑') }}</button>
           <div class="crossfade-slider-container">
             <label for="crossfade-duration-slider" class="duration-slider-label">X-Fade: {{ displayCrossfadeDurationSeconds }}s</label>
@@ -94,6 +93,7 @@
                    [value]="displayCrossfadeDurationSeconds"
                    (input)="onCrossfadeDurationSliderChange($event)">
           </div>
+          <button (click)="toggleFaderLink()" class="link-faders-button">{{ fadersLinked ? 'Unlink Faders' : 'Link Faders' }}</button>
         </div>
       </div>
     </div>
