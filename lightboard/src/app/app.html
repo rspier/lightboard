@@ -1,7 +1,7 @@
 <!-- App Header removed -->
 <div class="header-icons"> <!-- This div will be styled with position:fixed -->
-  <span class="shortcuts-icon" (click)="toggleShortcutsModal()" title="Keyboard Shortcuts">?</span>
-  <span class="settings-icon" (click)="toggleSettingsModal()" title="Settings">&#9881;</span>
+  <span class="shortcuts-icon" (click)="toggleShortcutsModal()" (keydown.enter)="toggleShortcutsModal()" tabindex="0" title="Keyboard Shortcuts">?</span>
+  <span class="settings-icon" (click)="toggleSettingsModal()" (keydown.enter)="toggleSettingsModal()" tabindex="0" title="Settings">&#9881;</span>
 </div>
 
 <main class="main">
@@ -11,7 +11,7 @@
         <div class="channel-slider-rows">
 
           <div class="scene-row-wrapper">
-            <div class="scene-label-container" (click)="toggleSceneTextInput(1)" title="Text Input for Scene 1">
+            <div class="scene-label-container" (click)="toggleSceneTextInput(1)" (keydown.enter)="toggleSceneTextInput(1)" tabindex="0" title="Text Input for Scene 1">
               <h2 class="scene-label scene-1-label">Scene 1</h2>
             </div>
             <div class="slider-row" id="row1">
@@ -38,7 +38,7 @@
           </div>
 
           <div class="scene-row-wrapper">
-            <div class="scene-label-container" (click)="toggleSceneTextInput(2)" title="Text Input for Scene 2">
+            <div class="scene-label-container" (click)="toggleSceneTextInput(2)" (keydown.enter)="toggleSceneTextInput(2)" tabindex="0" title="Text Input for Scene 2">
               <h2 class="scene-label scene-2-label">Scene 2</h2>
             </div>
             <div class="slider-row" id="row2">

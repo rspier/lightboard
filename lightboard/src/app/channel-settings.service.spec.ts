@@ -3,7 +3,7 @@ import { ChannelSettingsService, AppSettings } from './channel-settings.service'
 
 describe('ChannelSettingsService', () => {
   let service: ChannelSettingsService;
-  let store: { [key: string]: string | null } = {};
+  let store: Record<string, string | null> = {};
   const settingsKey = 'appSettings_v1';
 
   const defaultNumChannels = 4;

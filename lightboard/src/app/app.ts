@@ -9,7 +9,7 @@ import { SettingsModalComponent } from './settings-modal/settings-modal.componen
 import { KeyboardShortcutsModalComponent } from './keyboard-shortcuts-modal/keyboard-shortcuts-modal.component';
 import { SceneTextInputModalComponent } from './scene-text-input-modal/scene-text-input-modal.component';
 // import { RotaryDialComponent } from './rotary-dial/rotary-dial.component'; // Removed
-import { ChannelSettingsService, AppSettings } from './channel-settings.service';
+import { ChannelSettingsService } from './channel-settings.service'; // Removed AppSettings
 import { HttpDataService, CombinedOutputData } from './http-data.service';
 
 interface PotentiometerState {
@@ -46,25 +46,25 @@ export class App implements OnInit, OnDestroy {
 
   row1States: PotentiometerState[] = [];
   row2States: PotentiometerState[] = [];
-  scene1FaderValue: number = 50; // 0=bottom (0% S1 influence), 100=top (100% S1 influence)
-  scene2FaderValue: number = 50; // Represents Scene 2 influence: 0=top (0% S2 influence), 100=bottom (100% S2 influence)
-  fadersLinked: boolean = true;
+  scene1FaderValue = 50; // 0=bottom (0% S1 influence), 100=top (100% S1 influence)
+  scene2FaderValue = 50; // Represents Scene 2 influence: 0=top (0% S2 influence), 100=bottom (100% S2 influence)
+  fadersLinked = true;
   combinedOutputStates: PotentiometerState[] = [];
-  isAnimating: boolean = false;
-  animationInterval: any = null;
-  showSettingsModal: boolean = false;
-  showShortcutsModal: boolean = false;
+  isAnimating = false;
+  animationInterval: number | undefined = undefined; // Typed for browser's setInterval return, compatible with clearInterval
+  showSettingsModal = false;
+  showShortcutsModal = false;
   private settingsSubscription: Subscription | undefined;
 
   // Crossfade duration managed by app, controlled by rotary dial
-  displayCrossfadeDurationSeconds: number = 0.5; // Default, will be overwritten by service on init
+  displayCrossfadeDurationSeconds = 0.5; // Default, will be overwritten by service on init
 
   // State variables for Scene Text Input Modal
-  showSceneTextInputModal: boolean = false;
+  showSceneTextInputModal = false;
   currentSceneForModal: 1 | 2 | null = null;
-  modalInitialText: string = '';
-  scene1CommandsString: string = '';
-  scene2CommandsString: string = '';
+  modalInitialText = '';
+  scene1CommandsString = '';
+  scene2CommandsString = '';
   modalFeedbackMessages: {text: string, type: 'error' | 'success'}[] = []; // Renamed and typed
 
   private unlistenKeyDown: (() => void) | undefined; // For keyboard shortcut listener cleanup
@@ -73,7 +73,7 @@ export class App implements OnInit, OnDestroy {
   private currentBackendUrl: string;
   private currentCrossfadeDurationMs: number;
   private currentDarkMode: boolean;
-  isShiftPressed: boolean = false; // For dynamic arrow and shift-action
+  isShiftPressed = false; // For dynamic arrow and shift-action
   // effectiveGoTarget will be determined by a method now
 
   private defaultColorsScene1: string[] = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ffa500', '#800080', '#a52a2a', '#808000', '#008080', '#800000'];
@@ -383,11 +383,11 @@ export class App implements OnInit, OnDestroy {
     }
   }
 
-  onGoButtonClick(event?: MouseEvent): void { // event is passed but isShiftPressed property is now the source of truth for shift state affecting action
+  onGoButtonClick(_event?: MouseEvent): void { // Prefixed unused event with _
     if (this.isAnimating) {
       if (this.animationInterval) {
         clearInterval(this.animationInterval);
-        this.animationInterval = null;
+        this.animationInterval = undefined;
       }
       this.isAnimating = false;
       this.cdr.detectChanges();
@@ -410,7 +410,7 @@ export class App implements OnInit, OnDestroy {
       if (currentStep >= steps) {
         this.scene1FaderValue = targetScene1Value;
         clearInterval(this.animationInterval); // Clear interval before final update
-        this.animationInterval = null;
+        this.animationInterval = undefined; // Changed from null
         this.isAnimating = false;
       } else {
         this.scene1FaderValue = initialScene1Value + (stepSize * currentStep);

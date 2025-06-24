@@ -9,7 +9,7 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./keyboard-shortcuts-modal.component.css']
 })
 export class KeyboardShortcutsModalComponent {
-  @Input() isVisible: boolean = false;
+  @Input() isVisible = false;
   @Output() closeEvent = new EventEmitter<void>();
 
   constructor() { }

@@ -13,9 +13,9 @@ function dispatchKeyboardEvent(
   key: string,
   target: EventTarget,
   code?: string,
-  shiftKey: boolean = false,
-  ctrlKey: boolean = false,
-  altKey: boolean = false
+  shiftKey = false,
+  ctrlKey = false,
+  altKey = false
 ) {
   const event = new KeyboardEvent('keydown', {
     key: key,
@@ -80,7 +80,7 @@ describe('App', () => {
     mockHttpDataService.postCombinedOutput.and.returnValue(of({success: true}));
 
     mockRenderer = jasmine.createSpyObj('Renderer2', ['addClass', 'removeClass', 'listen']);
-    mockRenderer.listen.and.returnValue(() => {});
+    mockRenderer.listen.and.returnValue(() => { /* mock listener */ });
 
 
     await TestBed.configureTestingModule({
@@ -100,7 +100,7 @@ describe('App', () => {
   afterEach(() => {
     if (app.animationInterval) {
       clearInterval(app.animationInterval);
-      app.animationInterval = null;
+      app.animationInterval = undefined; // Changed from null
     }
     if (app['unlistenKeyDown']) { app['unlistenKeyDown'](); }
     if (app['unlistenShiftDown']) { app['unlistenShiftDown'](); }
@@ -384,7 +384,7 @@ describe('App', () => {
       const cdrSpy = spyOn(app['cdr'], 'detectChanges');
       app.onGoButtonClick();
       expect(clearInterval).toHaveBeenCalledWith(12345);
-      expect(app.animationInterval).toBeNull();
+      expect(app.animationInterval).toBeUndefined(); // Changed from toBeNull
       expect(app.isAnimating).toBeFalse();
       expect(cdrSpy).toHaveBeenCalled();
     });
@@ -475,7 +475,7 @@ describe('App', () => {
 
     describe('animateCrossfader method tests needing Jasmine Clock', () => {
       beforeEach(() => {
-        try { jasmine.clock().uninstall(); } catch (e) {} // Defensive uninstall
+        try { jasmine.clock().uninstall(); } catch (_e) {} // Defensive uninstall, mark _e as unused
         jasmine.clock().install();
         spyOn(app, 'updateAudioEngineAndPostData').and.callThrough();
         app['currentCrossfadeDurationMs'] = 500;
@@ -515,7 +515,7 @@ describe('App', () => {
         expect(app.scene1FaderValue).toBe(target);
         expect(app.scene2FaderValue).toBe(50);
         expect(app.isAnimating).toBeFalse();
-        expect(app.animationInterval).toBeNull();
+        expect(app.animationInterval).toBeUndefined(); // Changed from toBeNull
         expect(app.updateAudioEngineAndPostData).toHaveBeenCalledTimes(steps);
       });
 
@@ -540,7 +540,7 @@ describe('App', () => {
         expect(app.scene2FaderValue).toBe(expectedScene2Target);
         expect(app.displayScene2SliderBindingValue).toBe(100 - expectedScene2Target);
         expect(app.isAnimating).toBeFalse();
-        expect(app.animationInterval).toBeNull();
+        expect(app.animationInterval).toBeUndefined(); // Changed from toBeNull
         expect(app.updateAudioEngineAndPostData).toHaveBeenCalledTimes(steps);
       });
     });

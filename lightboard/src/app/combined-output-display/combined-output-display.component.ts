@@ -10,9 +10,9 @@ import { CommonModule, NgStyle } from '@angular/common'; // NgStyle is needed fo
   changeDetection: ChangeDetectionStrategy.OnPush // Good for display-only components
 })
 export class CombinedOutputDisplayComponent {
-  @Input() description: string = '';
-  @Input() value: number = 0;
-  @Input() color: string = '#ffffff'; // Default to white for the base color input
+  @Input() description = '';
+  @Input() value = 0;
+  @Input() color = '#ffffff'; // Default to white for the base color input
 
   // Helper to parse hex color string to RGB object
   private hexToRgb(hex: string): { r: number; g: number; b: number } | null {
