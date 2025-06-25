@@ -1,5 +1,5 @@
-<div class="modal-overlay" (click)="cancel()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
+<div class="modal-overlay" (click)="cancel()" (keydown.enter)="cancel()" tabindex="0">
+  <div class="modal-content" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" tabindex="0">
     <h2>Settings</h2>
     <form (ngSubmit)="saveSettings()">
       <!-- Number of Channels -->
@@ -30,7 +30,7 @@
 
       <!-- Channel Name Inputs -->
       <div class="form-group channel-names-group">
-        <label>Channel Names:</label>
+        <div class="group-label">Channel Names:</div>
         <div *ngFor="let description of descriptions; let i = index; trackBy: trackByIndex" class="channel-name-input">
           <label for="channel-name-{{i}}" class="channel-name-label">Ch {{ i + 1 }}:</label>
           <input type="text" id="channel-name-{{i}}" [(ngModel)]="descriptions[i]" name="channel-name-{{i}}" required>

@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing'; // Import fakeAsync, tick
+import { ComponentFixture, TestBed } from '@angular/core/testing'; // Removed fakeAsync, tick
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { SettingsModalComponent } from './settings-modal.component';

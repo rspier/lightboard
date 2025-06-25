@@ -1,5 +1,5 @@
-<div class="modal-overlay" *ngIf="isVisible" (click)="onCancel()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
+<div class="modal-overlay" *ngIf="isVisible" (click)="onCancel()" (keydown.enter)="onCancel()" tabindex="0">
+  <div class="modal-content" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" tabindex="0">
     <h3 class="modal-title">{{ sceneLabel }} Text Input</h3>
     <div class="modal-body">
       <input
