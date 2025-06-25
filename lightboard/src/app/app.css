@@ -384,3 +384,116 @@ input[type="range"].duration-slider::-moz-range-thumb {
 }
 
 /* Removed .global-command-feedback styles as the element is removed */
+
+/* Media Queries for Responsive Design */
+
+/* Small devices (phones, less than 768px) */
+@media (max-width: 767.98px) {
+  .page-content {
+    flex-direction: column;
+    align-items: center; /* Center items when stacked */
+  }
+
+  .sliders-area {
+    flex-direction: column;
+    align-items: center; /* Center sliders and crossfader column */
+    width: 100%; /* Allow sliders area to take full width */
+  }
+
+  .channel-slider-rows {
+    width: 100%; /* Ensure slider rows take full width */
+    align-items: center; /* Center content if not already */
+  }
+
+  .scene-row-wrapper {
+    flex-direction: column; /* Stack label and sliders vertically */
+    align-items: center;
+    width: 100%; /* Take full width */
+    margin-bottom: 15px; /* Add some space between scene rows */
+  }
+
+  .scene-label-container {
+    width: auto; /* Allow label container to adjust */
+    margin-right: 0; /* Remove right margin */
+    margin-bottom: 5px; /* Add space below label */
+  }
+
+  .scene-label {
+    writing-mode: horizontal-tb; /* Horizontal text */
+    transform: none; /* Remove rotation */
+    font-size: 1.2em; /* Slightly larger for readability */
+  }
+
+  .slider-row {
+    justify-content: center; /* Center sliders in the row */
+    flex-wrap: wrap; /* Allow sliders to wrap if needed */
+    /* Assuming app-slide-potentiometer has a fixed width, wrapping will occur.
+       If they are flex items, they might shrink. Consider min-width on them if an issue. */
+  }
+
+  .combined-output-row {
+    padding-left: 0; /* Remove padding, align with centered content */
+    justify-content: center; /* Center combined output displays */
+    flex-wrap: wrap; /* Allow wrapping */
+  }
+
+  .crossfader-column {
+    width: 100%; /* Full width for crossfader elements */
+    margin-top: 20px; /* Add space above crossfader section */
+  }
+
+  .fader-container {
+    justify-content: space-around; /* Space out faders if horizontal space allows */
+    width: 100%;
+  }
+
+  /* Adjustments for header icons if they become too crowded or hard to tap */
+  .header-icons {
+    padding: 5px;
+    top: 5px;
+    right: 5px;
+  }
+  .settings-icon, .shortcuts-icon {
+    font-size: 1.8em; /* Slightly smaller if needed */
+    margin-left: 5px;
+  }
+
+  .main-layout {
+    padding-top: 60px; /* Adjust if header icons height changed */
+  }
+}
+
+/* Medium devices (tablets, 768px and up) */
+@media (min-width: 768px) and (max-width: 991.98px) {
+  .page-content {
+    /* May not need changes if desktop layout is mostly fine,
+       but could adjust gaps or specific element widths if needed. */
+  }
+
+  .sliders-area {
+    /* Could allow wrapping or adjust gap if too wide */
+    /* flex-wrap: wrap; */ /* Example if needed */
+    /* justify-content: center; */
+  }
+
+  /* Example: reduce gap between sliders if they are too spaced out */
+  .slider-row {
+    gap: 0px; /* Or a smaller value than default */
+  }
+   .combined-output-row {
+    gap: 0px;
+  }
+
+  /* Ensure faders are reasonably sized */
+  .fader-container {
+    gap: 10px; /* Reduce gap if too wide */
+  }
+}
+
+/* Large devices (desktops, 992px and up) */
+/* Styles for .page-content, .sliders-area, etc., are already defined
+   for this range by default (styles outside media queries). */
+
+/* Extra large devices (large desktops, 1200px and up) */
+/* .page-content already has max-width: 1200px, so it's constrained.
+   No specific changes usually needed here unless elements within become too sparse. */
