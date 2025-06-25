@@ -9,14 +9,14 @@ import { SettingsModalComponent } from './settings-modal/settings-modal.componen
 import { KeyboardShortcutsModalComponent } from './keyboard-shortcuts-modal/keyboard-shortcuts-modal.component';
 import { SceneTextInputModalComponent } from './scene-text-input-modal/scene-text-input-modal.component';
 // import { RotaryDialComponent } from './rotary-dial/rotary-dial.component'; // Removed
-import { ChannelSettingsService } from './channel-settings.service'; // AppSettings removed as unused
+import { ChannelSettingsService, AppSettings } from './channel-settings.service';
 import { HttpDataService, CombinedOutputData } from './http-data.service';
 
 interface PotentiometerState {
   channelNumber: number;
   channelDescription: string;
   value: number;
-  color: string; // Changed from any to string
+  color: string;
 }
 
 interface ParsedCommand {
@@ -46,23 +46,23 @@ export class App implements OnInit, OnDestroy {
 
   row1States: PotentiometerState[] = [];
   row2States: PotentiometerState[] = [];
-  crossfaderValue = 50;
+  crossfaderValue: number = 50;
   combinedOutputStates: PotentiometerState[] = [];
-  isAnimating = false;
+  isAnimating: boolean = false;
   animationInterval: any = null;
-  showSettingsModal = false;
-  showShortcutsModal = false;
+  showSettingsModal: boolean = false;
+  showShortcutsModal: boolean = false;
   private settingsSubscription: Subscription | undefined;
 
   // Crossfade duration managed by app, controlled by rotary dial
-  displayCrossfadeDurationSeconds = 0.5; // Default, will be overwritten by service on init
+  displayCrossfadeDurationSeconds: number = 0.5; // Default, will be overwritten by service on init
 
   // State variables for Scene Text Input Modal
-  showSceneTextInputModal = false;
+  showSceneTextInputModal: boolean = false;
   currentSceneForModal: 1 | 2 | null = null;
-  modalInitialText = '';
-  scene1CommandsString = '';
-  scene2CommandsString = '';
+  modalInitialText: string = '';
+  scene1CommandsString: string = '';
+  scene2CommandsString: string = '';
   modalFeedbackMessages: {text: string, type: 'error' | 'success'}[] = []; // Renamed and typed
 
   private unlistenKeyDown: (() => void) | undefined; // For keyboard shortcut listener cleanup
@@ -71,7 +71,7 @@ export class App implements OnInit, OnDestroy {
   private currentBackendUrl: string;
   private currentCrossfadeDurationMs: number;
   private currentDarkMode: boolean;
-  isShiftPressed = false; // For dynamic arrow and shift-action
+  isShiftPressed: boolean = false; // For dynamic arrow and shift-action
   // effectiveGoTarget will be determined by a method now
 
   private defaultColorsScene1: string[] = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ffa500', '#800080', '#a52a2a', '#808000', '#008080', '#800000'];
@@ -137,21 +137,21 @@ export class App implements OnInit, OnDestroy {
     });
 
     // Shift key listeners
-    this.unlistenShiftDown = this.renderer.listen('document', 'keydown', (_event: KeyboardEvent) => {
-      if (_event.key === 'Shift' && !this.isShiftPressed) {
+    this.unlistenShiftDown = this.renderer.listen('document', 'keydown', (event: KeyboardEvent) => {
+      if (event.key === 'Shift' && !this.isShiftPressed) {
         this.isShiftPressed = true;
         this.updateEffectiveGoTarget();
       }
     });
-    this.unlistenShiftUp = this.renderer.listen('document', 'keyup', (_event: KeyboardEvent) => {
-      if (_event.key === 'Shift' && this.isShiftPressed) {
+    this.unlistenShiftUp = this.renderer.listen('document', 'keyup', (event: KeyboardEvent) => {
+      if (event.key === 'Shift' && this.isShiftPressed) {
         this.isShiftPressed = false;
         this.updateEffectiveGoTarget();
       }
     });
 
     // Setup global keyboard listener for other shortcuts
-    this.unlistenKeyDown = this.renderer.listen('document', 'keydown', (_event: KeyboardEvent) => {
+    this.unlistenKeyDown = this.renderer.listen('document', 'keydown', (event: KeyboardEvent) => {
       const activeElement = document.activeElement as HTMLElement;
       const isInputFocused = activeElement &&
                              (activeElement.tagName === 'INPUT' ||
@@ -277,8 +277,8 @@ export class App implements OnInit, OnDestroy {
     return this.isShiftPressed ? (naturalTargetValue === 0 ? 100 : 0) : naturalTargetValue;
   }
 
-  onPotentiometerChange(): void { this.calculateCombinedOutputs(); if (this.currentBackendUrl && this.combinedOutputStates && this.combinedOutputStates.length > 0) { this.httpDataService.postCombinedOutput(this.currentBackendUrl, this.combinedOutputStates as CombinedOutputData[]).subscribe({ next: () => { /* Post successful, no action needed */ }, error: (err) => { console.error('Error posting data:', err); } }); } }
-  onGoButtonClick(_event?: MouseEvent): void { // event is passed but isShiftPressed property is now the source of truth for shift state affecting action
+  onPotentiometerChange(): void { this.calculateCombinedOutputs(); if (this.currentBackendUrl && this.combinedOutputStates && this.combinedOutputStates.length > 0) { this.httpDataService.postCombinedOutput(this.currentBackendUrl, this.combinedOutputStates as CombinedOutputData[]).subscribe({ next: () => {}, error: (err) => { console.error('Error posting data:', err); } }); } }
+  onGoButtonClick(event?: MouseEvent): void { // event is passed but isShiftPressed property is now the source of truth for shift state affecting action
     if (this.isAnimating) {
       if (this.animationInterval) {
         clearInterval(this.animationInterval);

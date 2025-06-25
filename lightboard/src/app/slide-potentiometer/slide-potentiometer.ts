@@ -10,23 +10,23 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './slide-potentiometer.css'
 })
 export class SlidePotentiometerComponent {
-  @Input() channelNumber = 0;
+  @Input() channelNumber: number = 0;
   // @Input() channelDescription: string = ''; // Removed
-  @Input() sliderHeight = '150px';
-  @Input() showChannelInfo = true;
-  @Input() showValueDisplay = true; // New input
-  @Input() showColorInput = true; // New input
+  @Input() sliderHeight: string = '150px';
+  @Input() showChannelInfo: boolean = true;
+  @Input() showValueDisplay: boolean = true; // New input
+  @Input() showColorInput: boolean = true; // New input
 
-  @Input() value = 0;
+  @Input() value: number = 0;
   @Output() valueChange = new EventEmitter<number>();
 
-  @Input() color = '#ffffff'; // Default color
+  @Input() color: string = '#ffffff'; // Default color
   @Output() colorChange = new EventEmitter<string>();
 
   @ViewChild('valueInput') valueInputRef!: ElementRef<HTMLInputElement>;
 
-  isEditing = false;
-  editValue = 0;
+  isEditing: boolean = false;
+  editValue: number = 0;
 
   startEditing(): void {
     this.isEditing = true;

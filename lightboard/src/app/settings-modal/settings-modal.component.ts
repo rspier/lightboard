@@ -12,11 +12,11 @@ import { ChannelSettingsService, AppSettings } from '../channel-settings.service
 })
 export class SettingsModalComponent implements OnInit {
   // Properties for form binding
-  numChannels = 4;
+  numChannels: number = 4;
   descriptions: string[] = [];
-  backendUrl = '';
+  backendUrl: string = '';
   // crossfadeDurationSeconds: number = 0.5; // Removed
-  darkMode = false; // New property
+  darkMode: boolean = false; // New property
 
   // Validation error messages
   backendUrlError: string | null = null;

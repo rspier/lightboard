@@ -10,18 +10,18 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './scene-text-input-modal.component.css'
 })
 export class SceneTextInputModalComponent implements OnChanges, AfterViewChecked {
-  @Input() isVisible = false;
-  @Input() sceneLabel = '';
-  @Input() initialValue = '';
+  @Input() isVisible: boolean = false;
+  @Input() sceneLabel: string = '';
+  @Input() initialValue: string = '';
   @Input() messages: {text: string, type: 'error' | 'success'}[] = [];
 
   @Output() closeModal = new EventEmitter<void>();
   @Output() applyCommands = new EventEmitter<string>();
 
   @ViewChild('textInput') textInputField!: ElementRef<HTMLInputElement>;
-  private fieldFocused = false;
+  private fieldFocused: boolean = false;
 
-  textInputValue = '';
+  textInputValue: string = '';
 
   ngOnChanges(changes: SimpleChanges): void {
     // If initialValue itself changes, update textInputValue

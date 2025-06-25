@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, Input } from '@angular/core'; // Removed HostListener
+import { Component, EventEmitter, Output, Input, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -9,7 +9,7 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./keyboard-shortcuts-modal.component.css']
 })
 export class KeyboardShortcutsModalComponent {
-  @Input() isVisible = false;
+  @Input() isVisible: boolean = false;
   @Output() closeEvent = new EventEmitter<void>();
 
   constructor() { }
