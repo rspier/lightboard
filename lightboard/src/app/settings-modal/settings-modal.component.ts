@@ -1,7 +1,7 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; // For ngModel
-import { ChannelSettingsService, AppSettings } from '../channel-settings.service'; // Import AppSettings
+import { ChannelSettingsService } from '../channel-settings.service'; // Removed AppSettings
 
 @Component({
   selector: 'app-settings-modal',
@@ -11,6 +11,8 @@ import { ChannelSettingsService, AppSettings } from '../channel-settings.service
   styleUrls: ['./settings-modal.component.css']
 })
 export class SettingsModalComponent implements OnInit {
+  private channelSettingsService = inject(ChannelSettingsService);
+
   // Properties for form binding
   numChannels = 4;
   descriptions: string[] = [];
@@ -23,9 +25,7 @@ export class SettingsModalComponent implements OnInit {
   // durationError: string | null = null; // Removed
   numChannelsError: string | null = null;
 
-  @Output() close = new EventEmitter<void>();
-
-  constructor(private channelSettingsService: ChannelSettingsService) {}
+  @Output() closeModal = new EventEmitter<void>();
 
   ngOnInit(): void {
     const currentSettings = this.channelSettingsService.getCurrentAppSettings();
@@ -100,11 +100,11 @@ export class SettingsModalComponent implements OnInit {
     // this.channelSettingsService.updateCrossfadeDurationSeconds(duration); // Removed
     this.channelSettingsService.updateDarkMode(this.darkMode); // Save darkMode setting
 
-    this.close.emit();
+    this.closeModal.emit();
   }
 
   cancel(): void {
-    this.close.emit();
+    this.closeModal.emit();
   }
 
   resetToDefaults(): void {
@@ -125,7 +125,7 @@ export class SettingsModalComponent implements OnInit {
     }
   }
 
-  public trackByIndex(index: number, item: any): number {
+  public trackByIndex(index: number): number { // Removed unused _item parameter
     return index;
   }
 }

@@ -112,7 +112,7 @@
   (applyCommands)="handleApplySceneCommandsFromModal($event)">
 </app-scene-text-input-modal>
 
-<app-settings-modal *ngIf="showSettingsModal" (close)="toggleSettingsModal()"></app-settings-modal>
+<app-settings-modal *ngIf="showSettingsModal" (closeModal)="toggleSettingsModal()"></app-settings-modal>
 
 <app-keyboard-shortcuts-modal
   *ngIf="showShortcutsModal"

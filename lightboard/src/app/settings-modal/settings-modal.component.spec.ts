@@ -102,8 +102,8 @@ describe('SettingsModalComponent', () => {
 
 
   describe('saveSettings', () => {
-    it('should call service update methods for valid settings (including darkMode) and emit close', () => {
-      spyOn(component.close, 'emit');
+    it('should call service update methods for valid settings (including darkMode) and emit closeModal', () => {
+      spyOn(component.closeModal, 'emit'); // Changed to closeModal
       component.numChannels = 3;
       component.descriptions = ['New1', 'New2', 'New3'];
       component.backendUrl = 'http://valid.url';
@@ -122,37 +122,37 @@ describe('SettingsModalComponent', () => {
       expect(mockChannelSettingsService.updateBackendUrl).toHaveBeenCalledWith('http://valid.url');
       // expect(mockChannelSettingsService.updateCrossfadeDurationSeconds).toHaveBeenCalledWith(2); // Removed
       expect(mockChannelSettingsService.updateDarkMode).toHaveBeenCalledWith(true); // Verify darkMode update
-      expect(component.close.emit).toHaveBeenCalled();
+      expect(component.closeModal.emit).toHaveBeenCalled(); // Changed to closeModal
       expect(component.numChannelsError).toBeNull();
       expect(component.backendUrlError).toBeNull();
       // expect(component.durationError).toBeNull(); // Removed
     });
     // ... (other saveSettings validation tests remain the same)
     it('should show error and not save if numChannels is invalid', () => {
-      spyOn(component.close, 'emit');
+      spyOn(component.closeModal, 'emit'); // Changed to closeModal
       component.numChannels = 0;
       component.saveSettings();
       expect(component.numChannelsError).toBeTruthy();
       expect(mockChannelSettingsService.updateNumChannels).not.toHaveBeenCalled();
-      expect(component.close.emit).not.toHaveBeenCalled();
+      expect(component.closeModal.emit).not.toHaveBeenCalled(); // Changed to closeModal
     });
 
     it('should show error and not save if backendUrl is invalid', () => {
-      spyOn(component.close, 'emit');
+      spyOn(component.closeModal, 'emit'); // Changed to closeModal
       component.backendUrl = 'invalidurl';
       component.saveSettings();
       expect(component.backendUrlError).toBeTruthy();
       expect(mockChannelSettingsService.updateBackendUrl).not.toHaveBeenCalled();
-      expect(component.close.emit).not.toHaveBeenCalled();
+      expect(component.closeModal.emit).not.toHaveBeenCalled(); // Changed to closeModal
     });
 
     // it('should show error and not save if crossfadeDuration is invalid', () => { // Removed Test
-    //   spyOn(component.close, 'emit');
+    //   spyOn(component.closeModal, 'emit'); // Changed to closeModal
     //   component.crossfadeDurationSeconds = 0;
     //   component.saveSettings();
     //   expect(component.durationError).toBeTruthy();
     //   expect(mockChannelSettingsService.updateCrossfadeDurationSeconds).not.toHaveBeenCalled();
-    //   expect(component.close.emit).not.toHaveBeenCalled();
+    //   expect(component.closeModal.emit).not.toHaveBeenCalled(); // Changed to closeModal
     // });
   }); // End of describe('saveSettings')
 
@@ -194,10 +194,10 @@ describe('SettingsModalComponent', () => {
   });
 
 
-  it('should emit close on cancel', () => {
-    spyOn(component.close, 'emit');
+  it('should emit closeModal on cancel', () => { // Changed to closeModal
+    spyOn(component.closeModal, 'emit'); // Changed to closeModal
     component.cancel();
-    expect(component.close.emit).toHaveBeenCalled();
+    expect(component.closeModal.emit).toHaveBeenCalled(); // Changed to closeModal
   });
 
   it('should call resetToDefaults on service and update all local properties including darkMode', () => {

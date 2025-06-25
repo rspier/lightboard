@@ -33,7 +33,7 @@
 </div>
 <ng-container *ngIf="showValueDisplay">
   <div class="value-display-container">
-    <span *ngIf="!isEditing" (click)="startEditing()" class="value-text">{{ value }}</span>
+    <span *ngIf="!isEditing" (click)="startEditing()" (keydown.enter)="startEditing()" class="value-text" tabindex="0">{{ value }}</span>
     <input #valueInput type="number" class="value-edit-input" *ngIf="isEditing" [(ngModel)]="editValue" (blur)="stopEditing()" (keyup.enter)="stopEditing()">
   </div>
 </ng-container>

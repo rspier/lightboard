@@ -668,7 +668,7 @@ describe('App', () => {
       fixture.detectChanges();
       const modalComponentDebugElement = fixture.debugElement.query(By.css('app-settings-modal'));
       expect(modalComponentDebugElement).toBeTruthy();
-      modalComponentDebugElement.componentInstance.close.emit();
+      modalComponentDebugElement.componentInstance.closeModal.emit(); // Changed to closeModal
       fixture.detectChanges();
       expect(app.showSettingsModal).toBeFalse();
     });
