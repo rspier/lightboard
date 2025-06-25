@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, Renderer2, Inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, Renderer2, inject } from '@angular/core';
 import { DOCUMENT, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterOutlet } from '@angular/router';
@@ -42,6 +42,12 @@ interface ParsedCommand {
   styleUrl: './app.css'
 })
 export class App implements OnInit, OnDestroy {
+  private cdr = inject(ChangeDetectorRef);
+  private channelSettingsService = inject(ChannelSettingsService);
+  private httpDataService = inject(HttpDataService);
+  private renderer = inject(Renderer2);
+  private document = inject<Document>(DOCUMENT);
+
   protected title = 'lightboard';
 
   row1States: PotentiometerState[] = [];
@@ -81,13 +87,7 @@ export class App implements OnInit, OnDestroy {
   private unlistenShiftDown: (() => void) | undefined;
   private unlistenShiftUp: (() => void) | undefined;
 
-  constructor(
-    private cdr: ChangeDetectorRef,
-    private channelSettingsService: ChannelSettingsService,
-    private httpDataService: HttpDataService,
-    private renderer: Renderer2,
-    @Inject(DOCUMENT) private document: Document
-  ) {
+  constructor() {
     const initialSettings = this.channelSettingsService.getCurrentAppSettings();
     this.currentNumChannels = initialSettings.numChannels;
     this.currentBackendUrl = initialSettings.backendUrl;
@@ -319,7 +319,7 @@ export class App implements OnInit, OnDestroy {
     this.calculateCombinedOutputs();
     if (this.currentBackendUrl && this.combinedOutputStates && this.combinedOutputStates.length > 0) {
       this.httpDataService.postCombinedOutput(this.currentBackendUrl, this.combinedOutputStates as CombinedOutputData[]).subscribe({
-        next: () => {},
+        next: () => { /* Handle successful post if needed */ },
         error: (err) => { console.error('Error posting data:', err); }
       });
     }
@@ -383,7 +383,7 @@ export class App implements OnInit, OnDestroy {
     }
   }
 
-  onGoButtonClick(_event?: MouseEvent): void { // Prefixed unused event with _
+  onGoButtonClick(): void {
     if (this.isAnimating) {
       if (this.animationInterval) {
         clearInterval(this.animationInterval);

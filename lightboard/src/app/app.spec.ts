@@ -379,7 +379,7 @@ describe('App', () => {
 
     it('onGoButtonClick should stop animation if already animating', () => {
       app.isAnimating = true;
-      app.animationInterval = 12345 as any;
+      app.animationInterval = 12345 as number;
       spyOn(window, 'clearInterval');
       const cdrSpy = spyOn(app['cdr'], 'detectChanges');
       app.onGoButtonClick();
@@ -475,7 +475,7 @@ describe('App', () => {
 
     xdescribe('animateCrossfader method tests needing Jasmine Clock', () => { // xdescribe to skip this block
       beforeEach(() => {
-        try { jasmine.clock().uninstall(); } catch (_e) {} // Defensive uninstall, mark _e as unused
+        try { jasmine.clock().uninstall(); } catch { /* Defensive uninstall */ }
         jasmine.clock().install();
         spyOn(app, 'updateAudioEngineAndPostData').and.callThrough();
         app['currentCrossfadeDurationMs'] = 500;
@@ -769,10 +769,10 @@ describe('App', () => {
 
     describe('Shortcuts inhibition', () => {
       const testCases = [
-        { name: 'Spacebar', key: ' ', code: 'Space', spy: () => onGoButtonClickSpy, args: [] as any[], shift: false },
-        { name: 'QuestionMark', key: '?', code: '?', spy: () => toggleShortcutsModalSpy, args: [] as any[], shift: false },
-        { name: 'Q', key: 'q', code: 'KeyQ', shift: false, spy: () => toggleSceneTextInputSpy, args: [1] as any[] },
-        { name: 'W', key: 'w', code: 'KeyW', shift: false, spy: () => toggleSceneTextInputSpy, args: [2] as any[] },
+        { name: 'Spacebar', key: ' ', code: 'Space', spy: () => onGoButtonClickSpy, args: [] as unknown[], shift: false },
+        { name: 'QuestionMark', key: '?', code: '?', spy: () => toggleShortcutsModalSpy, args: [] as unknown[], shift: false },
+        { name: 'Q', key: 'q', code: 'KeyQ', shift: false, spy: () => toggleSceneTextInputSpy, args: [1] as unknown[] },
+        { name: 'W', key: 'w', code: 'KeyW', shift: false, spy: () => toggleSceneTextInputSpy, args: [2] as unknown[] },
       ];
 
       function runInhibitionTest(modalType: 'scene' | 'shortcuts' | 'settings' | 'inputFocus') {
