@@ -92,7 +92,7 @@ export class ChannelSettingsService {
           darkMode // Include darkMode
         };
       }
-    } catch (error) {
+    } catch {
       // console.error('ChannelSettingsService: Error loading settings from localStorage', error);
     }
 
@@ -110,7 +110,7 @@ export class ChannelSettingsService {
   private saveSettings(settings: AppSettings): void {
     try {
       localStorage.setItem(this.settingsKey, JSON.stringify(settings));
-    } catch (error) {
+    } catch {
       // console.error('ChannelSettingsService: Error saving settings to localStorage', error);
     }
   }

@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CommonModule, NgStyle } from '@angular/common'; // NgStyle is needed for [ngStyle]
 import { CombinedOutputDisplayComponent } from './combined-output-display.component';
-import { By } from '@angular/platform-browser';
 
 describe('CombinedOutputDisplayComponent', () => {
   let component: CombinedOutputDisplayComponent;

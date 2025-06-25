@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, Input, HostListener } from '@angular/core';
+import { Component, EventEmitter, Output, Input } from '@angular/core'; // Removed HostListener
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -12,7 +12,9 @@ export class KeyboardShortcutsModalComponent {
   @Input() isVisible = false;
   @Output() closeEvent = new EventEmitter<void>();
 
-  constructor() { }
+  constructor() {
+    // This component intentionally has no specific constructor logic.
+  }
 
   close(): void {
     this.closeEvent.emit();
