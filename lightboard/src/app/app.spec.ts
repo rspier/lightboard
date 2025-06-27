@@ -335,9 +335,9 @@ describe('App', () => {
       // expect(mockThemeService.applyTheme).toHaveBeenCalledWith('light'); // or whatever default
     });
 
-    it('should call ThemeService to cycle themes when "T" key is pressed', () => {
+    it('should call ThemeService to cycle themes when "Shift+T" is pressed', () => {
       fixture.detectChanges(); // Ensure listeners are attached
-      dispatchKeyboardEvent('T', mockDocument.body, 'KeyT');
+      dispatchKeyboardEvent('T', mockDocument.body, 'KeyT', true); // Pass true for shiftKey
       expect(mockThemeService.cycleNextTheme).toHaveBeenCalled();
     });
   });
