@@ -47,3 +47,12 @@ a {
 a:hover {
   text-decoration: underline;
 }
+
+/* Ensure buttons use the theme-defined font */
+button,
+input[type="button"],
+input[type="submit"],
+input[type="reset"] {
+  font-family: var(--app-font-family, sans-serif); /* Fallback to sans-serif if variable not defined */
+  /* Other button resets/base styles can go here if needed */
+}

@@ -436,6 +436,7 @@ input[type="range"].duration-slider::-moz-range-thumb {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  font-family: var(--app-font-family); /* Ensure LCARS buttons use the LCARS font */
 }
 
 .lcars-theme .button-primary {
