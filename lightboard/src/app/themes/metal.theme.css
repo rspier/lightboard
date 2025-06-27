@@ -4,10 +4,10 @@
   --app-text-color: #EAEAEA; /* Light grey text, almost white */
   --app-header-bg-color: #313335; /* Even darker grey for header */
   --app-header-text-color: #FFFFFF;
-  --app-border-color: #606368; /* Slightly lighter grey for borders */
+  --app-border-color: #55585C; /* Slightly darker for better definition */
 
   --slider-host-bg-color: #3A3C3F;
-  --slider-host-border-color: #505358;
+  --slider-host-border-color: #606368; /* Match app border for panels */
   --slider-text-color: #E0E0E0;
   --slider-channel-info-border-color: #484A4D;
   --slider-value-edit-border-color: #707378;
@@ -19,22 +19,26 @@
   --table-header-bg-color: #2A2C2E;
   --table-header-text-color: #F0F0F0;
 
-  --modal-bg-color: #333538;
-  --modal-text-color: #D0D0D0;
-  --modal-overlay-bg-color: rgba(30, 30, 30, 0.8);
-  --modal-input-border-color: #66696E;
-  --modal-error-text-color: #FF5555; /* Bright red for errors */
+  --modal-bg-color: #303235; /* Slightly darker modal */
+  --modal-text-color: #D8D8D8;
+  --modal-overlay-bg-color: rgba(20, 20, 20, 0.85);
+  --modal-input-border-color: #5A5C5F;
+  --modal-error-text-color: #FF6B6B; /* Brighter, clearer red */
 
-  --button-primary-bg-color: #D4AF37; /* Gold-like color for primary buttons */
-  --button-primary-text-color: #222222; /* Dark text on gold */
-  --button-primary-hover-bg-color: #B8860B; /* DarkGoldenRod - tarnished gold */
-  --button-secondary-bg-color: #C0C0C0; /* Silver */
-  --button-secondary-text-color: #333333; /* Dark text on silver */
-  --button-secondary-hover-bg-color: #A9A9A9; /* Darker silver */
+  /* Metallic sheen for buttons */
+  --button-primary-bg-color: linear-gradient(to bottom, #EAC854, #D4AF37); /* Gold gradient */
+  --button-primary-text-color: #2F1E00; /* Darker brown for gold */
+  --button-primary-hover-bg-color: linear-gradient(to bottom, #D4AF37, #B8860B); /* Darker Gold gradient */
+  --button-secondary-bg-color: linear-gradient(to bottom, #DADADA, #B0B0B0); /* Silver gradient */
+  --button-secondary-text-color: #222222; /* Dark grey for silver */
+  --button-secondary-hover-bg-color: linear-gradient(to bottom, #B0B0B0, #8C8C8C); /* Darker Silver gradient */
+
   --button-disabled-bg-color: #5A5C5F;
   --button-disabled-text-color: #888888;
+  --button-border-color: #707378; /* For actual button borders if not using gradients alone */
 
-  --slider-thumb-bevel-highlight: #888B91; /* Lighter metallic highlight */
+
+  --slider-thumb-bevel-highlight: #A0A3A8; /* Lighter metallic highlight */
   --slider-thumb-bevel-shadow: #2A2C2E; /* Dark shadow */
 
   --fixed-icons-bg-color: rgba(50, 50, 50, 0.75); /* Semi-transparent dark grey */

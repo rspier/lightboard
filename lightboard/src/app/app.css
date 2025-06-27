@@ -415,6 +415,101 @@ input[type="range"].duration-slider::-moz-range-thumb {
 
 /* Media Queries for Responsive Design */
 
+/* LCARS Theme Specific Structural Styles */
+.lcars-theme body { /* Ensure font is applied broadly */
+  font-family: var(--app-font-family, 'Antonio', 'Impact', 'Arial Narrow Bold', sans-serif);
+}
+
+.lcars-theme .button-primary,
+.lcars-theme .button-secondary,
+.lcars-theme .go-button,
+.lcars-theme .link-faders-button,
+.lcars-theme .scene-text-apply-button {
+  border-radius: 0; /* LCARS buttons are typically rectangular */
+  border-top-left-radius: 15px; /* Rounded on one side - classic LCARS button */
+  border-bottom-left-radius: 15px;
+  border: 2px solid var(--app-header-text-color, #000000); /* Border color matching text */
+  padding: 8px 15px;
+  text-transform: uppercase;
+  font-weight: bold;
+  min-height: 30px; /* Ensure a minimum height */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lcars-theme .button-primary {
+  background-color: var(--button-primary-bg-color, #CC66FF);
+  color: var(--button-primary-text-color, #000000);
+}
+.lcars-theme .button-primary:hover {
+  background-color: var(--button-primary-hover-bg-color, #9933CC);
+}
+
+.lcars-theme .button-secondary {
+  background-color: var(--button-secondary-bg-color, #FF6600);
+  color: var(--button-secondary-text-color, #000000);
+}
+.lcars-theme .button-secondary:hover {
+  background-color: var(--button-secondary-hover-bg-color, #CC3300);
+}
+
+/* Specific styling for GO button if it needs to be different */
+.lcars-theme .go-button {
+  border-radius: 15px; /* Go button might be fully rounded or oval in some LCARS */
+  /* Override if it needs to be different from the general LCARS button style */
+}
+
+
+/* Attempting LCARS frame/panel styling for key areas */
+.lcars-theme .sliders-area,
+.lcars-theme .scene-row-wrapper,
+.lcars-theme .crossfader-column {
+  background-color: var(--slider-host-bg-color, #000033); /* Dark panel background */
+  border: 2px solid var(--app-border-color, #CC6600);
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 0; /* Sharp corners */
+}
+
+/* LCARS "elbow" or connector piece - typically on the left of a panel */
+.lcars-theme .sliders-area::before,
+.lcars-theme .scene-row-wrapper::before {
+  content: '';
+  display: block;
+  width: 20px; /* Width of the vertical part of the elbow */
+  height: 100%; /* Full height of the parent */
+  background-color: var(--app-header-bg-color, #FF9900); /* LCARS accent color */
+  margin-right: 10px;
+  border-top-left-radius: 15px;
+  border-bottom-left-radius: 15px;
+}
+
+/* This might be too aggressive or break layout, needs careful testing.
+   The ::before pseudo-element is added to the flex container, which might not be ideal.
+   A wrapper div for the content *inside* these areas might be better for applying ::before,
+   but that would require HTML changes. This is an attempt with pure CSS.
+*/
+
+/* Adjust slider row for LCARS - remove internal padding if ::before adds too much space */
+.lcars-theme .slider-row {
+  padding-left: 0; /* Reset padding if any */
+}
+
+/* Style for header icons in LCARS */
+.lcars-theme .header-icons {
+  background-color: var(--app-header-bg-color, #FF9900);
+  border-radius: 0;
+  border-bottom-left-radius: 15px;
+  padding: 5px 10px;
+}
+.lcars-theme .settings-icon,
+.lcars-theme .shortcuts-icon {
+  color: var(--app-header-text-color, #000000);
+  font-size: 1.8em; /* Slightly smaller for fitting in LCARS style */
+}
+
+
 /* Small devices (phones, less than 768px) */
 @media (max-width: 767.98px) {
   .page-content {

@@ -41,10 +41,23 @@
   --slider-track-color: #663300; /* Dark brown track */
   --slider-track-border-color: #B8860B;
   --slider-thumb-color: #CD853F; /* Peru - brassy thumb */
+  --slider-host-border-color: #804A20; /* Darker, richer wood border */
+  --app-border-color: #804A20; /* Consistent border color */
+  --modal-input-border-color: #B8860B; /* DarkGoldenRod - more defined input borders */
+  --slider-value-edit-border-color: #B8860B;
 
-  /* Consider a more ornate or serif font if available */
-  /* font-family: 'Times New Roman', serif; */
+  /* Button styling for a more mechanical/inset look */
+  --button-border-style: outset;
+  --button-border-width: 2px;
+  --button-border-color: #A0522D; /* Sienna, for a slight 3D effect border */
+  --button-primary-border-color: var(--button-border-color);
+  --button-secondary-border-color: #888888; /* Silver border */
+
+  /* Font for Steampunk - serif, slightly ornate if possible */
+  font-family: 'Merriweather', 'Georgia', serif;
+  --app-font-family: 'Merriweather', 'Georgia', serif;
 }
 
 /* Steampunk might also involve textures (wood, metal), gear icons, ornate borders.
-   These variables primarily set the color palette. */
+   These variables primarily set the color palette and some border styles.
+   Actual textures often require image assets or more complex CSS. */

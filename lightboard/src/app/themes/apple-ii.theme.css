@@ -32,18 +32,24 @@
   --button-secondary-bg-color: #555555; /* Grey secondary buttons */
   --button-secondary-text-color: #00FF00; /* Green text on grey */
   --button-secondary-hover-bg-color: #444444;
-  --button-disabled-bg-color: #333333;
-  --button-disabled-text-color: #116611; /* Very dark green */
+  --button-disabled-bg-color: #222222; /* Darker disabled bg */
+  --button-disabled-text-color: #114411; /* Dimmer green text */
 
-  --slider-thumb-bevel-highlight: #66FF66;
-  --slider-thumb-bevel-shadow: #11AA11;
+  /* Starker, flatter slider thumb for Apple II */
+  --slider-thumb-bevel-highlight: var(--app-text-color);
+  --slider-thumb-bevel-shadow: var(--app-text-color);
+  --slider-color-swatch-border-color: var(--app-text-color); /* Green border for color swatch */
+  --modal-input-border-color: var(--app-text-color); /* Green borders for inputs */
+  --slider-value-edit-border-color: var(--app-text-color);
 
   --fixed-icons-bg-color: rgba(0, 50, 0, 0.7); /* Semi-transparent dark green */
-  --slider-track-color: #222222; /* Dark grey track */
-  --slider-track-border-color: #33FF33;
-  --slider-thumb-color: #33FF33; /* Green thumb */
+  --slider-track-color: #1A1A1A; /* Very dark grey track */
+  --slider-track-border-color: var(--app-text-color); /* Bright green border */
+  --slider-thumb-color: var(--app-text-color); /* Bright green thumb */
 
-  /* Consider a pixelated or monospace font if available */
-  /* font-family: 'Monaco', 'Lucida Console', monospace; */
-  /* For a more authentic feel, text might not be anti-aliased, but that's hard to control. */
+  font-family: 'VT323', 'Monaco', 'Lucida Console', monospace; /* Pixel font if available */
+  --app-font-family: 'VT323', 'Monaco', 'Lucida Console', monospace;
+  /* For a more authentic feel, text might not be anti-aliased, but that's hard to control.
+     Consider text-rendering: optimizeSpeed; or image-rendering: pixelated; on specific elements if needed,
+     but these are broad strokes. Font is the biggest win. */
 }

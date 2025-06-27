@@ -43,9 +43,11 @@
   --slider-track-border-color: #FF9900;
   --slider-thumb-color: #FFCC66; /* Lighter orange for thumb */
 
-  /* LCARS specific font (if available and licensed, otherwise fallback) */
-  /* font-family: 'LCARSGTJ3', sans-serif; */ /* Example */
+  /* LCARS specific font stack */
+  font-family: 'Antonio', 'Impact', 'Arial Narrow Bold', sans-serif; /* Common LCARS-style fonts */
+  --app-font-family: 'Antonio', 'Impact', 'Arial Narrow Bold', sans-serif; /* Explicitly define for components if needed */
 }
 
 /* Additional styling for LCARS might involve changing border-radii to be more angular,
    specific component background shapes, etc. This is primarily a color scheme. */
+/* More specific LCARS styles will be added to app.css scoped under .lcars-theme */
