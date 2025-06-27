@@ -86,6 +86,7 @@
 .apple-2-theme input[type="text"],
 .apple-2-theme input[type="number"],
 .apple-2-theme input[type="url"],
-.apple-2-theme textarea {
+.apple-2-theme textarea,
+.apple-2-theme select#theme-selector { /* Add theme selector here */
   border-radius: var(--input-border-radius, 0px) !important;
 }

@@ -280,3 +280,14 @@
   width: 10px;
   height: 22px;
 }
+
+/* LCARS specific styling for the theme selector in settings modal */
+.lcars-theme select#theme-selector {
+  background-color: #000; /* Black background consistent with other LCARS inputs */
+  color: var(--app-text-color); /* LCARS orange text */
+  border: 1px solid var(--app-border-color); /* LCARS orange border */
+  border-radius: 0; /* Sharp corners */
+  padding: 8px; /* Consistent padding */
+  /* appearance: none; already set in settings-modal.component.css, but ensure it looks LCARS */
+  /* Consider a custom LCARS-style dropdown arrow if possible, or leave as browser default if clean */
+}
