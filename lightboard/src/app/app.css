@@ -416,8 +416,38 @@ input[type="range"].duration-slider::-moz-range-thumb {
 /* Media Queries for Responsive Design */
 
 /* LCARS Theme Specific Structural Styles */
-.lcars-theme body { /* Ensure font is applied broadly */
+.lcars-theme body {
   font-family: var(--app-font-family, 'Antonio', 'Impact', 'Arial Narrow Bold', sans-serif);
+  display: flex; /* Ensure body is flex for page-content to take height */
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.lcars-theme .main-layout {
+  background-color: var(--app-bg-color); /* Should be black */
+  flex-grow: 1;
+  display: flex; /* for page-content alignment */
+  padding-top: 20px; /* Reduced padding, header icons are separate */
+}
+
+.lcars-theme .page-content {
+  background-color: var(--slider-host-bg-color); /* Dark panel background for the main content area */
+  border: 3px solid var(--app-border-color);
+  border-left: 15px solid var(--app-header-bg-color); /* Main LCARS sidebar accent */
+  border-radius: 0;
+  border-top-left-radius: 25px;
+  border-bottom-left-radius: 25px;
+  padding: 15px;
+  width: 100%; /* Occupy available space within main-layout's max-width */
+  max-width: 1200px; /* Keep max width consistent */
+  margin: 0 auto; /* Center it if viewport is wider than max-width */
+  box-shadow: -5px 0 15px rgba(0,0,0,0.3) inset; /* Inner shadow for depth from the 'sidebar' */
+}
+
+/* Remove the ::before attempt from individual areas if page-content provides the main frame */
+.lcars-theme .sliders-area::before,
+.lcars-theme .scene-row-wrapper::before {
+  display: none; /* Disable the old problematic elbows */
 }
 
 .lcars-theme .button-primary,
@@ -462,52 +492,165 @@ input[type="range"].duration-slider::-moz-range-thumb {
 }
 
 
-/* Attempting LCARS frame/panel styling for key areas */
+/* Styling for sub-panels within the main LCARS page-content */
 .lcars-theme .sliders-area,
-.lcars-theme .scene-row-wrapper,
-.lcars-theme .crossfader-column {
-  background-color: var(--slider-host-bg-color, #000033); /* Dark panel background */
-  border: 2px solid var(--app-border-color, #CC6600);
+.lcars-theme .channel-slider-rows, /* Grouping for scene rows */
+.lcars-theme .crossfader-column,
+.lcars-theme .scene-text-input-wrapper {
+  background-color: #000000; /* Black background for sub-panels */
+  border: 2px solid var(--app-border-color);
+  border-left: 10px solid var(--button-secondary-bg-color); /* Accent left border */
   padding: 10px;
-  margin-bottom: 10px;
-  border-radius: 0; /* Sharp corners */
+  margin-bottom: 15px;
+  border-radius: 0;
+  border-top-right-radius: 10px; /* Slight rounding on one corner */
+  border-bottom-right-radius: 10px;
 }
 
-/* LCARS "elbow" or connector piece - typically on the left of a panel */
-.lcars-theme .sliders-area::before,
-.lcars-theme .scene-row-wrapper::before {
-  content: '';
-  display: block;
-  width: 20px; /* Width of the vertical part of the elbow */
-  height: 100%; /* Full height of the parent */
-  background-color: var(--app-header-bg-color, #FF9900); /* LCARS accent color */
-  margin-right: 10px;
-  border-top-left-radius: 15px;
-  border-bottom-left-radius: 15px;
+/* Individual scene-row-wrapper within channel-slider-rows */
+.lcars-theme .scene-row-wrapper {
+  padding: 5px 0;
+  margin-bottom: 5px;
+  border: none; /* Remove individual border, parent .channel-slider-rows has it */
+  background-color: transparent;
 }
 
-/* This might be too aggressive or break layout, needs careful testing.
-   The ::before pseudo-element is added to the flex container, which might not be ideal.
-   A wrapper div for the content *inside* these areas might be better for applying ::before,
-   but that would require HTML changes. This is an attempt with pure CSS.
-*/
-
-/* Adjust slider row for LCARS - remove internal padding if ::before adds too much space */
 .lcars-theme .slider-row {
-  padding-left: 0; /* Reset padding if any */
+  padding-left: 5px; /* Indent sliders slightly from the accent border of parent */
 }
+
+.lcars-theme .combined-output-row {
+  margin: 10px 0 15px 0;
+  padding-left: 10px; /* Align with other indented content */
+  border-left: 5px solid var(--button-secondary-bg-color);
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+/* Scene labels to look like LCARS tabs/labels */
+.lcars-theme .scene-label-container {
+  background-color: var(--button-secondary-bg-color); /* Use an accent color */
+  color: var(--button-secondary-text-color);
+  padding: 10px 5px;
+  margin-right: 8px;
+  border-radius: 0;
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+  width: auto; /* Adjust width based on content */
+  min-width: 25px; /* Ensure minimum width for rotated text */
+}
+.lcars-theme .scene-label {
+  color: var(--button-secondary-text-color); /* Ensure text color matches */
+  font-size: 0.9em; /* Slightly smaller for tab look */
+}
+
 
 /* Style for header icons in LCARS */
 .lcars-theme .header-icons {
-  background-color: var(--app-header-bg-color, #FF9900);
+  background-color: var(--app-header-bg-color); /* LCARS Orange */
+  border: 2px solid var(--app-header-text-color); /* Black border */
+  border-right: none;
   border-radius: 0;
+  border-top-left-radius: 15px;
   border-bottom-left-radius: 15px;
-  padding: 5px 10px;
+  padding: 8px 10px 8px 15px;
+  box-shadow: -2px 2px 5px rgba(0,0,0,0.5);
+  right: 0; /* Ensure it's flush right */
+  top: 15px; /* Adjust vertical position */
 }
 .lcars-theme .settings-icon,
 .lcars-theme .shortcuts-icon {
-  color: var(--app-header-text-color, #000000);
-  font-size: 1.8em; /* Slightly smaller for fitting in LCARS style */
+  color: var(--app-header-text-color);
+  font-size: 1.8em;
+}
+
+/* LCARS styling for Modals */
+.lcars-theme .modal-overlay {
+  /* Overlay color is already themed via variable */
+}
+.lcars-theme .modal-content {
+  background-color: var(--modal-bg-color); /* Usually dark blue/black */
+  color: var(--modal-text-color);
+  border: 3px solid var(--app-border-color);
+  border-left: 10px solid var(--app-header-bg-color); /* Prominent orange left bar */
+  border-radius: 0;
+  border-top-left-radius: 20px;
+  border-bottom-left-radius: 20px;
+  border-top-right-radius: 10px; /* Subtle rounding on other side */
+  border-bottom-right-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 5px 25px rgba(0,0,0,0.5);
+}
+.lcars-theme .modal-content h2 {
+  color: var(--app-header-bg-color); /* Orange for modal titles */
+  text-align: left;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--app-header-bg-color);
+  margin-bottom: 20px;
+}
+.lcars-theme .form-group label {
+  color: var(--app-text-color); /* Orange text for labels */
+}
+.lcars-theme .form-group input[type="text"],
+.lcars-theme .form-group input[type="number"],
+.lcars-theme .form-group input[type="url"],
+.lcars-theme .scene-text-input { /* Apply to scene text input as well */
+  background-color: #000; /* Black input fields */
+  color: var(--app-text-color);
+  border: 1px solid var(--app-border-color);
+  border-radius: 0; /* Sharp corners for inputs */
+  padding: 8px;
+}
+
+/* LCARS styling for Sliders (app-slide-potentiometer) */
+/* This requires selecting the host and potentially its internal parts if accessible,
+   or relying on CSS variables passed down to the component.
+   Assuming .app-slide-potentiometer is the host element. */
+.lcars-theme .app-slide-potentiometer {
+  background-color: #000; /* Black background for slider component */
+  border: 1px solid var(--slider-host-border-color);
+  padding: 8px;
+  border-radius: 0;
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+  margin: 2px; /* Small margin around each slider */
+}
+/* Further specific styling for track and thumb would ideally be done
+   within slide-potentiometer.css using LCARS theme variables if possible.
+   For now, we rely on the variables set in lcars.theme.css:
+   --slider-track-color, --slider-track-border-color, --slider-thumb-color
+   These should make tracks dark purple/blue and thumbs lighter orange.
+   To make them more "blocky" for LCARS, the component's own CSS would need adjustment
+   or more specific variables for border-radius of thumb/track.
+*/
+
+/* Styling for the crossfade duration slider */
+.lcars-theme input[type="range"].duration-slider::-webkit-slider-runnable-track {
+  background: var(--slider-track-color);
+  border: 1px solid var(--slider-track-border-color);
+  border-radius: 0; /* Sharp track */
+  height: 10px;
+}
+.lcars-theme input[type="range"].duration-slider::-moz-range-track {
+  background: var(--slider-track-color);
+  border: 1px solid var(--slider-track-border-color);
+  border-radius: 0; /* Sharp track */
+  height: 10px;
+}
+.lcars-theme input[type="range"].duration-slider::-webkit-slider-thumb {
+  background: var(--slider-thumb-color);
+  border: 1px solid var(--app-header-text-color); /* Black border for thumb */
+  border-radius: 0; /* Sharp thumb */
+  width: 10px;
+  height: 22px; /* Taller, thinner thumb */
+  margin-top: -7px; /* Adjust vertical position */
+}
+.lcars-theme input[type="range"].duration-slider::-moz-range-thumb {
+  background: var(--slider-thumb-color);
+  border: 1px solid var(--app-header-text-color);
+  border-radius: 0;
+  width: 10px;
+  height: 22px;
 }
 
 

@@ -52,4 +52,40 @@
   /* For a more authentic feel, text might not be anti-aliased, but that's hard to control.
      Consider text-rendering: optimizeSpeed; or image-rendering: pixelated; on specific elements if needed,
      but these are broad strokes. Font is the biggest win. */
+
+  /* Sharper corners for Apple ][ elements */
+  --button-border-radius: 0px;
+  --input-border-radius: 0px;
+  --modal-border-radius: 0px;
+  --slider-host-border-radius: 0px;
+}
+
+/* Apply the border radius variables */
+.apple-2-theme button,
+.apple-2-theme .button,
+.apple-2-theme .button-primary,
+.apple-2-theme .button-secondary,
+.apple-2-theme input[type="text"],
+.apple-2-theme input[type="number"],
+.apple-2-theme input[type="url"],
+.apple-2-theme textarea,
+.apple-2-theme .modal-content,
+.apple-2-theme .app-slide-potentiometer {
+  border-radius: var(--button-border-radius, 0px) !important; /* Use important if necessary to override general styles, but check specificity first */
+}
+
+/* Specific overrides if the general one isn't enough or needs nuance */
+.apple-2-theme .modal-content {
+  border-radius: var(--modal-border-radius, 0px) !important;
+}
+
+.apple-2-theme .app-slide-potentiometer {
+  border-radius: var(--slider-host-border-radius, 0px) !important;
+}
+
+.apple-2-theme input[type="text"],
+.apple-2-theme input[type="number"],
+.apple-2-theme input[type="url"],
+.apple-2-theme textarea {
+  border-radius: var(--input-border-radius, 0px) !important;
 }
