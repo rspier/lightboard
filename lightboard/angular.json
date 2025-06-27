@@ -22,47 +22,7 @@
               }
             ],
             "styles": [
-              "src/styles.css",
-              {
-                "input": "src/app/themes/light.theme.css",
-                "bundleName": "light-theme",
-                "inject": false
-              },
-              {
-                "input": "src/app/themes/dark.theme.css",
-                "bundleName": "dark-theme",
-                "inject": false
-              },
-              {
-                "input": "src/app/themes/lcars.theme.css",
-                "bundleName": "lcars-theme",
-                "inject": false
-              },
-              {
-                "input": "src/app/themes/steampunk.theme.css",
-                "bundleName": "steampunk-theme",
-                "inject": false
-              },
-              {
-                "input": "src/app/themes/extra-dark.theme.css",
-                "bundleName": "extra-dark-theme",
-                "inject": false
-              },
-              {
-                "input": "src/app/themes/metal.theme.css",
-                "bundleName": "metal-theme",
-                "inject": false
-              },
-              {
-                "input": "src/app/themes/apple-ii.theme.css",
-                "bundleName": "apple-ii-theme",
-                "inject": false
-              },
-              {
-                "input": "src/app/themes/glass.theme.css",
-                "bundleName": "glass-theme",
-                "inject": false
-              }
+              "src/styles.css"
             ]
           },
           "configurations": {
@@ -119,47 +79,7 @@
               }
             ],
             "styles": [
-              "src/styles.css",
-              {
-                "input": "src/app/themes/light.theme.css",
-                "bundleName": "light-theme",
-                "inject": false
-              },
-              {
-                "input": "src/app/themes/dark.theme.css",
-                "bundleName": "dark-theme",
-                "inject": false
-              },
-              {
-                "input": "src/app/themes/lcars.theme.css",
-                "bundleName": "lcars-theme",
-                "inject": false
-              },
-              {
-                "input": "src/app/themes/steampunk.theme.css",
-                "bundleName": "steampunk-theme",
-                "inject": false
-              },
-              {
-                "input": "src/app/themes/extra-dark.theme.css",
-                "bundleName": "extra-dark-theme",
-                "inject": false
-              },
-              {
-                "input": "src/app/themes/metal.theme.css",
-                "bundleName": "metal-theme",
-                "inject": false
-              },
-              {
-                "input": "src/app/themes/apple-ii.theme.css",
-                "bundleName": "apple-ii-theme",
-                "inject": false
-              },
-              {
-                "input": "src/app/themes/glass.theme.css",
-                "bundleName": "glass-theme",
-                "inject": false
-              }
+              "src/styles.css"
             ]
           }
         },

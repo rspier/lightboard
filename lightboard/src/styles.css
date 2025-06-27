@@ -1,3 +1,12 @@
+@import url('./app/themes/light.theme.css');
+@import url('./app/themes/dark.theme.css');
+@import url('./app/themes/lcars.theme.css');
+@import url('./app/themes/steampunk.theme.css');
+@import url('./app/themes/extra-dark.theme.css');
+@import url('./app/themes/metal.theme.css');
+@import url('./app/themes/apple-ii.theme.css');
+@import url('./app/themes/glass.theme.css');
+
 /* Global base styles */
 /* Variables formerly in :root and body.dark-theme have been moved to individual theme files
    in the src/app/themes/ directory.
