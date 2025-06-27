@@ -196,7 +196,8 @@ export class App implements OnInit, OnDestroy {
       if (!event.shiftKey && event.key.toLowerCase() === 'q') { event.preventDefault(); this.toggleSceneTextInput(1); }
       else if (!event.shiftKey && event.key.toLowerCase() === 'w') { event.preventDefault(); this.toggleSceneTextInput(2); }
       else if (event.key === '?') { event.preventDefault(); this.toggleShortcutsModal(); }
-      else if (event.key === '-') { // Minus key for theme cycling
+      // Shift+T for theme cycling
+      else if (event.shiftKey && (event.key === 'T' || event.key === 't')) {
         event.preventDefault();
         this.themeService.cycleNextTheme();
       }
