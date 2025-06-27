@@ -1,5 +1,6 @@
 import { Injectable, Renderer2, RendererFactory2 } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
+import { ToastrService } from 'ngx-toastr';
 
 export interface Theme {
   id: string; // e.g., 'light', 'dark', 'lcars'
@@ -27,7 +28,10 @@ export class ThemeService {
 
   public activeTheme$: BehaviorSubject<Theme | null> = new BehaviorSubject<Theme | null>(null);
 
-  constructor(rendererFactory: RendererFactory2) {
+  constructor(
+    rendererFactory: RendererFactory2,
+    private toastr: ToastrService
+  ) {
     this.renderer = rendererFactory.createRenderer(null, null);
     // Load initial theme from local storage or default to 'light'
     const savedThemeId = localStorage.getItem('activeThemeId') || 'light';
@@ -50,6 +54,7 @@ export class ThemeService {
       this.applyTheme(theme.id);
       localStorage.setItem('activeThemeId', theme.id);
       this.activeTheme$.next(theme);
+      this.toastr.success(`Theme changed to ${theme.name}`);
     } else {
       console.warn(`Theme with id '${themeId}' not found.`);
     }

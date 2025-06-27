@@ -335,9 +335,9 @@ describe('App', () => {
       // expect(mockThemeService.applyTheme).toHaveBeenCalledWith('light'); // or whatever default
     });
 
-    it('should call ThemeService to cycle themes when "-" key is pressed', () => {
+    it('should call ThemeService to cycle themes when "T" key is pressed', () => {
       fixture.detectChanges(); // Ensure listeners are attached
-      dispatchKeyboardEvent('-', mockDocument.body, 'Minus');
+      dispatchKeyboardEvent('T', mockDocument.body, 'KeyT');
       expect(mockThemeService.cycleNextTheme).toHaveBeenCalled();
     });
   });
