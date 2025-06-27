@@ -1,6 +1,6 @@
-/* Apple II Theme */
+/* Apple ][ Theme */
 /* Inspired by the classic Apple II computer interface */
-.apple-ii-theme {
+.apple-2-theme {
   --app-bg-color: #000000; /* Black background */
   --app-text-color: #33FF33; /* Bright green text */
   --app-header-bg-color: #000000; /* Black header */
@@ -47,8 +47,8 @@
   --slider-track-border-color: var(--app-text-color); /* Bright green border */
   --slider-thumb-color: var(--app-text-color); /* Bright green thumb */
 
-  font-family: 'VT323', 'Monaco', 'Lucida Console', monospace; /* Pixel font if available */
-  --app-font-family: 'VT323', 'Monaco', 'Lucida Console', monospace;
+  font-family: 'Press Start 2P', 'VT323', 'Monaco', 'Lucida Console', monospace; /* Pixel font */
+  --app-font-family: 'Press Start 2P', 'VT323', 'Monaco', 'Lucida Console', monospace;
   /* For a more authentic feel, text might not be anti-aliased, but that's hard to control.
      Consider text-rendering: optimizeSpeed; or image-rendering: pixelated; on specific elements if needed,
      but these are broad strokes. Font is the biggest win. */

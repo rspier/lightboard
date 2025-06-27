@@ -20,8 +20,9 @@ export class ThemeService {
     { id: 'steampunk', name: 'Steampunk', className: 'steampunk-theme' },
     { id: 'extra-dark', name: 'Extra Dark', className: 'extra-dark-theme' },
     { id: 'metal', name: 'Metal', className: 'metal-theme' },
-    { id: 'apple-ii', name: 'Apple II', className: 'apple-ii-theme' },
+    { id: 'apple-2', name: 'Apple ][', className: 'apple-2-theme' },
     { id: 'glass', name: 'Glass', className: 'glass-theme' },
+    { id: 'night-vision', name: 'Night Vision', className: 'night-vision-theme' },
   ];
 
   public activeTheme$: BehaviorSubject<Theme | null> = new BehaviorSubject<Theme | null>(null);

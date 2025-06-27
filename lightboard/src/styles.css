@@ -1,11 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 @import url('./app/themes/light.theme.css');
 @import url('./app/themes/dark.theme.css');
 @import url('./app/themes/lcars.theme.css');
 @import url('./app/themes/steampunk.theme.css');
 @import url('./app/themes/extra-dark.theme.css');
 @import url('./app/themes/metal.theme.css');
-@import url('./app/themes/apple-ii.theme.css');
+@import url('./app/themes/apple-2.theme.css');
 @import url('./app/themes/glass.theme.css');
+@import url('./app/themes/night-vision.theme.css');
 
 /* Global base styles */
 /* Variables formerly in :root and body.dark-theme have been moved to individual theme files

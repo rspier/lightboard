@@ -1,0 +1,49 @@
+/* Night Vision Theme */
+/* Designed for optimal use in low-light conditions, preserving night vision. */
+.night-vision-theme {
+  --app-bg-color: #000000; /* Pure black background */
+  --app-text-color: #FF0000; /* Bright red text */
+  --app-header-bg-color: #220000; /* Very dark red, almost black */
+  --app-header-text-color: #FF0000; /* Red text */
+  --app-border-color: #440000; /* Darker red for borders */
+
+  --slider-host-bg-color: #050000; /* Very dark red, slightly off-black */
+  --slider-host-border-color: #FF0000;
+  --slider-text-color: #FF0000;
+  --slider-channel-info-border-color: #440000;
+  --slider-value-edit-border-color: #CC0000; /* Brighter red for inputs */
+  --slider-color-swatch-border-color: #FF0000;
+
+  --table-bg-color: #000000;
+  --table-text-color: #FF0000;
+  --table-border-color: #440000;
+  --table-header-bg-color: #110000; /* Very dark red for table header */
+  --table-header-text-color: #FF0000;
+
+  --modal-bg-color: #0A0000; /* Slightly off-black for modals */
+  --modal-text-color: #FF0000;
+  --modal-overlay-bg-color: rgba(34, 0, 0, 0.85); /* Dark red overlay */
+  --modal-input-border-color: #FF0000;
+  --modal-error-text-color: #FF6666; /* Lighter red for errors, for visibility */
+
+  --button-primary-bg-color: #DD0000; /* Bright red buttons */
+  --button-primary-text-color: #000000; /* Black text on red buttons */
+  --button-primary-hover-bg-color: #AA0000; /* Darker red for hover */
+  --button-secondary-bg-color: #550000; /* Dark red secondary buttons */
+  --button-secondary-text-color: #FF0000; /* Red text on dark red */
+  --button-secondary-hover-bg-color: #330000;
+  --button-disabled-bg-color: #222222; /* Dark grey for disabled */
+  --button-disabled-text-color: #660000; /* Dimmer red text */
+
+  --slider-thumb-bevel-highlight: #FF4444; /* Lighter red for highlight */
+  --slider-thumb-bevel-shadow: #AA0000; /* Darker red for shadow */
+
+  --fixed-icons-bg-color: rgba(50, 0, 0, 0.7); /* Semi-transparent dark red */
+  --slider-track-color: #1A0000; /* Very dark red track */
+  --slider-track-border-color: #FF0000; /* Bright red border */
+  --slider-thumb-color: #FF0000; /* Bright red thumb */
+
+  /* Standard sans-serif font, consider if a specific "night vision" font is needed */
+  font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --app-font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}

@@ -44,8 +44,8 @@
   --slider-thumb-color: #FFCC66; /* Lighter orange for thumb */
 
   /* LCARS specific font stack */
-  font-family: 'Antonio', 'Impact', 'Arial Narrow Bold', sans-serif; /* Common LCARS-style fonts */
-  --app-font-family: 'Antonio', 'Impact', 'Arial Narrow Bold', sans-serif; /* Explicitly define for components if needed */
+  font-family: 'Roboto Condensed', 'Arial Narrow', 'Helvetica Neue Condensed', 'Antonio', 'Impact', sans-serif; /* Common LCARS-style fonts */
+  --app-font-family: 'Roboto Condensed', 'Arial Narrow', 'Helvetica Neue Condensed', 'Antonio', 'Impact', sans-serif; /* Explicitly define for components if needed */
 }
 
 /* Additional styling for LCARS might involve changing border-radii to be more angular,
