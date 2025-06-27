@@ -81,10 +81,12 @@ func TestHandleDataRequest(t *testing.T) {
 	mockMQTT := &MockMQTTClient{}
 	httpServer := NewHTTPServer(cfg, mockMQTT)
 
-	// Setup test server using the correct endpoint from httpServer's Start method logic
-	// We are directly calling handleDataRequest, so server.URL will be dynamic.
-	// The endpoint used in NewRequest should match what's configured in httpServer.Start() -> "/post"
-	testServer := httptest.NewServer(http.HandlerFunc(httpServer.handleDataRequest))
+	// Setup test server. Since corsMiddleware is applied in Start(), we need to
+	// replicate that setup or test the mux directly. For simplicity here, we'll
+	// create a mux, register the handler with middleware, and then use httptest.NewServer.
+	mux := http.NewServeMux()
+	mux.HandleFunc("/post", corsMiddleware(httpServer.handleDataRequest))
+	testServer := httptest.NewServer(mux)
 	defer testServer.Close()
 
 	// Expected messages structure for verification
@@ -94,16 +96,30 @@ func TestHandleDataRequest(t *testing.T) {
 	}
 
 	tests := []struct {
-		name                 string
-		payload              []IncomingDataPoint // Used if rawPayload is empty
-		rawPayload           string              // Used if non-empty, overrides payload
-		expectedStatusCode   int
-		expectedMessages     []ExpectedMessage // Slice of all expected messages across topics
-		expectErrorInBody    bool
-		expectedTotalPublishes int // Total number of publish calls expected
+		name                   string
+		method                 string              // Add HTTP method for testing OPTIONS
+		payload                []IncomingDataPoint // Used if rawPayload is empty
+		rawPayload             string              // Used if non-empty, overrides payload
+		expectedStatusCode     int
+		expectedMessages       []ExpectedMessage // Slice of all expected messages across topics
+		expectErrorInBody      bool
+		expectedTotalPublishes int                 // Total number of publish calls expected
+		expectedResponseHeaders map[string]string   // For checking CORS headers
 	}{
 		{
-			name: "Valid single data point (value > 0)",
+			name:   "OPTIONS preflight request",
+			method: http.MethodOptions,
+			expectedStatusCode: http.StatusNoContent,
+			expectedResponseHeaders: map[string]string{
+				"Access-Control-Allow-Origin":  "*",
+				"Access-Control-Allow-Methods": "POST, OPTIONS",
+				"Access-Control-Allow-Headers": "Content-Type, Authorization",
+			},
+			expectedTotalPublishes: 0,
+		},
+		{
+			name:   "Valid single data point (value > 0)",
+			method: http.MethodPost,
 			payload: []IncomingDataPoint{
 				{ChannelNumber: 1, Value: json.Number("10.5"), Color: "#FF0000"},
 			},
@@ -114,9 +130,11 @@ func TestHandleDataRequest(t *testing.T) {
 				{Topic: "ch1/onoff", Payload: "1"},
 			},
 			expectedTotalPublishes: 3,
+			expectedResponseHeaders: map[string]string{"Access-Control-Allow-Origin": "*"}, // Basic check for POST
 		},
 		{
-			name: "Valid single data point (value == 0)",
+			name:   "Valid single data point (value == 0)",
+			method: http.MethodPost,
 			payload: []IncomingDataPoint{
 				{ChannelNumber: 1, Value: json.Number("0"), Color: "#00FF00"},
 			},
@@ -127,9 +145,11 @@ func TestHandleDataRequest(t *testing.T) {
 				{Topic: "ch1/onoff", Payload: "0"},
 			},
 			expectedTotalPublishes: 3,
+			expectedResponseHeaders: map[string]string{"Access-Control-Allow-Origin": "*"},
 		},
 		{
-			name: "Valid multiple data points",
+			name:   "Valid multiple data points",
+			method: http.MethodPost,
 			payload: []IncomingDataPoint{
 				{ChannelNumber: 1, Value: json.Number("20"), Color: "#00FF00"},
 				{ChannelNumber: 2, Value: json.Number("0"), Color: "#0000FF"},
@@ -144,25 +164,31 @@ func TestHandleDataRequest(t *testing.T) {
 				{Topic: "ch2/onoff", Payload: "0"},
 			},
 			expectedTotalPublishes: 6,
+			expectedResponseHeaders: map[string]string{"Access-Control-Allow-Origin": "*"},
 		},
 		{
 			name:                   "Invalid JSON payload (empty array)",
+			method:                 http.MethodPost,
 			payload:                []IncomingDataPoint{},
 			expectedStatusCode:     http.StatusBadRequest,
 			expectedTotalPublishes: 0,
 			expectErrorInBody:      true,
+			expectedResponseHeaders: map[string]string{"Access-Control-Allow-Origin": "*"},
 		},
 		{
-			name: "Unknown channel number",
+			name:   "Unknown channel number",
+			method: http.MethodPost,
 			payload: []IncomingDataPoint{
 				{ChannelNumber: 99, Value: json.Number("40"), Color: "#FFFF00"}, // Channel 99 not in testMappings
 			},
 			expectedStatusCode:     http.StatusMultiStatus,
 			expectedTotalPublishes: 0,
 			expectErrorInBody:      true,
+			expectedResponseHeaders: map[string]string{"Access-Control-Allow-Origin": "*"},
 		},
 		{
-			name: "Partial success - one known, one unknown channel number",
+			name:   "Partial success - one known, one unknown channel number",
+			method: http.MethodPost,
 			payload: []IncomingDataPoint{
 				{ChannelNumber: 1, Value: json.Number("50"), Color: "#FF00FF"},
 				{ChannelNumber: 99, Value: json.Number("60"), Color: "#00FFFF"},
@@ -175,13 +201,16 @@ func TestHandleDataRequest(t *testing.T) {
 			},
 			expectedTotalPublishes: 3,
 			expectErrorInBody:      true,
+			expectedResponseHeaders: map[string]string{"Access-Control-Allow-Origin": "*"},
 		},
 		{
 			name:                   "Invalid value type for a channel (raw JSON)",
+			method:                 http.MethodPost,
 			rawPayload:             `[{"channelNumber":1,"value":"not-a-number","color":"#123456"}]`,
 			expectedStatusCode:     http.StatusBadRequest, // Fails full JSON decode due to invalid number
 			expectedTotalPublishes: 0,
 			expectErrorInBody:      true,
+			expectedResponseHeaders: map[string]string{"Access-Control-Allow-Origin": "*"},
 		},
 	}
 
@@ -190,22 +219,26 @@ func TestHandleDataRequest(t *testing.T) {
 			mockMQTT.PublishedMessages = make(map[string][]string) // Reset mock
 			var payloadBytes []byte
 			var err error
+			currentMethod := tt.method
+			if currentMethod == "" { // Default to POST if not specified
+				currentMethod = http.MethodPost
+			}
 
-			if tt.rawPayload != "" {
-				payloadBytes = []byte(tt.rawPayload)
-			} else {
-				payloadBytes, err = json.Marshal(tt.payload)
-				if err != nil {
-					t.Fatalf("Failed to marshal test payload: %v", err)
+			if currentMethod == http.MethodPost {
+				if tt.rawPayload != "" {
+					payloadBytes = []byte(tt.rawPayload)
+				} else {
+					payloadBytes, err = json.Marshal(tt.payload)
+					if err != nil {
+						t.Fatalf("Failed to marshal test payload: %v", err)
+					}
 				}
 			}
-			// The testServer.URL already includes the host and port. We need to append the specific path.
-			// The NewServeMux in Start() is not used when directly calling handleDataRequest via httptest.NewServer.
-			// The httptest.NewServer itself uses the provided handler for all requests to server.URL.
-			// So, the path in NewRequest doesn't strictly matter here as long as it hits the server.
-			// However, for clarity, let's use a path, though it's not routed by the mux here.
-			req, _ := http.NewRequest(http.MethodPost, testServer.URL+"/post", bytes.NewBuffer(payloadBytes))
-			req.Header.Set("Content-Type", "application/json")
+
+			req, _ := http.NewRequest(currentMethod, testServer.URL+"/post", bytes.NewBuffer(payloadBytes))
+			if currentMethod == http.MethodPost {
+				req.Header.Set("Content-Type", "application/json")
+			}
 
 			resp, err := http.DefaultClient.Do(req)
 			if err != nil {
@@ -217,25 +250,45 @@ func TestHandleDataRequest(t *testing.T) {
 				t.Errorf("Expected status code %d, got %d", tt.expectedStatusCode, resp.StatusCode)
 			}
 
-			var totalPublishedActual int
-			for _, msgs := range mockMQTT.PublishedMessages {
-				totalPublishedActual += len(msgs)
-			}
-			if totalPublishedActual != tt.expectedTotalPublishes {
-				t.Errorf("Expected %d total MQTT messages to be published, got %d. Messages: %v",
-					tt.expectedTotalPublishes, totalPublishedActual, mockMQTT.PublishedMessages)
+			// Check response headers
+			for key, expectedValue := range tt.expectedResponseHeaders {
+				actualValue := resp.Header.Get(key)
+				if actualValue != expectedValue {
+					t.Errorf("Expected header %s: %s, got: %s", key, expectedValue, actualValue)
+				}
 			}
 
-			for _, expectedMsg := range tt.expectedMessages {
-				msgsOnTopic, ok := mockMQTT.PublishedMessages[expectedMsg.Topic]
-				if !ok {
-					t.Errorf("Expected message on topic '%s', but no messages found on this topic. Expected payload: '%s'",
-						expectedMsg.Topic, expectedMsg.Payload)
-					continue
+			if tt.method != http.MethodOptions { // No MQTT messages for OPTIONS
+				var totalPublishedActual int
+				for _, msgs := range mockMQTT.PublishedMessages {
+					totalPublishedActual += len(msgs)
 				}
-				if !containsMessage(msgsOnTopic, expectedMsg.Payload) {
-					t.Errorf("Topic '%s': Expected to find payload '%s', but got messages: %v",
-						expectedMsg.Topic, expectedMsg.Payload, msgsOnTopic)
+				if totalPublishedActual != tt.expectedTotalPublishes {
+					t.Errorf("Expected %d total MQTT messages to be published, got %d. Messages: %v",
+						tt.expectedTotalPublishes, totalPublishedActual, mockMQTT.PublishedMessages)
+				}
+
+				for _, expectedMsg := range tt.expectedMessages {
+					msgsOnTopic, ok := mockMQTT.PublishedMessages[expectedMsg.Topic]
+					if !ok && len(tt.expectedMessages) > 0 && tt.expectedTotalPublishes > 0 {
+						// Only error if we actually expected messages for this test case and specifically this topic
+						isTopicExpected := false
+						for _, em := range tt.expectedMessages {
+							if em.Topic == expectedMsg.Topic {
+								isTopicExpected = true
+								break
+							}
+						}
+						if isTopicExpected {
+							t.Errorf("Expected message on topic '%s', but no messages found on this topic. Expected payload: '%s'",
+								expectedMsg.Topic, expectedMsg.Payload)
+						}
+						continue
+					}
+					if ok && !containsMessage(msgsOnTopic, expectedMsg.Payload) {
+						t.Errorf("Topic '%s': Expected to find payload '%s', but got messages: %v",
+							expectedMsg.Topic, expectedMsg.Payload, msgsOnTopic)
+					}
 				}
 			}
 		})

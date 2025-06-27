@@ -51,11 +51,30 @@ func NewHTTPServer(cfg *Config, mqttClient MQTTClientInterface) *HTTPServer { //
 	return hs
 }
 
+// corsMiddleware adds necessary CORS headers and handles OPTIONS preflight requests
+func corsMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization") // Common headers
+
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent) // 204
+			return
+		}
+
+		next(w, r)
+	}
+}
+
 // Start begins listening for HTTP requests
 func (hs *HTTPServer) Start() error {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/post", hs.handleDataRequest) // Changed endpoint to /post
+	mux.HandleFunc("/post", corsMiddleware(hs.handleDataRequest)) // Wrap handler with CORS middleware
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		// Health check typically doesn't need CORS for GET requests from browsers,
+		// but if it were accessed via JS from another origin, it might.
+		// For simplicity, not wrapping health check with CORS unless specified.
 		w.WriteHeader(http.StatusOK)
 		fmt.Fprintln(w, "OK")
 	})
