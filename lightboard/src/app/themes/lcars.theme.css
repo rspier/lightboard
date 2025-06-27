@@ -50,4 +50,233 @@
 
 /* Additional styling for LCARS might involve changing border-radii to be more angular,
    specific component background shapes, etc. This is primarily a color scheme. */
-/* More specific LCARS styles will be added to app.css scoped under .lcars-theme */
+/* More specific LCARS styles will be added to app.css scoped under .lcars-theme */ /* This comment is now outdated */
+
+/* LCARS Theme Specific Structural and Component Styles */
+/* Moved from app.css for better organization */
+
+.lcars-theme body { /* Ensure font is applied broadly */
+  font-family: var(--app-font-family, 'Antonio', 'Impact', 'Arial Narrow Bold', sans-serif);
+  display: flex; /* Ensure body is flex for page-content to take height */
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.lcars-theme .main-layout {
+  background-color: var(--app-bg-color); /* Should be black */
+  flex-grow: 1;
+  display: flex; /* for page-content alignment */
+  padding-top: 20px; /* Reduced padding, header icons are separate */
+}
+
+.lcars-theme .page-content {
+  background-color: var(--slider-host-bg-color); /* Dark panel background for the main content area */
+  border: 3px solid var(--app-border-color);
+  border-left: 15px solid var(--app-header-bg-color); /* Main LCARS sidebar accent */
+  border-radius: 0;
+  border-top-left-radius: 25px;
+  border-bottom-left-radius: 25px;
+  padding: 15px;
+  width: 100%; /* Occupy available space within main-layout's max-width */
+  max-width: 1200px; /* Keep max width consistent */
+  margin: 0 auto; /* Center it if viewport is wider than max-width */
+  box-shadow: -5px 0 15px rgba(0,0,0,0.3) inset; /* Inner shadow for depth from the 'sidebar' */
+}
+
+/* Remove the ::before attempt from individual areas if page-content provides the main frame */
+.lcars-theme .sliders-area::before,
+.lcars-theme .scene-row-wrapper::before {
+  display: none; /* Disable the old problematic elbows */
+}
+
+.lcars-theme .button-primary,
+.lcars-theme .button-secondary,
+.lcars-theme .go-button,
+.lcars-theme .link-faders-button,
+.lcars-theme .scene-text-apply-button {
+  border-radius: 0; /* LCARS buttons are typically rectangular */
+  border-top-left-radius: 15px; /* Rounded on one side - classic LCARS button */
+  border-bottom-left-radius: 15px;
+  border: 2px solid var(--app-header-text-color, #000000); /* Border color matching text */
+  padding: 8px 15px;
+  text-transform: uppercase;
+  font-weight: bold;
+  min-height: 30px; /* Ensure a minimum height */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--app-font-family); /* Ensure LCARS buttons use the LCARS font */
+}
+
+.lcars-theme .button-primary {
+  background-color: var(--button-primary-bg-color, #CC66FF);
+  color: var(--button-primary-text-color, #000000);
+}
+.lcars-theme .button-primary:hover {
+  background-color: var(--button-primary-hover-bg-color, #9933CC);
+}
+
+.lcars-theme .button-secondary {
+  background-color: var(--button-secondary-bg-color, #FF6600);
+  color: var(--button-secondary-text-color, #000000);
+}
+.lcars-theme .button-secondary:hover {
+  background-color: var(--button-secondary-hover-bg-color, #CC3300);
+}
+
+/* Specific styling for GO button if it needs to be different */
+.lcars-theme .go-button {
+  border-radius: 15px; /* Go button might be fully rounded or oval in some LCARS */
+  /* Override if it needs to be different from the general LCARS button style */
+}
+
+
+/* Styling for sub-panels within the main LCARS page-content */
+.lcars-theme .sliders-area,
+.lcars-theme .channel-slider-rows, /* Grouping for scene rows */
+.lcars-theme .crossfader-column,
+.lcars-theme .scene-text-input-wrapper {
+  background-color: #000000; /* Black background for sub-panels */
+  border: 2px solid var(--app-border-color);
+  border-left: 10px solid var(--button-secondary-bg-color); /* Accent left border */
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 0;
+  border-top-right-radius: 10px; /* Slight rounding on one corner */
+  border-bottom-right-radius: 10px;
+}
+
+/* Individual scene-row-wrapper within channel-slider-rows */
+.lcars-theme .scene-row-wrapper {
+  padding: 5px 0;
+  margin-bottom: 5px;
+  border: none; /* Remove individual border, parent .channel-slider-rows has it */
+  background-color: transparent;
+}
+
+.lcars-theme .slider-row {
+  padding-left: 5px; /* Indent sliders slightly from the accent border of parent */
+}
+
+.lcars-theme .combined-output-row {
+  margin: 10px 0 15px 0;
+  padding-left: 10px; /* Align with other indented content */
+  border-left: 5px solid var(--button-secondary-bg-color);
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+/* Scene labels to look like LCARS tabs/labels */
+.lcars-theme .scene-label-container {
+  background-color: var(--button-secondary-bg-color); /* Use an accent color */
+  color: var(--button-secondary-text-color);
+  padding: 10px 5px;
+  margin-right: 8px;
+  border-radius: 0;
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+  width: auto; /* Adjust width based on content */
+  min-width: 25px; /* Ensure minimum width for rotated text */
+}
+.lcars-theme .scene-label {
+  color: var(--button-secondary-text-color); /* Ensure text color matches */
+  font-size: 0.9em; /* Slightly smaller for tab look */
+}
+
+
+/* Style for header icons in LCARS */
+.lcars-theme .header-icons {
+  background-color: var(--app-header-bg-color); /* LCARS Orange */
+  border: 2px solid var(--app-header-text-color); /* Black border */
+  border-right: none;
+  border-radius: 0;
+  border-top-left-radius: 15px;
+  border-bottom-left-radius: 15px;
+  padding: 8px 10px 8px 15px;
+  box-shadow: -2px 2px 5px rgba(0,0,0,0.5);
+  right: 0; /* Ensure it's flush right */
+  top: 15px; /* Adjust vertical position */
+}
+.lcars-theme .settings-icon,
+.lcars-theme .shortcuts-icon {
+  color: var(--app-header-text-color);
+  font-size: 1.8em;
+}
+
+/* LCARS styling for Modals */
+.lcars-theme .modal-overlay {
+  /* Overlay color is already themed via variable */
+}
+.lcars-theme .modal-content {
+  background-color: var(--modal-bg-color); /* Usually dark blue/black */
+  color: var(--modal-text-color);
+  border: 3px solid var(--app-border-color);
+  border-left: 10px solid var(--app-header-bg-color); /* Prominent orange left bar */
+  border-radius: 0;
+  border-top-left-radius: 20px;
+  border-bottom-left-radius: 20px;
+  border-top-right-radius: 10px; /* Subtle rounding on other side */
+  border-bottom-right-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 5px 25px rgba(0,0,0,0.5);
+}
+.lcars-theme .modal-content h2 {
+  color: var(--app-header-bg-color); /* Orange for modal titles */
+  text-align: left;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--app-header-bg-color);
+  margin-bottom: 20px;
+}
+.lcars-theme .form-group label {
+  color: var(--app-text-color); /* Orange text for labels */
+}
+.lcars-theme .form-group input[type="text"],
+.lcars-theme .form-group input[type="number"],
+.lcars-theme .form-group input[type="url"],
+.lcars-theme .scene-text-input { /* Apply to scene text input as well */
+  background-color: #000; /* Black input fields */
+  color: var(--app-text-color);
+  border: 1px solid var(--app-border-color);
+  border-radius: 0; /* Sharp corners for inputs */
+  padding: 8px;
+}
+
+/* LCARS styling for Sliders (app-slide-potentiometer) */
+.lcars-theme .app-slide-potentiometer {
+  background-color: #000; /* Black background for slider component */
+  border: 1px solid var(--slider-host-border-color);
+  padding: 8px;
+  border-radius: 0;
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+  margin: 2px; /* Small margin around each slider */
+}
+
+/* Styling for the crossfade duration slider */
+.lcars-theme input[type="range"].duration-slider::-webkit-slider-runnable-track {
+  background: var(--slider-track-color);
+  border: 1px solid var(--slider-track-border-color);
+  border-radius: 0; /* Sharp track */
+  height: 10px;
+}
+.lcars-theme input[type="range"].duration-slider::-moz-range-track {
+  background: var(--slider-track-color);
+  border: 1px solid var(--slider-track-border-color);
+  border-radius: 0; /* Sharp track */
+  height: 10px;
+}
+.lcars-theme input[type="range"].duration-slider::-webkit-slider-thumb {
+  background: var(--slider-thumb-color);
+  border: 1px solid var(--app-header-text-color); /* Black border for thumb */
+  border-radius: 0; /* Sharp thumb */
+  width: 10px;
+  height: 22px; /* Taller, thinner thumb */
+  margin-top: -7px; /* Adjust vertical position */
+}
+.lcars-theme input[type="range"].duration-slider::-moz-range-thumb {
+  background: var(--slider-thumb-color);
+  border: 1px solid var(--app-header-text-color);
+  border-radius: 0;
+  width: 10px;
+  height: 22px;
+}
