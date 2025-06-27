@@ -1,13 +1,13 @@
 /* Metal Theme */
 .metal-theme {
-  /* Simplified and more distinct brushed metal effect for main background */
+  /* Simplified and more distinct brushed metal effect for main background - now ~20% lighter */
   --app-background-image: /* Renamed from --app-bg-color */
     repeating-linear-gradient(
       -45deg,
-      #4a4e54,
-      #4a4e54 5px,
-      #52565c 5px,
-      #52565c 10px
+      #6E7176, /* Lighter version of #4a4e54 */
+      #6E7176 5px,
+      #75787D 5px, /* Lighter version of #52565c */
+      #75787D 10px
     );
   --app-text-color: #F0F0F0; /* Slightly brighter light grey text */
   --app-text-shadow: 0px 1px 2px rgba(0,0,0,0.6); /* Dark text shadow for better readability */
