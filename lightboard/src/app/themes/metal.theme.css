@@ -1,15 +1,24 @@
 /* Metal Theme */
 .metal-theme {
-  --app-bg-color: #43464B; /* Dark, cool grey - like brushed steel */
+  /* Subtle brushed steel effect for the main background */
+  --app-bg-color:
+    linear-gradient(to bottom, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%),
+    linear-gradient(to right, #43464B, #53565B, #43464B);
   --app-text-color: #EAEAEA; /* Light grey text, almost white */
-  --app-header-bg-color: #313335; /* Even darker grey for header */
+  /* Darker, slightly textured header */
+  --app-header-bg-color:
+    linear-gradient(to bottom, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0) 100%),
+    linear-gradient(to right, #313335, #3A3C3F, #313335);
   --app-header-text-color: #FFFFFF;
-  --app-border-color: #55585C; /* Slightly darker for better definition */
+  --app-border-color: #2A2C2E; /* Darkened border for more contrast with textures */
 
-  --slider-host-bg-color: #3A3C3F;
-  --slider-host-border-color: #606368; /* Match app border for panels */
+  /* Brushed metal for slider panels */
+  --slider-host-bg-color:
+    linear-gradient(0deg, rgba(255,255,255,0.04), rgba(255,255,255,0)),
+    repeating-linear-gradient(45deg, #3A3C3F, #3A3C3F 5px, #4A4C4F 5px, #4A4C4F 10px);
+  --slider-host-border-color: #202225; /* Darker border for panels */
   --slider-text-color: #E0E0E0;
-  --slider-channel-info-border-color: #484A4D;
+  --slider-channel-info-border-color: #303235;
   --slider-value-edit-border-color: #707378;
   --slider-color-swatch-border-color: #707378;
 
@@ -19,33 +28,50 @@
   --table-header-bg-color: #2A2C2E;
   --table-header-text-color: #F0F0F0;
 
-  --modal-bg-color: #303235; /* Slightly darker modal */
+  /* Modal with a subtle central sheen */
+  --modal-bg-color:
+    radial-gradient(ellipse at center, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%),
+    #303235;
   --modal-text-color: #D8D8D8;
   --modal-overlay-bg-color: rgba(20, 20, 20, 0.85);
-  --modal-input-border-color: #5A5C5F;
+  --modal-input-border-color: #4A4C4F; /* Darker input border */
   --modal-error-text-color: #FF6B6B; /* Brighter, clearer red */
 
-  /* Metallic sheen for buttons */
-  --button-primary-bg-color: linear-gradient(to bottom, #EAC854, #D4AF37); /* Gold gradient */
-  --button-primary-text-color: #2F1E00; /* Darker brown for gold */
-  --button-primary-hover-bg-color: linear-gradient(to bottom, #D4AF37, #B8860B); /* Darker Gold gradient */
-  --button-secondary-bg-color: linear-gradient(to bottom, #DADADA, #B0B0B0); /* Silver gradient */
-  --button-secondary-text-color: #222222; /* Dark grey for silver */
-  --button-secondary-hover-bg-color: linear-gradient(to bottom, #B0B0B0, #8C8C8C); /* Darker Silver gradient */
+  /* Enhanced metallic sheen for buttons with more stops and subtle inset shadow */
+  --button-primary-bg-color: linear-gradient(to bottom, #F8E08E 0%, #EAC854 50%, #D4AF37 100%); /* Brighter Gold */
+  --button-primary-text-color: #2F1E00;
+  --button-primary-hover-bg-color: linear-gradient(to bottom, #EAC854 0%, #D4AF37 50%, #B8860B 100%); /* Darker Gold */
+  --button-primary-box-shadow: inset 0px 1px 1px rgba(255,255,255,0.3), inset 0px -1px 1px rgba(0,0,0,0.2);
+
+  --button-secondary-bg-color: linear-gradient(to bottom, #E8E8E8 0%, #DADADA 50%, #B0B0B0 100%); /* Brighter Silver */
+  --button-secondary-text-color: #222222;
+  --button-secondary-hover-bg-color: linear-gradient(to bottom, #DADADA 0%, #B0B0B0 50%, #8C8C8C 100%); /* Darker Silver */
+  --button-secondary-box-shadow: inset 0px 1px 1px rgba(255,255,255,0.4), inset 0px -1px 1px rgba(0,0,0,0.2);
 
   --button-disabled-bg-color: #5A5C5F;
   --button-disabled-text-color: #888888;
-  --button-border-color: #707378; /* For actual button borders if not using gradients alone */
+  --button-border-color: #707378;
 
 
-  --slider-thumb-bevel-highlight: #A0A3A8; /* Lighter metallic highlight */
-  --slider-thumb-bevel-shadow: #2A2C2E; /* Dark shadow */
+  --slider-thumb-bevel-highlight: #A0A3A8;
+  --slider-thumb-bevel-shadow: #2A2C2E;
 
-  --fixed-icons-bg-color: rgba(50, 50, 50, 0.75); /* Semi-transparent dark grey */
-  --slider-track-color: #505358; /* Grey track */
-  --slider-track-border-color: #2F3133;
-  --slider-thumb-color: #B0B0B0; /* Light grey, like polished metal */
+  --fixed-icons-bg-color: rgba(50, 50, 50, 0.75);
+  /* Metallic track for sliders */
+  --slider-track-color:
+    linear-gradient(to right, #404348, #505358, #404348);
+  --slider-track-border-color: #2A2C2E; /* Darker border for track */
+  /* Polished metal thumb for sliders */
+  --slider-thumb-color:
+    radial-gradient(ellipse at top, #D0D0D0, #B0B0B0);
+  --slider-thumb-border: 1px solid #707378; /* Add a border to the thumb */
 
-  /* Consider adding subtle gradients or textures to enhance the "metal" feel if possible
-     with additional CSS rules beyond just variables. */
+  /* Apply box shadows directly in component CSS where buttons are defined,
+     as CSS variables cannot directly hold box-shadow lists easily for all buttons.
+     The variables --button-primary-box-shadow and --button-secondary-box-shadow are for guidance
+     or if a component can consume them. For now, this will be a comment. */
+  /* To apply these shadows, you'd modify rules like .button-primary in settings-modal.component.css:
+     box-shadow: var(--button-primary-box-shadow);
+     border: 1px solid var(--button-border-color); // Ensure border is also applied for better definition
+  */
 }

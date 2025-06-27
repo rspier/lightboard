@@ -52,7 +52,7 @@
   align-items: center;
   width: 100%;
   padding: 10px;
-  padding-top: 70px; /* Added padding to prevent overlap with fixed header icons */
+  padding-top: 10px; /* Reduced padding as per request */
   box-sizing: border-box;
   background-color: var(--app-bg-color);
   color: var(--app-text-color);
