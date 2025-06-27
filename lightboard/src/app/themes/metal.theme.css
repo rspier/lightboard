@@ -1,12 +1,17 @@
 /* Metal Theme */
 .metal-theme {
-  /* More pronounced brushed steel effect for the main background */
+  /* Simplified and more distinct brushed metal effect for main background */
   --app-bg-color:
-    linear-gradient(to bottom, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.02) 50%, rgba(0,0,0,0.05) 100%), /* Stronger, more complex sheen */
-    linear-gradient(to right, #3C3F43, #5E6267, #3C3F43); /* Increased contrast in base */
+    repeating-linear-gradient(
+      -45deg,
+      #4a4e54,
+      #4a4e54 5px,
+      #52565c 5px,
+      #52565c 10px
+    );
   --app-text-color: #F0F0F0; /* Slightly brighter light grey text */
   --app-text-shadow: 0px 1px 2px rgba(0,0,0,0.6); /* Dark text shadow for better readability */
-  /* Darker, slightly textured header - keep this subtle relative to main bg */
+  /* Darker, slightly textured header - ensure it's distinct */
   --app-header-bg-color:
     linear-gradient(to bottom, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%),
     linear-gradient(to right, #2E3032, #3A3C3F, #2E3032);
@@ -38,16 +43,16 @@
   --modal-input-border-color: #4A4C4F; /* Darker input border */
   --modal-error-text-color: #FF6B6B; /* Brighter, clearer red */
 
-  /* Enhanced metallic sheen for buttons with more distinct stops */
-  --button-primary-bg-color: linear-gradient(to bottom, #FCEEAB 0%, #EAC854 40%, #D4AF37 70%, #C09A2B 100%); /* Gold with more highlights/shadows */
+  /* Simplified button gradients with clearer highlight, similar to thumb effect */
+  --button-primary-bg-color: linear-gradient(to bottom, #EAC854, #B8860B); /* Simpler Gold */
   --button-primary-text-color: #2F1E00;
-  --button-primary-hover-bg-color: linear-gradient(to bottom, #EAC854 0%, #D4AF37 40%, #B8860B 70%, #A07400 100%); /* Darker Gold */
-  --button-primary-box-shadow: inset 0px 1px 1px rgba(255,255,255,0.3), inset 0px -1px 1px rgba(0,0,0,0.2);
+  --button-primary-hover-bg-color: linear-gradient(to bottom, #D4AF37, #A07400); /* Darker Gold */
+  --button-primary-box-shadow: inset 0px 1px 1px rgba(255,223,128,0.5), inset 0px -1px 1px rgba(0,0,0,0.2); /* Gold-tinted highlight */
 
-  --button-secondary-bg-color: linear-gradient(to bottom, #F5F5F5 0%, #DADADA 40%, #B0B0B0 70%, #989898 100%); /* Silver with more highlights/shadows */
+  --button-secondary-bg-color: linear-gradient(to bottom, #DADADA, #A0A0A0); /* Simpler Silver */
   --button-secondary-text-color: #222222;
-  --button-secondary-hover-bg-color: linear-gradient(to bottom, #DADADA 0%, #B0B0B0 40%, #8C8C8C 70%, #787878 100%); /* Darker Silver */
-  --button-secondary-box-shadow: inset 0px 1px 1px rgba(255,255,255,0.4), inset 0px -1px 1px rgba(0,0,0,0.2);
+  --button-secondary-hover-bg-color: linear-gradient(to bottom, #B0B0B0, #8C8C8C); /* Darker Silver */
+  --button-secondary-box-shadow: inset 0px 1px 1px rgba(255,255,255,0.6), inset 0px -1px 1px rgba(0,0,0,0.2);
 
   --button-disabled-bg-color: #5A5C5F;
   --button-disabled-text-color: #888888;
@@ -75,4 +80,49 @@
      box-shadow: var(--button-primary-box-shadow);
      border: 1px solid var(--button-border-color); // Ensure border is also applied for better definition
   */
+}
+
+/* Apply text shadow for better readability on metallic backgrounds */
+.metal-theme body,
+.metal-theme p,
+.metal-theme label,
+.metal-theme h1,
+.metal-theme h2,
+.metal-theme h3,
+.metal-theme h4,
+.metal-theme h5,
+.metal-theme h6,
+.metal-theme span, /* General spans, but be mindful of icons if they are spans */
+.metal-theme div, /* Very general, might need more specific targeting if it causes issues */
+.metal-theme .settings-icon, /* Ensure icons (if text-based) also get shadow if needed, or exclude them */
+.metal-theme .shortcuts-icon,
+.metal-theme .fader-label,
+.metal-theme .duration-slider-label,
+.metal-theme .value-text, /* From combined-output-display */
+.metal-theme .description-text /* From combined-output-display */
+ {
+  text-shadow: var(--app-text-shadow);
+}
+
+/* Ensure button text also gets the shadow if their text color variable doesn't imply it */
+/* Buttons often have their own text color vars, so they might need specific rules if the global one isn't enough */
+.metal-theme .button-primary, /* Targets the button element itself */
+.metal-theme .button-secondary,
+.metal-theme .go-button,
+.metal-theme .link-faders-button,
+.metal-theme .scene-text-apply-button {
+  /* Text color is set by --button-primary-text-color etc. which are dark.
+     A dark shadow on dark text won't be visible.
+     So, text shadow should only apply if the text color is light.
+     The current button text colors are dark (#2F1E00, #222222), so shadow is not needed for them.
+     If button text were light, we'd add: text-shadow: var(--app-text-shadow);
+  */
+}
+
+/* For modal text, if it doesn't inherit well from body */
+.metal-theme .modal-content,
+.metal-theme .modal-content p,
+.metal-theme .modal-content label,
+.metal-theme .modal-content h2 {
+  text-shadow: var(--app-text-shadow);
 }
