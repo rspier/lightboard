@@ -1,14 +1,15 @@
 /* Metal Theme */
 .metal-theme {
-  /* Subtle brushed steel effect for the main background */
+  /* More pronounced brushed steel effect for the main background */
   --app-bg-color:
-    linear-gradient(to bottom, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%),
-    linear-gradient(to right, #43464B, #53565B, #43464B);
-  --app-text-color: #EAEAEA; /* Light grey text, almost white */
-  /* Darker, slightly textured header */
+    linear-gradient(to bottom, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.02) 50%, rgba(0,0,0,0.05) 100%), /* Stronger, more complex sheen */
+    linear-gradient(to right, #3C3F43, #5E6267, #3C3F43); /* Increased contrast in base */
+  --app-text-color: #F0F0F0; /* Slightly brighter light grey text */
+  --app-text-shadow: 0px 1px 2px rgba(0,0,0,0.6); /* Dark text shadow for better readability */
+  /* Darker, slightly textured header - keep this subtle relative to main bg */
   --app-header-bg-color:
-    linear-gradient(to bottom, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0) 100%),
-    linear-gradient(to right, #313335, #3A3C3F, #313335);
+    linear-gradient(to bottom, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%),
+    linear-gradient(to right, #2E3032, #3A3C3F, #2E3032);
   --app-header-text-color: #FFFFFF;
   --app-border-color: #2A2C2E; /* Darkened border for more contrast with textures */
 
@@ -37,15 +38,15 @@
   --modal-input-border-color: #4A4C4F; /* Darker input border */
   --modal-error-text-color: #FF6B6B; /* Brighter, clearer red */
 
-  /* Enhanced metallic sheen for buttons with more stops and subtle inset shadow */
-  --button-primary-bg-color: linear-gradient(to bottom, #F8E08E 0%, #EAC854 50%, #D4AF37 100%); /* Brighter Gold */
+  /* Enhanced metallic sheen for buttons with more distinct stops */
+  --button-primary-bg-color: linear-gradient(to bottom, #FCEEAB 0%, #EAC854 40%, #D4AF37 70%, #C09A2B 100%); /* Gold with more highlights/shadows */
   --button-primary-text-color: #2F1E00;
-  --button-primary-hover-bg-color: linear-gradient(to bottom, #EAC854 0%, #D4AF37 50%, #B8860B 100%); /* Darker Gold */
+  --button-primary-hover-bg-color: linear-gradient(to bottom, #EAC854 0%, #D4AF37 40%, #B8860B 70%, #A07400 100%); /* Darker Gold */
   --button-primary-box-shadow: inset 0px 1px 1px rgba(255,255,255,0.3), inset 0px -1px 1px rgba(0,0,0,0.2);
 
-  --button-secondary-bg-color: linear-gradient(to bottom, #E8E8E8 0%, #DADADA 50%, #B0B0B0 100%); /* Brighter Silver */
+  --button-secondary-bg-color: linear-gradient(to bottom, #F5F5F5 0%, #DADADA 40%, #B0B0B0 70%, #989898 100%); /* Silver with more highlights/shadows */
   --button-secondary-text-color: #222222;
-  --button-secondary-hover-bg-color: linear-gradient(to bottom, #DADADA 0%, #B0B0B0 50%, #8C8C8C 100%); /* Darker Silver */
+  --button-secondary-hover-bg-color: linear-gradient(to bottom, #DADADA 0%, #B0B0B0 40%, #8C8C8C 70%, #787878 100%); /* Darker Silver */
   --button-secondary-box-shadow: inset 0px 1px 1px rgba(255,255,255,0.4), inset 0px -1px 1px rgba(0,0,0,0.2);
 
   --button-disabled-bg-color: #5A5C5F;
