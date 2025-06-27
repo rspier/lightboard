@@ -45,9 +45,9 @@ describe('SettingsModalComponent', () => {
 
     // Adjust initialTestSettings if darkMode is truly gone from it
     const settingsForChannelService = { ...initialTestSettings };
-    delete (settingsForChannelService as any).darkMode; // Simulate it not being part of the core settings anymore
+    delete (settingsForChannelService as AppSettings & {darkMode?: boolean}).darkMode; // Simulate it not being part of the core settings anymore, provide a more specific type
 
-    mockChannelSettingsService.getCurrentAppSettings.and.returnValue(settingsForChannelService);
+    mockChannelSettingsService.getCurrentAppSettings.and.returnValue(settingsForChannelService as AppSettings); // Cast to AppSettings
     mockChannelSettingsService.getCurrentNumChannels.and.returnValue(initialTestSettings.numChannels);
     mockChannelSettingsService.getCurrentChannelDescriptions.and.returnValue([...initialTestSettings.channelDescriptions]);
 

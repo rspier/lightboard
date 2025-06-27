@@ -7,7 +7,7 @@ import { ChannelSettingsService, AppSettings } from './channel-settings.service'
 import { HttpDataService, CombinedOutputData } from './http-data.service';
 import { ThemeService } from './theme.service'; // Import ThemeService
 import { BehaviorSubject, of } from 'rxjs';
-import { map } from 'rxjs/operators';
+// import { map } from 'rxjs/operators'; // Removed unused import
 import { CombinedOutputDisplayComponent } from './combined-output-display/combined-output-display.component';
 
 function dispatchKeyboardEvent(

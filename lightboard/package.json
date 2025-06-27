@@ -6,8 +6,8 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test",
-    "test:ci": "CHROME_BIN=${CHROME_BIN:-$(node -p -e \"require('puppeteer').executablePath()\")} ng test --watch=false --browsers=ChromeHeadlessNoSandbox",
+    "test": "npm run lint && ng test",
+    "test:ci": "npm run lint && CHROME_BIN=${CHROME_BIN:-$(node -p -e \"require('puppeteer').executablePath()\")} ng test --watch=false --browsers=ChromeHeadlessNoSandbox",
     "lint": "ng lint"
   },
   "private": true,

@@ -27,6 +27,10 @@ jobs:
         export CHROME_BIN=$(node -p -e "require('puppeteer').executablePath()")
         echo "CHROME_BIN=${CHROME_BIN}" >> $GITHUB_ENV
 
+    - name: Run ESLint
+      working-directory: ./lightboard
+      run: npm run lint
+
     - name: Run tests
       run: |
         cd lightboard

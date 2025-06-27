@@ -1,4 +1,4 @@
-import { Injectable, Renderer2, RendererFactory2 } from '@angular/core';
+import { Injectable, inject, Renderer2, RendererFactory2 } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 
@@ -28,11 +28,11 @@ export class ThemeService {
 
   public activeTheme$: BehaviorSubject<Theme | null> = new BehaviorSubject<Theme | null>(null);
 
-  constructor(
-    rendererFactory: RendererFactory2,
-    private toastr: ToastrService
-  ) {
-    this.renderer = rendererFactory.createRenderer(null, null);
+  private rendererFactory = inject(RendererFactory2);
+  private toastr = inject(ToastrService);
+
+  constructor() {
+    this.renderer = this.rendererFactory.createRenderer(null, null);
     // Load initial theme from local storage or default to 'light'
     const savedThemeId = localStorage.getItem('activeThemeId') || 'light';
     this.currentThemeId = savedThemeId;
