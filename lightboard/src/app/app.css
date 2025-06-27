@@ -3,7 +3,7 @@
   justify-content: flex-end; /* Changed from space-between to align icons to the right */
   align-items: center;
   padding: 10px 20px;
-  background-color: var(--app-header-bg-color);
+  background: var(--app-header-background-image, var(--app-header-bg-color));
   border-bottom: 1px solid var(--app-border-color);
   margin-bottom: 15px;
   width: 100%;
@@ -54,7 +54,7 @@
   padding: 10px;
   padding-top: 10px; /* Reduced padding as per request */
   box-sizing: border-box;
-  background-color: var(--app-bg-color);
+  background: var(--app-background-image, var(--app-bg-color)); /* Use new var, fallback to old if needed during transition */
   color: var(--app-text-color);
 }
 
@@ -162,7 +162,7 @@
   padding: 8px 12px;
   font-size: 0.9em;
   color: var(--button-secondary-text-color); /* Using secondary button colors for less emphasis than Go */
-  background-color: var(--button-secondary-bg-color);
+  background: var(--button-secondary-background-image, var(--button-secondary-bg-color));
   border: 1px solid var(--button-secondary-border-color, transparent); /* Optional border */
   border-radius: 4px;
   cursor: pointer;
@@ -171,7 +171,7 @@
 }
 
 .link-faders-button:hover {
-  background-color: var(--button-secondary-hover-bg-color);
+  background: var(--button-secondary-hover-background-image, var(--button-secondary-hover-bg-color));
 }
 
 .go-button {
@@ -182,30 +182,30 @@
   font-size: 1em;
   font-weight: bold;
   color: var(--button-primary-text-color);
-  background-color: var(--button-primary-bg-color);
+  background: var(--button-primary-background-image, var(--button-primary-bg-color));
   border: none;
   border-radius: 4px;
   cursor: pointer;
 }
 
 .go-button:hover {
-  background-color: var(--button-primary-hover-bg-color);
+  background: var(--button-primary-hover-background-image, var(--button-primary-hover-bg-color));
 }
 
 .go-button:disabled {
-  background-color: var(--button-disabled-bg-color);
+  background: var(--button-disabled-background-color, var(--button-disabled-bg-color)); /* Assuming disabled is solid */
   color: var(--button-disabled-text-color);
   cursor: not-allowed;
 }
 
 .go-button.animating {
-  background-color: var(--button-secondary-bg-color);
+  background: var(--button-secondary-background-image, var(--button-secondary-bg-color));
   color: var(--button-secondary-text-color);
   /* Ensure cursor remains pointer, it inherits by default */
 }
 
 .go-button.animating:hover {
-  background-color: var(--button-secondary-hover-bg-color);
+  background: var(--button-secondary-hover-background-image, var(--button-secondary-hover-bg-color));
   color: var(--button-secondary-text-color);
 }
 
@@ -236,7 +236,7 @@ input[type="range"].duration-slider {
 input[type="range"].duration-slider::-webkit-slider-runnable-track {
   width: 100%;
   height: 8px;
-  background: var(--slider-track-color, #ddd);
+  background: var(--slider-track-background-image, var(--slider-track-color, #ddd));
   border-radius: 4px;
   border: 1px solid var(--slider-track-border-color, #ccc);
 }
@@ -244,7 +244,7 @@ input[type="range"].duration-slider::-webkit-slider-runnable-track {
 input[type="range"].duration-slider::-moz-range-track {
   width: 100%;
   height: 8px;
-  background: var(--slider-track-color, #ddd);
+  background: var(--slider-track-background-image, var(--slider-track-color, #ddd));
   border-radius: 4px;
   border: 1px solid var(--slider-track-border-color, #ccc);
 }
@@ -256,7 +256,7 @@ input[type="range"].duration-slider::-webkit-slider-thumb {
   margin-top: -7px; /* Recalculated: (track_height(8) - thumb_height(20)) / 2 = -6. Border might affect slightly. */
   width: 12px;  /* Narrower */
   height: 20px; /* Taller */
-  background: var(--slider-thumb-color, #3498db);
+  background: var(--slider-thumb-background-image, var(--slider-thumb-color, #3498db));
   border-radius: 3px; /* Slightly rounded rectangle */
   box-shadow: 0 1px 2px rgba(0,0,0,0.1);
   /* Bevel border */
@@ -271,7 +271,7 @@ input[type="range"].duration-slider::-webkit-slider-thumb {
 input[type="range"].duration-slider::-moz-range-thumb {
   width: 12px;
   height: 20px;
-  background: var(--slider-thumb-color, #3498db);
+  background: var(--slider-thumb-background-image, var(--slider-thumb-color, #3498db));
   border-radius: 3px; /* Slightly rounded rectangle */
   box-shadow: 0 1px 2px rgba(0,0,0,0.1);
   /* Bevel border */
@@ -348,14 +348,14 @@ input[type="range"].duration-slider::-moz-range-thumb {
   padding: 8px 12px;
   font-size: 0.9em;
   color: var(--button-primary-text-color);
-  background-color: var(--button-primary-bg-color);
+  background: var(--button-primary-background-image, var(--button-primary-bg-color));
   border: none;
   border-radius: 4px;
   cursor: pointer;
 }
 
 .scene-text-apply-button:hover {
-  background-color: var(--button-primary-hover-bg-color);
+  background: var(--button-primary-hover-background-image, var(--button-primary-hover-bg-color));
 }
 
 .error-messages { /* This class was for the old inline error display, can be removed or repurposed if needed */
