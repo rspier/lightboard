@@ -1,22 +1,28 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing'; // Removed fakeAsync, tick
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { SettingsModalComponent } from './settings-modal.component';
 import { ChannelSettingsService, AppSettings } from '../channel-settings.service';
+import { ThemeService, Theme } from '../theme.service'; // Import ThemeService and Theme
 import { By } from '@angular/platform-browser';
 
 describe('SettingsModalComponent', () => {
   let component: SettingsModalComponent;
   let fixture: ComponentFixture<SettingsModalComponent>;
   let mockChannelSettingsService: jasmine.SpyObj<ChannelSettingsService>;
+  let mockThemeService: jasmine.SpyObj<ThemeService>;
 
-  const initialTestSettings: AppSettings = {
+  const initialTestSettings: Omit<AppSettings, 'darkMode'> = { // darkMode removed
     numChannels: 4,
     channelDescriptions: ['Apple', 'Banana', 'Cherry', 'Date'],
     backendUrl: 'http://default.com',
     crossfadeDurationSeconds: 1.0,
-    darkMode: false // Added darkMode
   };
+
+  const mockThemes: Theme[] = [
+    { id: 'light', name: 'Light', className: 'light-theme' },
+    { id: 'dark', name: 'Dark', className: 'dark-theme' },
+  ];
 
   beforeEach(async () => {
     mockChannelSettingsService = jasmine.createSpyObj('ChannelSettingsService',
@@ -25,45 +31,59 @@ describe('SettingsModalComponent', () => {
         'updateNumChannels',
         'updateChannelDescriptions',
         'updateBackendUrl',
-        'updateCrossfadeDurationSeconds',
-        'updateDarkMode', // Added spy for updateDarkMode
+        // 'updateCrossfadeDurationSeconds', // Assuming this might be removed if not used elsewhere
+        // 'updateDarkMode', // Removed
         'resetToDefaults',
         'getCurrentNumChannels',
         'getCurrentChannelDescriptions'
       ]
     );
 
-    mockChannelSettingsService.getCurrentAppSettings.and.returnValue({...initialTestSettings});
+    mockThemeService = jasmine.createSpyObj('ThemeService',
+      ['getAvailableThemes', 'getActiveTheme', 'setActiveTheme']
+    );
+
+    // Adjust initialTestSettings if darkMode is truly gone from it
+    const settingsForChannelService = { ...initialTestSettings };
+    delete (settingsForChannelService as any).darkMode; // Simulate it not being part of the core settings anymore
+
+    mockChannelSettingsService.getCurrentAppSettings.and.returnValue(settingsForChannelService);
     mockChannelSettingsService.getCurrentNumChannels.and.returnValue(initialTestSettings.numChannels);
     mockChannelSettingsService.getCurrentChannelDescriptions.and.returnValue([...initialTestSettings.channelDescriptions]);
 
+    mockThemeService.getAvailableThemes.and.returnValue(mockThemes);
+    mockThemeService.getActiveTheme.and.returnValue(mockThemes[0]); // Default to light theme
 
     await TestBed.configureTestingModule({
       imports: [FormsModule, CommonModule, SettingsModalComponent],
       providers: [
-        { provide: ChannelSettingsService, useValue: mockChannelSettingsService }
+        { provide: ChannelSettingsService, useValue: mockChannelSettingsService },
+        { provide: ThemeService, useValue: mockThemeService } // Provide mock ThemeService
       ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(SettingsModalComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
+    fixture.detectChanges(); // This calls ngOnInit
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should load current settings on init, including dark mode', () => {
+  it('should load current channel settings and theme settings on init', () => {
     expect(mockChannelSettingsService.getCurrentAppSettings).toHaveBeenCalled();
     expect(component.numChannels).toBe(initialTestSettings.numChannels);
     expect(component.descriptions).toEqual(initialTestSettings.channelDescriptions);
     expect(component.backendUrl).toBe(initialTestSettings.backendUrl);
-    // expect(component.crossfadeDurationSeconds).toBe(initialTestSettings.crossfadeDurationSeconds); // Removed
-    expect(component.darkMode).toBe(initialTestSettings.darkMode); // Test darkMode init
+
+    expect(mockThemeService.getAvailableThemes).toHaveBeenCalled();
+    expect(mockThemeService.getActiveTheme).toHaveBeenCalled();
+    expect(component.availableThemes).toEqual(mockThemes);
+    expect(component.selectedThemeId).toBe(mockThemes[0].id); // e.g., 'light'
   });
 
-  // ... (onNumChannelsChange tests remain the same)
+  // ... (onNumChannelsChange tests remain largely the same)
   describe('onNumChannelsChange', () => {
     it('should update descriptions array length and content', () => {
       component.descriptions = ['One', 'Two', 'Three', 'Four'];
@@ -102,32 +122,27 @@ describe('SettingsModalComponent', () => {
 
 
   describe('saveSettings', () => {
-    it('should call service update methods for valid settings (including darkMode) and emit closeModal', () => {
-      spyOn(component.closeModal, 'emit'); // Changed to closeModal
+    it('should call service update methods for valid settings and emit closeModal', () => {
+      spyOn(component.closeModal, 'emit');
       component.numChannels = 3;
       component.descriptions = ['New1', 'New2', 'New3'];
       component.backendUrl = 'http://valid.url';
-      // component.crossfadeDurationSeconds = 2; // Removed
-      component.darkMode = true; // Set darkMode for test
+      // Theme is handled by onThemeChange, saveSettings doesn't directly interact with themeService.setActiveTheme
 
-      mockChannelSettingsService.getCurrentNumChannels.and.returnValue(initialTestSettings.numChannels); // Original num channels for comparison
-      // For when descriptions are updated for the new number of channels:
+      mockChannelSettingsService.getCurrentNumChannels.and.returnValue(initialTestSettings.numChannels);
       mockChannelSettingsService.getCurrentChannelDescriptions.and.returnValue(['New1', 'New2', 'New3']);
-
 
       component.saveSettings();
 
       expect(mockChannelSettingsService.updateNumChannels).toHaveBeenCalledWith(3);
       expect(mockChannelSettingsService.updateChannelDescriptions).toHaveBeenCalledWith(['New1', 'New2', 'New3']);
       expect(mockChannelSettingsService.updateBackendUrl).toHaveBeenCalledWith('http://valid.url');
-      // expect(mockChannelSettingsService.updateCrossfadeDurationSeconds).toHaveBeenCalledWith(2); // Removed
-      expect(mockChannelSettingsService.updateDarkMode).toHaveBeenCalledWith(true); // Verify darkMode update
-      expect(component.closeModal.emit).toHaveBeenCalled(); // Changed to closeModal
+      // No direct theme update call here, ThemeService handles its persistence (localStorage)
+      expect(component.closeModal.emit).toHaveBeenCalled();
       expect(component.numChannelsError).toBeNull();
       expect(component.backendUrlError).toBeNull();
-      // expect(component.durationError).toBeNull(); // Removed
     });
-    // ... (other saveSettings validation tests remain the same)
+
     it('should show error and not save if numChannels is invalid', () => {
       spyOn(component.closeModal, 'emit'); // Changed to closeModal
       component.numChannels = 0;
@@ -152,78 +167,74 @@ describe('SettingsModalComponent', () => {
     //   component.saveSettings();
     //   expect(component.durationError).toBeTruthy();
     //   expect(mockChannelSettingsService.updateCrossfadeDurationSeconds).not.toHaveBeenCalled();
-    //   expect(component.closeModal.emit).not.toHaveBeenCalled(); // Changed to closeModal
+    //   expect(component.closeModal.emit).not.toHaveBeenCalled();
     // });
   }); // End of describe('saveSettings')
 
-  it('should bind darkMode to the checkbox and update component property (view to model)', async () => {
-    component.darkMode = false;
-    fixture.detectChanges();
-    await fixture.whenStable(); // Ensure model is stable
-
-    const checkboxDebugElement = fixture.debugElement.query(By.css('#dark-mode-toggle'));
-    const checkboxNativeElement = checkboxDebugElement.nativeElement as HTMLInputElement;
-
-    expect(checkboxNativeElement.checked).toBeFalse(); // Initial state based on component.darkMode
-
-    // Simulate user checking the box
-    checkboxNativeElement.checked = true;
-    checkboxNativeElement.dispatchEvent(new Event('change')); // Dispatch change event for ngModel
-
-    fixture.detectChanges();
-    await fixture.whenStable(); // Allow ngModel to propagate the change
-
-    expect(component.darkMode).toBeTrue(); // Component property should be updated
+  describe('onThemeChange', () => {
+    it('should call themeService.setActiveTheme with the new theme id', () => {
+      const newThemeId = 'dark';
+      component.onThemeChange(newThemeId);
+      expect(mockThemeService.setActiveTheme).toHaveBeenCalledWith(newThemeId);
+    });
   });
 
-  it('should bind component darkMode property to checkbox state (model to view)', async () => {
-    // Test true state
-    component.darkMode = true;
+  it('should bind selectedThemeId to the select element (view to model and model to view)', async () => {
+    mockThemeService.getActiveTheme.and.returnValue(mockThemes[0]); // Start with 'light'
+    component.ngOnInit(); // Re-initialize based on mocked service state
     fixture.detectChanges();
     await fixture.whenStable();
-    let checkboxNativeElement = fixture.debugElement.query(By.css('#dark-mode-toggle')).nativeElement as HTMLInputElement;
-    expect(checkboxNativeElement.checked).toBeTrue();
 
-    // Test false state
-    component.darkMode = false;
+    const selectDebugElement = fixture.debugElement.query(By.css('#theme-selector'));
+    const selectNativeElement = selectDebugElement.nativeElement as HTMLSelectElement;
+
+    // Model to View
+    expect(selectNativeElement.value).toBe(mockThemes[0].id); // 'light'
+
+    // Simulate user changing the selection (View to Model)
+    selectNativeElement.value = mockThemes[1].id; // 'dark'
+    selectNativeElement.dispatchEvent(new Event('change')); // Dispatch change for ngModel
     fixture.detectChanges();
     await fixture.whenStable();
-    // Re-query in case the element was re-rendered, though not expected for just a property change
-    checkboxNativeElement = fixture.debugElement.query(By.css('#dark-mode-toggle')).nativeElement as HTMLInputElement;
-    expect(checkboxNativeElement.checked).toBeFalse();
+
+    expect(component.selectedThemeId).toBe(mockThemes[1].id); // 'dark'
+    // Also check if onThemeChange was triggered, which calls setActiveTheme
+    expect(mockThemeService.setActiveTheme).toHaveBeenCalledWith(mockThemes[1].id);
   });
 
-
-  it('should emit closeModal on cancel', () => { // Changed to closeModal
-    spyOn(component.closeModal, 'emit'); // Changed to closeModal
+  it('should emit closeModal on cancel', () => {
+    spyOn(component.closeModal, 'emit');
     component.cancel();
-    expect(component.closeModal.emit).toHaveBeenCalled(); // Changed to closeModal
+    expect(component.closeModal.emit).toHaveBeenCalled();
   });
 
-  it('should call resetToDefaults on service and update all local properties including darkMode', () => {
-    const newDefaultSettings: AppSettings = {
+  it('should call resetToDefaults on services and update local properties', () => {
+    const newDefaultSettings: AppSettings = { // Define without darkMode
       numChannels: 2,
       channelDescriptions: ['DefaultA', 'DefaultB'],
       backendUrl: 'http://newdefault.com',
       crossfadeDurationSeconds: 0.8,
-      darkMode: true // Ensure new default has darkMode set
     };
+    // Simulate ChannelSettingsService returning new defaults after reset
     mockChannelSettingsService.resetToDefaults.and.callFake(() => {
       mockChannelSettingsService.getCurrentAppSettings.and.returnValue(newDefaultSettings);
     });
+    // Simulate ThemeService returning the light theme as active after reset
+    mockThemeService.getActiveTheme.and.returnValue(mockThemes[0]); // Light theme
 
     spyOn(window, 'confirm').and.returnValue(true);
     component.resetToDefaults();
 
     expect(mockChannelSettingsService.resetToDefaults).toHaveBeenCalled();
+    expect(mockThemeService.setActiveTheme).toHaveBeenCalledWith('light'); // Reset to light theme
+
     expect(component.numChannels).toBe(newDefaultSettings.numChannels);
     expect(component.descriptions).toEqual(newDefaultSettings.channelDescriptions);
     expect(component.backendUrl).toBe(newDefaultSettings.backendUrl);
-    // expect(component.crossfadeDurationSeconds).toBe(newDefaultSettings.crossfadeDurationSeconds); // Removed
-    expect(component.darkMode).toBe(newDefaultSettings.darkMode); // Check darkMode reset
+    expect(component.selectedThemeId).toBe(mockThemes[0].id); // Should be 'light'
+
     expect(component.numChannelsError).toBeNull();
     expect(component.backendUrlError).toBeNull();
-    // expect(component.durationError).toBeNull(); // Removed
   });
 
 });

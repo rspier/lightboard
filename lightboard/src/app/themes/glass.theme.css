@@ -1,0 +1,64 @@
+/* Glass Theme */
+/* Inspired by frosted glass effects, often with a bright, airy feel */
+.glass-theme {
+  /* Base colors - often light, can have a background image to show through */
+  --app-bg-color: #E0F2F7; /* Very light blue, like a sky */
+  --app-text-color: #003366; /* Dark blue text for contrast */
+  --app-header-bg-color: rgba(255, 255, 255, 0.3); /* Semi-transparent white */
+  --app-header-text-color: #003366;
+  --app-border-color: rgba(0, 51, 102, 0.2); /* Semi-transparent border */
+
+  /* For elements that should have the "glass" effect */
+  --glass-bg-color: rgba(255, 255, 255, 0.6); /* More opaque white for content areas */
+  --glass-border-color: rgba(200, 220, 255, 0.5);
+  /* backdrop-filter: blur(10px); */ /* This would be applied to actual elements */
+
+  --slider-host-bg-color: var(--glass-bg-color);
+  --slider-host-border-color: var(--glass-border-color);
+  --slider-text-color: #004C99; /* Slightly brighter blue */
+  --slider-channel-info-border-color: rgba(0, 76, 153, 0.2);
+  --slider-value-edit-border-color: rgba(0, 76, 153, 0.4);
+  --slider-color-swatch-border-color: rgba(0, 76, 153, 0.4);
+
+  --table-bg-color: var(--glass-bg-color);
+  --table-text-color: #003366;
+  --table-border-color: var(--glass-border-color);
+  --table-header-bg-color: rgba(200, 230, 255, 0.4); /* Slightly tinted glass */
+  --table-header-text-color: #002244; /* Darker for header */
+
+  --modal-bg-color: rgba(240, 248, 255, 0.85); /* AliceBlue, highly transparent */
+  --modal-text-color: #003366;
+  --modal-overlay-bg-color: rgba(100, 150, 200, 0.3); /* Light blue, subtle overlay */
+  --modal-input-border-color: rgba(0, 102, 204, 0.5);
+  --modal-error-text-color: #CC0033; /* A clear red for errors */
+
+  --button-primary-bg-color: rgba(0, 122, 255, 0.7); /* Semi-transparent primary blue */
+  --button-primary-text-color: #FFFFFF;
+  --button-primary-hover-bg-color: rgba(0, 100, 220, 0.8);
+  --button-secondary-bg-color: rgba(108, 117, 125, 0.6); /* Semi-transparent grey */
+  --button-secondary-text-color: #FFFFFF;
+  --button-secondary-hover-bg-color: rgba(84, 91, 98, 0.7);
+  --button-disabled-bg-color: rgba(200, 200, 200, 0.5);
+  --button-disabled-text-color: #777777;
+
+  --slider-thumb-bevel-highlight: rgba(255, 255, 255, 0.7);
+  --slider-thumb-bevel-shadow: rgba(0, 0, 0, 0.15);
+
+  --fixed-icons-bg-color: rgba(224, 242, 247, 0.6); /* Semi-transparent light blue */
+  --slider-track-color: rgba(0, 51, 102, 0.15); /* Very subtle track */
+  --slider-track-border-color: rgba(0, 51, 102, 0.1);
+  --slider-thumb-color: rgba(0, 122, 255, 0.8); /* Primary blue thumb, slightly transparent */
+
+  /* The actual glass effect relies on backdrop-filter, box-shadow for depth, etc.
+     These would be applied in app.css or component-specific styles targeting elements
+     when .glass-theme is active. For example:
+     .glass-theme .some-component {
+       background: var(--glass-bg-color);
+       border: 1px solid var(--glass-border-color);
+       box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+       backdrop-filter: blur(10px);
+       -webkit-backdrop-filter: blur(10px); // For Safari
+       border-radius: 8px; // Rounded corners are common
+     }
+  */
+}

@@ -20,12 +20,12 @@
         <div *ngIf="backendUrlError" class="error-message">{{ backendUrlError }}</div>
       </div>
 
-      <!-- Dark Mode Toggle -->
+      <!-- Theme Selector -->
       <div class="form-group">
-        <label for="dark-mode-toggle" class="toggle-label">
-          <input type="checkbox" id="dark-mode-toggle" class="toggle-checkbox" [(ngModel)]="darkMode" name="darkModeToggle">
-          Enable Dark Mode
-        </label>
+        <label for="theme-selector">Theme:</label>
+        <select id="theme-selector" name="themeSelector" [(ngModel)]="selectedThemeId" (ngModelChange)="onThemeChange($event)">
+          <option *ngFor="let theme of availableThemes" [value]="theme.id">{{ theme.name }}</option>
+        </select>
       </div>
 
       <!-- Channel Name Inputs -->

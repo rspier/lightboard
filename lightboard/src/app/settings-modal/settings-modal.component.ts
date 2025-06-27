@@ -1,7 +1,8 @@
 import { Component, EventEmitter, OnInit, Output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; // For ngModel
-import { ChannelSettingsService } from '../channel-settings.service'; // Removed AppSettings
+import { ChannelSettingsService } from '../channel-settings.service';
+import { ThemeService, Theme } from '../theme.service'; // Import ThemeService and Theme interface
 
 @Component({
   selector: 'app-settings-modal',
@@ -12,17 +13,20 @@ import { ChannelSettingsService } from '../channel-settings.service'; // Removed
 })
 export class SettingsModalComponent implements OnInit {
   private channelSettingsService = inject(ChannelSettingsService);
+  private themeService = inject(ThemeService); // Inject ThemeService
 
   // Properties for form binding
   numChannels = 4;
   descriptions: string[] = [];
   backendUrl = '';
-  // crossfadeDurationSeconds: number = 0.5; // Removed
-  darkMode = false; // New property
+  // darkMode = false; // Removed, will be handled by ThemeService
+
+  // Theme related properties
+  availableThemes: Theme[] = [];
+  selectedThemeId = '';
 
   // Validation error messages
   backendUrlError: string | null = null;
-  // durationError: string | null = null; // Removed
   numChannelsError: string | null = null;
 
   @Output() closeModal = new EventEmitter<void>();
@@ -34,8 +38,16 @@ export class SettingsModalComponent implements OnInit {
       currentSettings.channelDescriptions[i] || `Channel ${i + 1}`
     );
     this.backendUrl = currentSettings.backendUrl;
-    // this.crossfadeDurationSeconds = currentSettings.crossfadeDurationSeconds; // Removed
-    this.darkMode = currentSettings.darkMode; // Load darkMode
+    // this.darkMode = currentSettings.darkMode; // Removed
+
+    // Initialize theme settings
+    this.availableThemes = this.themeService.getAvailableThemes();
+    const activeTheme = this.themeService.getActiveTheme();
+    if (activeTheme) {
+      this.selectedThemeId = activeTheme.id;
+    } else if (this.availableThemes.length > 0) {
+      this.selectedThemeId = this.availableThemes[0].id; // Default to first theme if none active (should not happen with constructor logic)
+    }
   }
 
   onNumChannelsChange(newCountStr: string | number): void {
@@ -56,10 +68,14 @@ export class SettingsModalComponent implements OnInit {
     this.descriptions = newDescriptionsArray;
   }
 
+  onThemeChange(themeId: string): void {
+    this.themeService.setActiveTheme(themeId);
+    // No need to call saveSettings() immediately, theme is applied reactively.
+    // Settings save will persist the last chosen theme ID from ThemeService.
+  }
 
   saveSettings(): void {
     this.backendUrlError = null;
-    // this.durationError = null; // Removed
     this.numChannelsError = null;
     let hasError = false;
 
@@ -73,12 +89,6 @@ export class SettingsModalComponent implements OnInit {
       this.backendUrlError = 'Invalid URL. Must start with http(s):// or ws(s):// and not be empty if provided.';
       hasError = true;
     }
-
-    // const duration = Number(this.crossfadeDurationSeconds); // Removed
-    // if (isNaN(duration) || duration <= 0 || duration > 300) { // Removed
-    //   this.durationError = 'Duration must be a positive number (e.g. 0.1) up to 300 seconds.'; // Removed
-    //   hasError = true; // Removed
-    // } // Removed
 
     if (hasError) {
       return;
@@ -97,35 +107,56 @@ export class SettingsModalComponent implements OnInit {
     }
 
     this.channelSettingsService.updateBackendUrl(this.backendUrl);
-    // this.channelSettingsService.updateCrossfadeDurationSeconds(duration); // Removed
-    this.channelSettingsService.updateDarkMode(this.darkMode); // Save darkMode setting
+    // The theme is already applied by ThemeService and its ID stored in localStorage by ThemeService.
+    // We might want to save the theme ID specifically within ChannelSettingsService if it's considered part of "app settings"
+    // that might be exported/imported or managed differently than just localStorage.
+    // For now, ThemeService handles its own persistence.
+    // If ChannelSettingsService needs to know about the theme, update it here:
+    const activeTheme = this.themeService.getActiveTheme();
+    if (activeTheme) {
+      // Assuming ChannelSettingsService has a method like updateActiveThemeId(id: string)
+      // this.channelSettingsService.updateActiveThemeId(activeTheme.id);
+      // For now, we'll rely on ThemeService's localStorage.
+      // The `darkMode` property in ChannelSettingsService is now effectively obsolete for theme selection.
+      // We can remove it or decide how it interacts if we want a "prefers-dark" independent of full themes.
+      // Let's assume we remove the old `darkMode` from ChannelSettingsService's direct responsibility.
+      // The settings service will no longer save `darkMode` directly.
+    }
+
 
     this.closeModal.emit();
   }
 
   cancel(): void {
+    // If the theme was changed but not "saved" through other settings,
+    // it's already applied. If we want to revert, we'd need to store original theme on init.
+    // For now, changes are instant.
     this.closeModal.emit();
   }
 
   resetToDefaults(): void {
-    if (confirm('Are you sure you want to reset all settings to their defaults?')) {
-      this.channelSettingsService.resetToDefaults();
+    if (confirm('Are you sure you want to reset all settings to their defaults? This includes the theme.')) {
+      this.channelSettingsService.resetToDefaults(); // This resets channel/backend settings
+      this.themeService.setActiveTheme('light'); // Reset theme to light via ThemeService
+
       const defaults = this.channelSettingsService.getCurrentAppSettings();
       this.numChannels = defaults.numChannels;
       this.descriptions = Array.from({ length: this.numChannels }, (_, i) =>
         defaults.channelDescriptions[i] || `Channel ${i + 1}`
       );
       this.backendUrl = defaults.backendUrl;
-      // this.crossfadeDurationSeconds = defaults.crossfadeDurationSeconds; // Removed
-      this.darkMode = defaults.darkMode; // Reset darkMode
+      // this.darkMode = defaults.darkMode; // Removed
+
+      const activeTheme = this.themeService.getActiveTheme();
+      this.selectedThemeId = activeTheme ? activeTheme.id : 'light';
+
 
       this.backendUrlError = null;
-      // this.durationError = null; // Removed
       this.numChannelsError = null;
     }
   }
 
-  public trackByIndex(index: number): number { // Removed unused _item parameter
+  public trackByIndex(index: number): number {
     return index;
   }
 }

@@ -1,89 +1,37 @@
-/* :root defines global variables available everywhere */
-:root {
-  --app-bg-color: #ffffff;
-  --app-text-color: #212529; /* Standard dark text */
-  --app-header-bg-color: #f0f0f0;
-  --app-header-text-color: #212529;
-  --app-border-color: #ccc;
+/* Global base styles */
+/* Variables formerly in :root and body.dark-theme have been moved to individual theme files
+   in the src/app/themes/ directory.
+   The ThemeService will apply a class to the body (e.g., <body class="theme-light">)
+   which will then activate the variables within the corresponding theme CSS file.
+*/
 
-  --slider-host-bg-color: #f8f9fa; /* Light gray for slider component background */
-  --slider-host-border-color: #dee2e6; /* Slightly darker border */
-  --slider-text-color: #212529;
-  --slider-channel-info-border-color: #eee;
-  --slider-value-edit-border-color: #ced4da;
-  --slider-color-swatch-border-color: #ccc;
-
-  --table-bg-color: #ffffff;
-  --table-text-color: #212529; /* Should be handled by dynamic row styles mostly */
-  --table-border-color: #dee2e6;
-  --table-header-bg-color: #e9ecef;
-  --table-header-text-color: #495057;
-
-  --modal-bg-color: #ffffff;
-  --modal-text-color: #212529;
-  --modal-overlay-bg-color: rgba(0, 0, 0, 0.6);
-  --modal-input-border-color: #ced4da;
-  --modal-error-text-color: red;
-
-  --button-primary-bg-color: #007bff;
-  --button-primary-text-color: #ffffff;
-  --button-primary-hover-bg-color: #0056b3;
-  --button-secondary-bg-color: #6c757d;
-  --button-secondary-text-color: #ffffff;
-  --button-secondary-hover-bg-color: #545b62;
-  --button-disabled-bg-color: #cccccc;
-  --button-disabled-text-color: #666666;
-
-  /* Variables for slider thumb bevel effect */
-  --slider-thumb-bevel-highlight: rgba(255, 255, 255, 0.8); /* Increased opacity */
-  --slider-thumb-bevel-shadow: rgba(0, 0, 0, 0.4); /* Increased opacity */
-}
-
-body.dark-theme { /* Or just .dark-theme if class applied to app-root */
-  --app-bg-color: #212529; /* Dark background */
-  --app-text-color: #dee2e6; /* Light text */
-  --app-header-bg-color: #343a40;
-  --app-header-text-color: #f8f9fa;
-  --app-border-color: #495057;
-
-  --slider-host-bg-color: #343a40;
-  --slider-host-border-color: #495057;
-  --slider-text-color: #f8f9fa;
-  --slider-channel-info-border-color: #444c56;
-  --slider-value-edit-border-color: #6c757d;
-  --slider-color-swatch-border-color: #666;
-
-  --table-bg-color: #212529;
-  --table-text-color: #dee2e6; /* Should be handled by dynamic row styles mostly */
-  --table-border-color: #454d55;
-  --table-header-bg-color: #343a40;
-  --table-header-text-color: #f8f9fa;
-
-  --modal-bg-color: #2c3034; /* Darker modal background */
-  --modal-text-color: #dee2e6;
-  --modal-overlay-bg-color: rgba(0, 0, 0, 0.75); /* Darker overlay */
-  --modal-input-border-color: #6c757d;
-  --modal-error-text-color: #ff6b6b; /* Lighter red for dark theme */
-
-  --button-primary-bg-color: #0d6efd; /* Often same or slightly adjusted blue */
-  --button-primary-text-color: #ffffff;
-  --button-primary-hover-bg-color: #0b5ed7;
-  --button-secondary-bg-color: #5c636a;
-  --button-secondary-text-color: #ffffff;
-  --button-secondary-hover-bg-color: #495057;
-  --button-disabled-bg-color: #444444;
-  --button-disabled-text-color: #888888;
-
-  /* Dark theme variables for slider thumb bevel effect */
-  --slider-thumb-bevel-highlight: rgba(255, 255, 255, 0.35); /* Increased opacity for better visibility */
-  --slider-thumb-bevel-shadow: rgba(0, 0, 0, 0.6);       /* Increased opacity for better visibility */
-}
-
-/* Apply base background and text color to body */
+/* Apply base background and text color to body using CSS variables that themes will define. */
 body {
   background-color: var(--app-bg-color);
   color: var(--app-text-color);
   margin: 0; /* Reset default margin */
   font-family: sans-serif; /* Consistent base font */
   transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+  /* Ensure body takes full height for themes that might use full-page gradients or images */
+  min-height: 100vh;
+  display: flex; /* Helps with main content full height if needed */
+  flex-direction: column;
+}
+
+/* If app-root or other root components need to expand, style them here */
+app-root {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1; /* Allows app-root to fill body height */
+}
+
+/* Add any other global, non-theme-specific styles below.
+   For example, global link styling if not handled by components or themes. */
+a {
+  color: var(--button-primary-bg-color); /* Default link color to primary button color */
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
 }

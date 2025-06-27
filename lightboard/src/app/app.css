@@ -385,6 +385,34 @@ input[type="range"].duration-slider::-moz-range-thumb {
 
 /* Removed .global-command-feedback styles as the element is removed */
 
+/* Glass Theme Specific Enhancements */
+/* Apply backdrop filter and other glass properties when glass-theme is active */
+.glass-theme .modal-content {
+  background-color: var(--glass-bg-color, rgba(255, 255, 255, 0.6)); /* Fallback if var not defined */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px); /* For Safari */
+  border: 1px solid var(--glass-border-color, rgba(200, 220, 255, 0.5));
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37); /* Subtle shadow for depth */
+  border-radius: 10px; /* Rounded corners complement glass typically */
+}
+
+/* Example for slider hosts if they should also be glass */
+.glass-theme .app-slide-potentiometer { /* Targeting the host element of the slider component */
+  background-color: var(--glass-bg-color, rgba(255, 255, 255, 0.6));
+  backdrop-filter: blur(8px); /* Slightly less blur perhaps */
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--glass-border-color, rgba(200, 220, 255, 0.5));
+  border-radius: 8px;
+  padding: 10px; /* Ensure content isn't too close to edges */
+  margin: 5px; /* Add some spacing around glassy elements */
+}
+
+/* Ensure the overlay for modals in glass theme doesn't obscure the effect too much */
+.glass-theme .modal-overlay {
+  background-color: var(--modal-overlay-bg-color, rgba(100, 150, 200, 0.3)); /* From glass.theme.css */
+}
+
+
 /* Media Queries for Responsive Design */
 
 /* Small devices (phones, less than 768px) */

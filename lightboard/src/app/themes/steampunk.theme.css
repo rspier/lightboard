@@ -1,0 +1,50 @@
+/* Steampunk Theme */
+.steampunk-theme {
+  --app-bg-color: #8B4513; /* SaddleBrown - a rich leather/wood color */
+  --app-text-color: #F0E68C; /* Khaki - aged paper text */
+  --app-header-bg-color: #A0522D; /* Sienna - darker wood/metal */
+  --app-header-text-color: #FFF8DC; /* Cornsilk - lighter text for header */
+  --app-border-color: #CD853F; /* Peru - brass/copper accents */
+
+  --slider-host-bg-color: #5A3A27; /* Darker wood, like walnut */
+  --slider-host-border-color: #B8860B; /* DarkGoldenRod - brass fittings */
+  --slider-text-color: #F0E68C;
+  --slider-channel-info-border-color: #CD853F;
+  --slider-value-edit-border-color: #D2B48C; /* Tan - input field background */
+  --slider-color-swatch-border-color: #B8860B;
+
+  --table-bg-color: #654321; /* Dark wood table */
+  --table-text-color: #F0E68C;
+  --table-border-color: #B8860B;
+  --table-header-bg-color: #A0522D;
+  --table-header-text-color: #FFF8DC;
+
+  --modal-bg-color: #6B4226; /* Slightly lighter wood for modal */
+  --modal-text-color: #F5DEB3; /* Wheat */
+  --modal-overlay-bg-color: rgba(50, 20, 10, 0.8); /* Very dark brown overlay */
+  --modal-input-border-color: #B8860B;
+  --modal-error-text-color: #DC143C; /* Crimson for errors */
+
+  --button-primary-bg-color: #B87333; /* Copper */
+  --button-primary-text-color: #2F1B14; /* Dark brown text for contrast */
+  --button-primary-hover-bg-color: #965426; /* Darker copper */
+  --button-secondary-bg-color: #C0C0C0; /* Silver - for gears/metal parts */
+  --button-secondary-text-color: #333333; /* Dark gray text */
+  --button-secondary-hover-bg-color: #A9A9A9; /* Darker silver */
+  --button-disabled-bg-color: #778899; /* LightSlateGray */
+  --button-disabled-text-color: #3b4148;
+
+  --slider-thumb-bevel-highlight: #E6D8AD; /* Light khaki highlight */
+  --slider-thumb-bevel-shadow: #5C4033; /* Dark wood shadow */
+
+  --fixed-icons-bg-color: rgba(160, 82, 45, 0.75); /* Semi-transparent sienna */
+  --slider-track-color: #663300; /* Dark brown track */
+  --slider-track-border-color: #B8860B;
+  --slider-thumb-color: #CD853F; /* Peru - brassy thumb */
+
+  /* Consider a more ornate or serif font if available */
+  /* font-family: 'Times New Roman', serif; */
+}
+
+/* Steampunk might also involve textures (wood, metal), gear icons, ornate borders.
+   These variables primarily set the color palette. */

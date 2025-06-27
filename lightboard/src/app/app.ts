@@ -9,8 +9,9 @@ import { SettingsModalComponent } from './settings-modal/settings-modal.componen
 import { KeyboardShortcutsModalComponent } from './keyboard-shortcuts-modal/keyboard-shortcuts-modal.component';
 import { SceneTextInputModalComponent } from './scene-text-input-modal/scene-text-input-modal.component';
 // import { RotaryDialComponent } from './rotary-dial/rotary-dial.component'; // Removed
-import { ChannelSettingsService } from './channel-settings.service'; // Removed AppSettings
+import { ChannelSettingsService } from './channel-settings.service';
 import { HttpDataService, CombinedOutputData } from './http-data.service';
+import { ThemeService } from './theme.service'; // Import ThemeService
 
 interface PotentiometerState {
   channelNumber: number;
@@ -45,6 +46,7 @@ export class App implements OnInit, OnDestroy {
   private cdr = inject(ChangeDetectorRef);
   private channelSettingsService = inject(ChannelSettingsService);
   private httpDataService = inject(HttpDataService);
+  private themeService = inject(ThemeService); // Inject ThemeService
   private renderer = inject(Renderer2);
   private document = inject<Document>(DOCUMENT);
 
@@ -78,7 +80,6 @@ export class App implements OnInit, OnDestroy {
   private currentNumChannels: number;
   private currentBackendUrl: string;
   private currentCrossfadeDurationMs: number;
-  private currentDarkMode: boolean;
   isShiftPressed = false; // For dynamic arrow and shift-action
   // effectiveGoTarget will be determined by a method now
 
@@ -94,9 +95,8 @@ export class App implements OnInit, OnDestroy {
     // Initialize displayCrossfadeDurationSeconds from service, which then updates currentCrossfadeDurationMs
     this.displayCrossfadeDurationSeconds = initialSettings.crossfadeDurationSeconds;
     this.currentCrossfadeDurationMs = this.displayCrossfadeDurationSeconds * 1000;
-    this.currentDarkMode = initialSettings.darkMode;
     this.initializeChannelStates(this.currentNumChannels, initialSettings.channelDescriptions);
-    this.applyTheme(this.currentDarkMode);
+    // Theme is now applied by ThemeService constructor
   }
 
   initializeChannelStates(numChannels: number, descriptions: string[]): void {
@@ -130,13 +130,26 @@ export class App implements OnInit, OnDestroy {
         this.displayCrossfadeDurationSeconds = settings.crossfadeDurationSeconds;
         this.currentCrossfadeDurationMs = this.displayCrossfadeDurationSeconds * 1000;
       }
-      if (this.currentDarkMode !== settings.darkMode) {
-        this.currentDarkMode = settings.darkMode;
-        this.applyTheme(this.currentDarkMode);
-      }
+      // if (this.currentDarkMode !== settings.darkMode) { // Old theme handling
+      //   this.currentDarkMode = settings.darkMode;
+      //   this.applyTheme(this.currentDarkMode);
+      // }
       if (channelsOrDescriptionsChanged) { this.calculateCombinedOutputs(); }
       this.cdr.detectChanges();
     });
+
+    // ThemeService subscription to apply body class (alternative to direct renderer call in service)
+    // However, ThemeService already handles applying the class directly via Renderer2.
+    // If we wanted AppComponent to manage it, we'd subscribe here.
+    // For now, ThemeService's direct manipulation of document.body is fine.
+    // this.themeService.activeTheme$.subscribe(theme => {
+    //   if (theme) {
+    //     this.renderer.setAttribute(this.document.body, 'class', theme.className);
+    //   } else { // Fallback or initial state
+    //     this.renderer.setAttribute(this.document.body, 'class', 'theme-light'); // Default
+    //   }
+    // });
+
 
     // Shift key listeners
     this.unlistenShiftDown = this.renderer.listen('document', 'keydown', (event: KeyboardEvent) => {
@@ -183,6 +196,10 @@ export class App implements OnInit, OnDestroy {
       if (!event.shiftKey && event.key.toLowerCase() === 'q') { event.preventDefault(); this.toggleSceneTextInput(1); }
       else if (!event.shiftKey && event.key.toLowerCase() === 'w') { event.preventDefault(); this.toggleSceneTextInput(2); }
       else if (event.key === '?') { event.preventDefault(); this.toggleShortcutsModal(); }
+      else if (event.key === '-') { // Minus key for theme cycling
+        event.preventDefault();
+        this.themeService.cycleNextTheme();
+      }
       else if (event.code === 'Space' || event.key === ' ') {
         event.preventDefault();
         this.onGoButtonClick(); // onGoButtonClick will use this.isShiftPressed
@@ -203,9 +220,9 @@ export class App implements OnInit, OnDestroy {
     if (this.unlistenShiftUp) { this.unlistenShiftUp(); }
   }
 
-  private applyTheme(isDarkMode: boolean): void {
-    if (isDarkMode) { this.renderer.addClass(this.document.body, 'dark-theme'); } else { this.renderer.removeClass(this.document.body, 'dark-theme'); }
-  }
+  // private applyTheme(isDarkMode: boolean): void { // Old theme handling
+  //   if (isDarkMode) { this.renderer.addClass(this.document.body, 'dark-theme'); } else { this.renderer.removeClass(this.document.body, 'dark-theme'); }
+  // }
   private hexToRgb(hex: string): { r: number; g: number; b: number } | null { const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex); return result ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) } : null; }
   private rgbToHex(r: number, g: number, b: number): string { return ("#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).padStart(6, '0')).toLowerCase(); }
 

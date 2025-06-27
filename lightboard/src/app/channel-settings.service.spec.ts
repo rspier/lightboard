@@ -9,7 +9,7 @@ describe('ChannelSettingsService', () => {
   const defaultNumChannels = 4;
   const defaultBackendUrl = '';
   const defaultCrossfadeDurationSeconds = 0.5;
-  const defaultDarkMode = false; // Default from service
+  // const defaultDarkMode = false; // Removed
   const getDefaultDescriptions = (count: number) => Array.from({ length: count }, (_, i) => `Channel ${i + 1}`);
 
   const initialDefaultSettings: AppSettings = {
@@ -17,7 +17,7 @@ describe('ChannelSettingsService', () => {
     channelDescriptions: getDefaultDescriptions(defaultNumChannels),
     backendUrl: defaultBackendUrl,
     crossfadeDurationSeconds: defaultCrossfadeDurationSeconds,
-    darkMode: defaultDarkMode // Added darkMode to initialDefaultSettings
+    // darkMode: defaultDarkMode // Removed
   };
 
   beforeEach(() => {
@@ -49,31 +49,17 @@ describe('ChannelSettingsService', () => {
         channelDescriptions: ['Custom1', 'Custom2'],
         backendUrl: 'http://local.test',
         crossfadeDurationSeconds: 1.5,
-        darkMode: true
+        // darkMode: true // darkMode removed
       };
       store[settingsKey] = JSON.stringify(storedAppSettings);
       service = new ChannelSettingsService();
-      expect(service.getCurrentAppSettings()).toEqual(storedAppSettings);
+      expect(service.getCurrentAppSettings()).toEqual(storedAppSettings as AppSettings); // Cast if AppSettings type is strict
     });
 
-    it('should use default darkMode if stored darkMode is invalid type', () => {
-      const storedAppSettings = { ...initialDefaultSettings, darkMode: "not-a-boolean" };
-      store[settingsKey] = JSON.stringify(storedAppSettings);
-      service = new ChannelSettingsService();
-      expect(service.getCurrentDarkMode()).toBe(defaultDarkMode);
-    });
+    // Tests for darkMode loading are removed as the property is gone.
+    // it('should use default darkMode if stored darkMode is invalid type', () => { ... });
+    // it('should use default darkMode if darkMode is missing from stored settings', () => { ... });
 
-    it('should use default darkMode if darkMode is missing from stored settings', () => {
-      const partialStoredSettings = { // darkMode is missing
-        numChannels: 2,
-        channelDescriptions: ['Custom1', 'Custom2'],
-        backendUrl: 'http://local.test',
-        crossfadeDurationSeconds: 1.5
-      };
-      store[settingsKey] = JSON.stringify(partialStoredSettings);
-      service = new ChannelSettingsService();
-      expect(service.getCurrentDarkMode()).toBe(defaultDarkMode);
-    });
     // ... (other loading tests from before remain, ensure they are compatible or update if needed)
     it('should use default numChannels if stored numChannels is invalid (e.g., 0)', () => {
         const storedAppSettings = { ...initialDefaultSettings, numChannels: 0 };
@@ -90,26 +76,10 @@ describe('ChannelSettingsService', () => {
       (localStorage.setItem as jasmine.Spy).calls.reset();
     });
 
-    it('updateDarkMode should update darkMode setting and save', (done) => {
-      service.updateDarkMode(true);
-      const settingsAfterUpdate = service.getCurrentAppSettings();
-      expect(settingsAfterUpdate.darkMode).toBe(true);
-      expect(localStorage.setItem).toHaveBeenCalledWith(settingsKey, JSON.stringify(settingsAfterUpdate));
+    // Tests for updateDarkMode are removed.
+    // it('updateDarkMode should update darkMode setting and save', (done) => { ... });
+    // it('updateDarkMode(false) should update darkMode setting and save', (done) => { ... });
 
-      service.getAppSettings().subscribe(s => {
-        expect(s.darkMode).toBe(true);
-        done();
-      });
-    });
-
-    it('updateDarkMode(false) should update darkMode setting and save', (done) => {
-        service.updateDarkMode(true); // Set to true first
-        service.updateDarkMode(false); // Then set to false
-        const settingsAfterUpdate = service.getCurrentAppSettings();
-        expect(settingsAfterUpdate.darkMode).toBe(false);
-        expect(localStorage.setItem).toHaveBeenCalledWith(settingsKey, JSON.stringify(settingsAfterUpdate));
-        done();
-      });
     // ... (other update tests from before remain)
     it('updateNumChannels should update numChannels and adjust descriptions, then save', (done) => {
         const initialDescs = service.getCurrentChannelDescriptions();
@@ -126,19 +96,27 @@ describe('ChannelSettingsService', () => {
       });
   });
 
-  it('resetToDefaults should reset all settings including darkMode', (done) => {
+  it('resetToDefaults should reset all settings (darkMode is not part of this service anymore)', (done) => {
     service = new ChannelSettingsService();
-    service.updateDarkMode(true); // Change something
+    // service.updateDarkMode(true); // This method is removed
     service.updateNumChannels(2); // Change something else
+    service.updateBackendUrl('http://test.com');
     (localStorage.setItem as jasmine.Spy).calls.reset();
 
     service.resetToDefaults();
     const currentSettings = service.getCurrentAppSettings();
-    expect(currentSettings).toEqual(initialDefaultSettings);
-    expect(localStorage.setItem).toHaveBeenCalledWith(settingsKey, JSON.stringify(initialDefaultSettings));
+    // initialDefaultSettings should also be defined without darkMode for this comparison
+    const expectedDefaultSettings: AppSettings = {
+      numChannels: defaultNumChannels,
+      channelDescriptions: getDefaultDescriptions(defaultNumChannels),
+      backendUrl: defaultBackendUrl,
+      crossfadeDurationSeconds: defaultCrossfadeDurationSeconds,
+    };
+    expect(currentSettings).toEqual(expectedDefaultSettings);
+    expect(localStorage.setItem).toHaveBeenCalledWith(settingsKey, JSON.stringify(expectedDefaultSettings));
 
     service.getAppSettings().subscribe(s => {
-      expect(s).toEqual(initialDefaultSettings);
+      expect(s).toEqual(expectedDefaultSettings);
       done();
     });
   });

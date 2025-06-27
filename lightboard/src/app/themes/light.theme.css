@@ -1,0 +1,46 @@
+/* Light Theme */
+.light-theme { /* This class will be applied to body */
+  --app-bg-color: #ffffff;
+  --app-text-color: #212529; /* Standard dark text */
+  --app-header-bg-color: #f0f0f0;
+  --app-header-text-color: #212529;
+  --app-border-color: #ccc;
+
+  --slider-host-bg-color: #f8f9fa; /* Light gray for slider component background */
+  --slider-host-border-color: #dee2e6; /* Slightly darker border */
+  --slider-text-color: #212529;
+  --slider-channel-info-border-color: #eee;
+  --slider-value-edit-border-color: #ced4da;
+  --slider-color-swatch-border-color: #ccc;
+
+  --table-bg-color: #ffffff;
+  --table-text-color: #212529; /* Should be handled by dynamic row styles mostly */
+  --table-border-color: #dee2e6;
+  --table-header-bg-color: #e9ecef;
+  --table-header-text-color: #495057;
+
+  --modal-bg-color: #ffffff;
+  --modal-text-color: #212529;
+  --modal-overlay-bg-color: rgba(0, 0, 0, 0.6);
+  --modal-input-border-color: #ced4da;
+  --modal-error-text-color: red;
+
+  --button-primary-bg-color: #007bff;
+  --button-primary-text-color: #ffffff;
+  --button-primary-hover-bg-color: #0056b3;
+  --button-secondary-bg-color: #6c757d;
+  --button-secondary-text-color: #ffffff;
+  --button-secondary-hover-bg-color: #545b62;
+  --button-disabled-bg-color: #cccccc;
+  --button-disabled-text-color: #666666;
+
+  /* Variables for slider thumb bevel effect */
+  --slider-thumb-bevel-highlight: rgba(255, 255, 255, 0.8); /* Increased opacity */
+  --slider-thumb-bevel-shadow: rgba(0, 0, 0, 0.4); /* Increased opacity */
+
+  --fixed-icons-bg-color: rgba(255, 255, 255, 0.8);
+
+  --slider-track-color: #ddd;
+  --slider-track-border-color: #ccc;
+  --slider-thumb-color: #3498db;
+}

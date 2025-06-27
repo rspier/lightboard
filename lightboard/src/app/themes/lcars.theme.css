@@ -1,0 +1,51 @@
+/* LCARS Theme */
+/* Inspired by Star Trek: The Next Generation's Library Computer Access and Retrieval System */
+.lcars-theme {
+  --app-bg-color: #000000;
+  --app-text-color: #FF9900; /* Classic LCARS orange */
+  --app-header-bg-color: #FF9900; /* Orange header bar */
+  --app-header-text-color: #000000; /* Black text on orange */
+  --app-border-color: #CC6600; /* Darker orange for borders */
+
+  --slider-host-bg-color: #000033; /* Dark blue, almost black */
+  --slider-host-border-color: #FF9900;
+  --slider-text-color: #FFFFFF; /* White text for readability */
+  --slider-channel-info-border-color: #CC6600;
+  --slider-value-edit-border-color: #FFCC66; /* Lighter orange for inputs */
+  --slider-color-swatch-border-color: #FF9900;
+
+  --table-bg-color: #000000;
+  --table-text-color: #FF9900;
+  --table-border-color: #CC6600;
+  --table-header-bg-color: #FF9900;
+  --table-header-text-color: #000000;
+
+  --modal-bg-color: #000033;
+  --modal-text-color: #FFCC66; /* Lighter orange for modal text */
+  --modal-overlay-bg-color: rgba(0, 0, 51, 0.85); /* Dark blue overlay */
+  --modal-input-border-color: #FF9900;
+  --modal-error-text-color: #FF6666; /* A reddish tone for errors */
+
+  --button-primary-bg-color: #CC66FF; /* LCARS purple */
+  --button-primary-text-color: #000000;
+  --button-primary-hover-bg-color: #9933CC; /* Darker purple */
+  --button-secondary-bg-color: #FF6600; /* Another LCARS accent color (red-orange) */
+  --button-secondary-text-color: #000000;
+  --button-secondary-hover-bg-color: #CC3300;
+  --button-disabled-bg-color: #666666;
+  --button-disabled-text-color: #333333;
+
+  --slider-thumb-bevel-highlight: #FFCC99;
+  --slider-thumb-bevel-shadow: #996633;
+
+  --fixed-icons-bg-color: rgba(255, 153, 0, 0.7); /* Semi-transparent orange */
+  --slider-track-color: #333366; /* Dark purple/blue for track */
+  --slider-track-border-color: #FF9900;
+  --slider-thumb-color: #FFCC66; /* Lighter orange for thumb */
+
+  /* LCARS specific font (if available and licensed, otherwise fallback) */
+  /* font-family: 'LCARSGTJ3', sans-serif; */ /* Example */
+}
+
+/* Additional styling for LCARS might involve changing border-radii to be more angular,
+   specific component background shapes, etc. This is primarily a color scheme. */

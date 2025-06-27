@@ -8,7 +8,7 @@ export interface AppSettings {
   channelDescriptions: string[];
   backendUrl: string;
   crossfadeDurationSeconds: number;
-  darkMode: boolean; // New property
+  // darkMode: boolean; // Removed, theme is handled by ThemeService
 }
 
 // Interface for channel-specific data (used internally by components)
@@ -30,7 +30,7 @@ export class ChannelSettingsService {
   private readonly defaultNumChannels = 4;
   private readonly defaultBackendUrl = '';
   private readonly defaultCrossfadeDurationSeconds = 0.5;
-  private readonly defaultDarkMode = false; // New default
+  // private readonly defaultDarkMode = false; // Removed
 
   private getDefaultDescriptions(count: number): string[] {
     return Array.from({ length: count }, (_, i) => `Channel ${i + 1}`);
@@ -79,17 +79,14 @@ export class ChannelSettingsService {
             crossfadeDurationSeconds = this.defaultCrossfadeDurationSeconds;
         }
 
-        let darkMode = storedSettings.darkMode ?? this.defaultDarkMode;
-        if (typeof darkMode !== 'boolean') {
-          darkMode = this.defaultDarkMode;
-        }
+        // darkMode property removed from loading logic
 
         return {
           numChannels,
           channelDescriptions: descriptions,
           backendUrl,
           crossfadeDurationSeconds,
-          darkMode // Include darkMode
+          // darkMode: darkMode // Removed
         };
       }
     } catch {
@@ -101,7 +98,7 @@ export class ChannelSettingsService {
       channelDescriptions: this.getDefaultDescriptions(this.defaultNumChannels),
       backendUrl: this.defaultBackendUrl,
       crossfadeDurationSeconds: this.defaultCrossfadeDurationSeconds,
-      darkMode: this.defaultDarkMode // Include darkMode in defaults
+      // darkMode: this.defaultDarkMode // Removed
     };
     this.saveSettings(defaultSettings);
     return defaultSettings;
@@ -151,12 +148,12 @@ export class ChannelSettingsService {
     return this.appSettingsSubject.getValue().crossfadeDurationSeconds;
   }
 
-  public getDarkMode(): Observable<boolean> {
-    return this.appSettingsSubject.pipe(map(settings => settings.darkMode));
-  }
-  public getCurrentDarkMode(): boolean {
-    return this.appSettingsSubject.getValue().darkMode;
-  }
+  // public getDarkMode(): Observable<boolean> { // Removed
+  //   return this.appSettingsSubject.pipe(map(settings => settings.darkMode));
+  // }
+  // public getCurrentDarkMode(): boolean { // Removed
+  //  return this.appSettingsSubject.getValue().darkMode;
+  // }
 
   public updateNumChannels(newCount: number): void {
     if (typeof newCount !== 'number' || newCount < 1 || newCount > 12) {
@@ -215,13 +212,13 @@ export class ChannelSettingsService {
     this.appSettingsSubject.next(newSettings);
   }
 
-  public updateDarkMode(isDarkMode: boolean): void {
-    if (typeof isDarkMode !== 'boolean') return;
-    const currentSettings = this.appSettingsSubject.getValue();
-    const newSettings = { ...currentSettings, darkMode: isDarkMode };
-    this.saveSettings(newSettings);
-    this.appSettingsSubject.next(newSettings);
-  }
+  // public updateDarkMode(isDarkMode: boolean): void { // Removed
+  //   if (typeof isDarkMode !== 'boolean') return;
+  //   const currentSettings = this.appSettingsSubject.getValue();
+  //   const newSettings = { ...currentSettings, darkMode: isDarkMode };
+  //   this.saveSettings(newSettings);
+  //   this.appSettingsSubject.next(newSettings);
+  // }
 
   public resetToDefaults(): void {
     const defaultSettings: AppSettings = {
@@ -229,7 +226,7 @@ export class ChannelSettingsService {
       channelDescriptions: this.getDefaultDescriptions(this.defaultNumChannels),
       backendUrl: this.defaultBackendUrl,
       crossfadeDurationSeconds: this.defaultCrossfadeDurationSeconds,
-      darkMode: this.defaultDarkMode // Include darkMode in reset
+      // darkMode: this.defaultDarkMode // Removed
     };
     this.saveSettings(defaultSettings);
     this.appSettingsSubject.next(defaultSettings);

@@ -1,0 +1,44 @@
+/* Extra Dark Theme (Variant of Dark Theme) */
+.extra-dark-theme {
+  --app-bg-color: #121212; /* Very dark grey, almost black */
+  --app-text-color: #B0B0B0; /* Lighter grey for text */
+  --app-header-bg-color: #1E1E1E; /* Slightly lighter than bg for header */
+  --app-header-text-color: #E0E0E0; /* Even lighter for header text */
+  --app-border-color: #333333; /* Dark grey borders */
+
+  --slider-host-bg-color: #1A1A1A;
+  --slider-host-border-color: #2C2C2C;
+  --slider-text-color: #C0C0C0;
+  --slider-channel-info-border-color: #252525;
+  --slider-value-edit-border-color: #404040;
+  --slider-color-swatch-border-color: #444444;
+
+  --table-bg-color: #121212;
+  --table-text-color: #B0B0B0;
+  --table-border-color: #282828;
+  --table-header-bg-color: #1E1E1E;
+  --table-header-text-color: #E0E0E0;
+
+  --modal-bg-color: #1F1F1F;
+  --modal-text-color: #C8C8C8;
+  --modal-overlay-bg-color: rgba(0, 0, 0, 0.85); /* More opaque overlay */
+  --modal-input-border-color: #444444;
+  --modal-error-text-color: #CF6679; /* Material Design dark theme error color */
+
+  --button-primary-bg-color: #BB86FC; /* Material Design dark theme primary (purple) */
+  --button-primary-text-color: #000000; /* Black text on this purple for contrast */
+  --button-primary-hover-bg-color: #9e67d3;
+  --button-secondary-bg-color: #03DAC6; /* Material Design dark theme secondary (teal) */
+  --button-secondary-text-color: #000000; /* Black text on this teal */
+  --button-secondary-hover-bg-color: #02b09b;
+  --button-disabled-bg-color: #2A2A2A;
+  --button-disabled-text-color: #555555;
+
+  --slider-thumb-bevel-highlight: #404040;
+  --slider-thumb-bevel-shadow: #101010;
+
+  --fixed-icons-bg-color: rgba(26, 26, 26, 0.85); /* Semi-transparent dark */
+  --slider-track-color: #303030;
+  --slider-track-border-color: #202020;
+  --slider-thumb-color: #BB86FC; /* Purple thumb */
+}

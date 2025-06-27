@@ -1,0 +1,47 @@
+/* Metal Theme */
+.metal-theme {
+  --app-bg-color: #43464B; /* Dark, cool grey - like brushed steel */
+  --app-text-color: #EAEAEA; /* Light grey text, almost white */
+  --app-header-bg-color: #313335; /* Even darker grey for header */
+  --app-header-text-color: #FFFFFF;
+  --app-border-color: #606368; /* Slightly lighter grey for borders */
+
+  --slider-host-bg-color: #3A3C3F;
+  --slider-host-border-color: #505358;
+  --slider-text-color: #E0E0E0;
+  --slider-channel-info-border-color: #484A4D;
+  --slider-value-edit-border-color: #707378;
+  --slider-color-swatch-border-color: #707378;
+
+  --table-bg-color: #383A3D;
+  --table-text-color: #DAE0E0;
+  --table-border-color: #55595E;
+  --table-header-bg-color: #2A2C2E;
+  --table-header-text-color: #F0F0F0;
+
+  --modal-bg-color: #333538;
+  --modal-text-color: #D0D0D0;
+  --modal-overlay-bg-color: rgba(30, 30, 30, 0.8);
+  --modal-input-border-color: #66696E;
+  --modal-error-text-color: #FF5555; /* Bright red for errors */
+
+  --button-primary-bg-color: #D4AF37; /* Gold-like color for primary buttons */
+  --button-primary-text-color: #222222; /* Dark text on gold */
+  --button-primary-hover-bg-color: #B8860B; /* DarkGoldenRod - tarnished gold */
+  --button-secondary-bg-color: #C0C0C0; /* Silver */
+  --button-secondary-text-color: #333333; /* Dark text on silver */
+  --button-secondary-hover-bg-color: #A9A9A9; /* Darker silver */
+  --button-disabled-bg-color: #5A5C5F;
+  --button-disabled-text-color: #888888;
+
+  --slider-thumb-bevel-highlight: #888B91; /* Lighter metallic highlight */
+  --slider-thumb-bevel-shadow: #2A2C2E; /* Dark shadow */
+
+  --fixed-icons-bg-color: rgba(50, 50, 50, 0.75); /* Semi-transparent dark grey */
+  --slider-track-color: #505358; /* Grey track */
+  --slider-track-border-color: #2F3133;
+  --slider-thumb-color: #B0B0B0; /* Light grey, like polished metal */
+
+  /* Consider adding subtle gradients or textures to enhance the "metal" feel if possible
+     with additional CSS rules beyond just variables. */
+}

@@ -1,0 +1,49 @@
+/* Apple II Theme */
+/* Inspired by the classic Apple II computer interface */
+.apple-ii-theme {
+  --app-bg-color: #000000; /* Black background */
+  --app-text-color: #33FF33; /* Bright green text */
+  --app-header-bg-color: #000000; /* Black header */
+  --app-header-text-color: #33FF33; /* Green text */
+  --app-border-color: #228B22; /* ForestGreen for borders */
+
+  --slider-host-bg-color: #101010; /* Slightly off-black */
+  --slider-host-border-color: #33FF33;
+  --slider-text-color: #33FF33;
+  --slider-channel-info-border-color: #228B22;
+  --slider-value-edit-border-color: #33AA33; /* Slightly dimmer green for inputs */
+  --slider-color-swatch-border-color: #33FF33;
+
+  --table-bg-color: #000000;
+  --table-text-color: #33FF33;
+  --table-border-color: #228B22;
+  --table-header-bg-color: #1A1A1A; /* Dark grey for table header */
+  --table-header-text-color: #33FF33;
+
+  --modal-bg-color: #0A0A0A;
+  --modal-text-color: #33FF33;
+  --modal-overlay-bg-color: rgba(0, 20, 0, 0.7); /* Dark green overlay */
+  --modal-input-border-color: #33FF33;
+  --modal-error-text-color: #FF3333; /* Red for errors, still bright */
+
+  --button-primary-bg-color: #33FF33; /* Green buttons */
+  --button-primary-text-color: #000000; /* Black text on green buttons */
+  --button-primary-hover-bg-color: #22CC22; /* Slightly darker green */
+  --button-secondary-bg-color: #555555; /* Grey secondary buttons */
+  --button-secondary-text-color: #00FF00; /* Green text on grey */
+  --button-secondary-hover-bg-color: #444444;
+  --button-disabled-bg-color: #333333;
+  --button-disabled-text-color: #116611; /* Very dark green */
+
+  --slider-thumb-bevel-highlight: #66FF66;
+  --slider-thumb-bevel-shadow: #11AA11;
+
+  --fixed-icons-bg-color: rgba(0, 50, 0, 0.7); /* Semi-transparent dark green */
+  --slider-track-color: #222222; /* Dark grey track */
+  --slider-track-border-color: #33FF33;
+  --slider-thumb-color: #33FF33; /* Green thumb */
+
+  /* Consider a pixelated or monospace font if available */
+  /* font-family: 'Monaco', 'Lucida Console', monospace; */
+  /* For a more authentic feel, text might not be anti-aliased, but that's hard to control. */
+}
