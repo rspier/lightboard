@@ -37,3 +37,19 @@ jobs:
         npm test -- --no-watch --no-progress --browsers=ChromeHeadlessNoSandbox
       env:
         CHROME_BIN: ${{ env.CHROME_BIN }}
+
+  test_go_server:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24' # Updated Go version
+          cache: true        # Enable caching for Go modules
+
+      - name: Test Go server
+        working-directory: ./server
+        run: go test ./...
