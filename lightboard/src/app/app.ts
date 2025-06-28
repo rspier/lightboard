@@ -9,6 +9,13 @@ import { SettingsModalComponent } from './settings-modal/settings-modal.componen
 import { KeyboardShortcutsModalComponent } from './keyboard-shortcuts-modal/keyboard-shortcuts-modal.component';
 import { SceneTextInputModalComponent } from './scene-text-input-modal/scene-text-input-modal.component';
 // import { RotaryDialComponent } from './rotary-dial/rotary-dial.component'; // Removed
+
+// Angular Material Modules
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSliderModule } from '@angular/material/slider';
+
 import { ChannelSettingsService } from './channel-settings.service';
 import { HttpDataService, CombinedOutputData } from './http-data.service';
 import { ThemeService } from './theme.service'; // Import ThemeService
@@ -36,8 +43,14 @@ interface ParsedCommand {
     CombinedOutputDisplayComponent,
     SettingsModalComponent,
     SceneTextInputModalComponent,
-    KeyboardShortcutsModalComponent
+    KeyboardShortcutsModalComponent,
     // RotaryDialComponent // Removed
+
+    // Angular Material Modules
+    MatButtonModule,
+    MatIconModule,
+    MatTooltipModule,
+    MatSliderModule
   ],
   templateUrl: './app.html',
   styleUrl: './app.css'
@@ -479,6 +492,24 @@ export class App implements OnInit, OnDestroy {
     this.channelSettingsService.updateCrossfadeDurationSeconds(newDuration);
     this.cdr.detectChanges();
   }
+
+  // For MatSlider displayWith
+  formatCrossfadeLabel(value: number): string {
+    return `${value}s`;
+  }
+
+  onCrossfadeDurationMatSliderChange(value: number | null): void {
+    if (value === null) return; // Should not happen with current setup but good practice
+    const newDuration = value;
+    // this.displayCrossfadeDurationSeconds = newDuration; // Already updated by ngModel
+    this.currentCrossfadeDurationMs = newDuration * 1000;
+    this.channelSettingsService.updateCrossfadeDurationSeconds(newDuration);
+    // No need for manual cdr.detectChanges() if using ngModel,
+    // but if using (input) event with [value] binding, it might be needed.
+    // Let's keep it for safety or if we switch from ngModel.
+    this.cdr.detectChanges();
+  }
+
 
   // Updated toggle function for modal
   toggleSceneTextInput(sceneNumber: 1 | 2): void {

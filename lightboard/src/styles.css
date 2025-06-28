@@ -18,14 +18,14 @@
 */
 
 /* Apply base background and text color to body using CSS variables that themes will define. */
+/* font-family from Angular Material installation will be the base. Theme classes will override. */
 body {
   background-color: var(--app-bg-color);
   color: var(--app-text-color);
-  margin: 0; /* Reset default margin */
-  font-family: sans-serif; /* Consistent base font */
+  /* margin: 0; -- This is set by Material's addition below */
+  /* font-family: sans-serif; -- This is overridden by Material's addition or theme classes */
   transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
-  /* Ensure body takes full height for themes that might use full-page gradients or images */
-  min-height: 100vh;
+  /* min-height: 100vh; -- Covered by height: 100% from Material's addition */
   display: flex; /* Helps with main content full height if needed */
   flex-direction: column;
 }
@@ -48,11 +48,23 @@ a:hover {
   text-decoration: underline;
 }
 
-/* Ensure buttons use the theme-defined font */
-button,
-input[type="button"],
-input[type="submit"],
-input[type="reset"] {
-  font-family: var(--app-font-family, sans-serif); /* Fallback to sans-serif if variable not defined */
-  /* Other button resets/base styles can go here if needed */
+/* Ensure NON-MATERIAL buttons use the theme-defined font if needed.
+   Material buttons will use Material Typography.
+   The .mat-typography class on body and theme-specific font-family settings should cover most cases.
+   This rule might be redundant or only for very specific non-Material buttons.
+*/
+button:not([class*="mat-"]), /* Target buttons that are not Material buttons */
+input[type="button"]:not([class*="mat-"]),
+input[type="submit"]:not([class*="mat-"]),
+input[type="reset"]:not([class*="mat-"]) {
+  font-family: var(--app-font-family, sans-serif);
+}
+
+html, body { height: 100%; }
+/* body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; } */
+/* The above body rule from Material install is merged/handled by existing body rule + theme specific body fonts */
+/* We ensure margin:0 is kept and font-family is handled by mat-typography and theme classes */
+body {
+  margin: 0; /* Explicitly keep margin: 0 from Material install */
+  /* font-family is handled by mat-typography class on body and theme-specific overrides */
 }

@@ -25,26 +25,18 @@
   box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
-/* Individual icon styling remains largely the same, but adjust margin if needed */
-.settings-icon, .shortcuts-icon {
-  font-size: 2em; /* Consistent icon size */
-  cursor: pointer;
-  color: var(--app-header-text-color);
-  padding: 0 5px; /* Add some padding around icons */
-  margin-left: 10px; /* Space between icons, and from the title if only one */
-  border-radius: 4px; /* Optional: slight rounding for hover effect */
-  transition: background-color 0.2s ease-in-out, opacity 0.2s;
+/* Styling for mat-icon-button in the header */
+.header-icons button.mat-mdc-icon-button {
+  width: 40px; /* Standard Material icon button size */
+  height: 40px;
+  /* Color will be inherited or can be set by theme's primary/accent if button has color="primary" etc. */
+  /* For now, let's ensure they pick up a sensible color from the theme for icons */
+}
+.header-icons button.mat-mdc-icon-button .mat-icon {
+  color: var(--app-header-text-color); /* Use existing variable for icon color */
+  /* Adjust font-size if Material's default icon size is different from previous */
 }
 
-.settings-icon:hover, .shortcuts-icon:hover {
-  opacity: 0.7;
-  /* Or a background highlight, depending on theme variables available */
-  /* background-color: var(--app-header-hover-bg-color, #555); */ /* Example if such a var existed */
-}
-
-.shortcuts-icon {
-  font-weight: bold; /* Make '?' more prominent if desired */
-}
 
 .main-layout {
   display: flex;
@@ -214,7 +206,12 @@
   flex-direction: column;
   align-items: center;
   margin-top: 15px;
-  width: 150px; /* Or adjust as needed */
+  width: 180px; /* Increased width for mat-slider */
+}
+
+/* Styling for the mat-slider used for crossfade duration */
+.crossfade-slider-container .mat-mdc-slider {
+  width: 100%; /* Make mat-slider take the full width of its container */
 }
 
 .duration-slider-label {

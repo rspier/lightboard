@@ -1,0 +1,329 @@
+@use '@angular/material' as mat;
+
+// 1. Light Theme
+$light-theme-primary-colors: (
+  500: #007bff, // from --button-primary-bg-color
+  contrast: (
+    500: #ffffff, // from --button-primary-text-color
+  )
+);
+$light-theme-accent-colors: (
+  500: #6c757d, // from --button-secondary-bg-color
+  contrast: (
+    500: #ffffff, // from --button-secondary-text-color
+  )
+);
+$light-theme-warn-colors: (
+  500: #f44336, // Standard Material Red, close to --modal-error-text-color: red
+  contrast: (
+    500: #ffffff,
+  )
+);
+
+$light-material-primary: mat.define-palette($light-theme-primary-colors, 500);
+$light-material-accent: mat.define-palette($light-theme-accent-colors, 500);
+$light-material-warn: mat.define-palette($light-theme-warn-colors, 500);
+
+$light-material-theme: mat.define-light-theme((
+  color: (
+    primary: $light-material-primary,
+    accent: $light-material-accent,
+    warn: $light-material-warn,
+  ),
+  typography: mat.define-typography-config(),
+  density: 0,
+));
+
+// 2. Dark Theme
+$dark-theme-primary-colors: (
+  500: #0d6efd, // from --button-primary-bg-color
+  contrast: (
+    500: #ffffff, // from --button-primary-text-color
+  )
+);
+$dark-theme-accent-colors: (
+  500: #5c636a, // from --button-secondary-bg-color
+  contrast: (
+    500: #ffffff, // from --button-secondary-text-color
+  )
+);
+$dark-theme-warn-colors: (
+  500: #ff6b6b, // from --modal-error-text-color
+  contrast: (
+    500: #000000, // Black text on this lighter red
+  )
+);
+
+$dark-material-primary: mat.define-palette($dark-theme-primary-colors, 500);
+$dark-material-accent: mat.define-palette($dark-theme-accent-colors, 500);
+$dark-material-warn: mat.define-palette($dark-theme-warn-colors, 500);
+
+$dark-material-theme: mat.define-dark-theme((
+  color: (
+    primary: $dark-material-primary,
+    accent: $dark-material-accent,
+    warn: $dark-material-warn,
+  ),
+  typography: mat.define-typography-config(),
+  density: 0,
+));
+
+// 3. LCARS Theme
+$lcars-theme-primary-colors: (
+  500: #CC66FF, // from --button-primary-bg-color
+  contrast: (
+    500: #000000, // from --button-primary-text-color
+  )
+);
+$lcars-theme-accent-colors: (
+  500: #FF6600, // from --button-secondary-bg-color
+  contrast: (
+    500: #000000, // from --button-secondary-text-color
+  )
+);
+$lcars-theme-warn-colors: (
+  500: #FF6666, // from --modal-error-text-color
+  contrast: (
+    500: #000000,
+  )
+);
+$lcars-material-primary: mat.define-palette($lcars-theme-primary-colors, 500);
+$lcars-material-accent: mat.define-palette($lcars-theme-accent-colors, 500);
+$lcars-material-warn: mat.define-palette($lcars-theme-warn-colors, 500);
+
+$lcars-material-theme: mat.define-dark-theme((
+  color: (
+    primary: $lcars-material-primary,
+    accent: $lcars-material-accent,
+    warn: $lcars-material-warn,
+  ),
+  typography: mat.define-typography-config(),
+  density: 0,
+));
+
+// 4. Steampunk Theme
+$steampunk-theme-primary-colors: (
+  500: #B87333, // from --button-primary-bg-color (Copper)
+  contrast: (
+    500: #2F1B14, // from --button-primary-text-color (Dark Brown)
+  )
+);
+$steampunk-theme-accent-colors: (
+  500: #C0C0C0, // from --button-secondary-bg-color (Silver)
+  contrast: (
+    500: #333333, // from --button-secondary-text-color (Dark Gray)
+  )
+);
+$steampunk-theme-warn-colors: (
+  500: #DC143C, // from --modal-error-text-color (Crimson)
+  contrast: (
+    500: #ffffff,
+  )
+);
+$steampunk-material-primary: mat.define-palette($steampunk-theme-primary-colors, 500);
+$steampunk-material-accent: mat.define-palette($steampunk-theme-accent-colors, 500);
+$steampunk-material-warn: mat.define-palette($steampunk-theme-warn-colors, 500);
+
+$steampunk-material-theme: mat.define-dark-theme(( // Based on --app-bg-color: #8B4513 (dark)
+  color: (
+    primary: $steampunk-material-primary,
+    accent: $steampunk-material-accent,
+    warn: $steampunk-material-warn,
+  ),
+  typography: mat.define-typography-config(),
+  density: 0,
+));
+
+// 5. Extra Dark Theme
+$extra-dark-theme-primary-colors: (
+  500: #BB86FC, // from --button-primary-bg-color (Material Purple)
+  contrast: (
+    500: #000000, // from --button-primary-text-color
+  )
+);
+$extra-dark-theme-accent-colors: (
+  500: #03DAC6, // from --button-secondary-bg-color (Material Teal)
+  contrast: (
+    500: #000000, // from --button-secondary-text-color
+  )
+);
+$extra-dark-theme-warn-colors: (
+  500: #CF6679, // from --modal-error-text-color (Material Error Red)
+  contrast: (
+    500: #000000,
+  )
+);
+$extra-dark-material-primary: mat.define-palette($extra-dark-theme-primary-colors, 500);
+$extra-dark-material-accent: mat.define-palette($extra-dark-theme-accent-colors, 500);
+$extra-dark-material-warn: mat.define-palette($extra-dark-theme-warn-colors, 500);
+
+$extra-dark-material-theme: mat.define-dark-theme((
+  color: (
+    primary: $extra-dark-material-primary,
+    accent: $extra-dark-material-accent,
+    warn: $extra-dark-material-warn,
+  ),
+  typography: mat.define-typography-config(),
+  density: 0,
+));
+
+// 6. Metal Theme
+$metal-theme-primary-colors: (
+  500: #B8860B, // Solid gold from --button-primary-background-image
+  contrast: (
+    500: #2F1E00, // from --button-primary-text-color
+  )
+);
+$metal-theme-accent-colors: (
+  500: #A0A0A0, // Solid silver from --button-secondary-background-image
+  contrast: (
+    500: #222222, // from --button-secondary-text-color
+  )
+);
+$metal-theme-warn-colors: (
+  500: #FF6B6B, // from --modal-error-text-color
+  contrast: (
+    500: #000000,
+  )
+);
+$metal-material-primary: mat.define-palette($metal-theme-primary-colors, 500);
+$metal-material-accent: mat.define-palette($metal-theme-accent-colors, 500);
+$metal-material-warn: mat.define-palette($metal-theme-warn-colors, 500);
+
+$metal-material-theme: mat.define-dark-theme(( // Based on dark, textured background
+  color: (
+    primary: $metal-material-primary,
+    accent: $metal-material-accent,
+    warn: $metal-material-warn,
+  ),
+  typography: mat.define-typography-config(),
+  density: 0,
+));
+
+// 7. Apple II Theme
+$apple2-theme-primary-colors: (
+  500: #33FF33, // from --button-primary-bg-color (Green)
+  contrast: (
+    500: #000000, // from --button-primary-text-color
+  )
+);
+$apple2-theme-accent-colors: (
+  500: #555555, // from --button-secondary-bg-color (Grey)
+  contrast: (
+    500: #33FF33, // from --button-secondary-text-color (Green text on grey)
+  )
+);
+$apple2-theme-warn-colors: (
+  500: #FF3333, // from --modal-error-text-color (Red)
+  contrast: (
+    500: #000000,
+  )
+);
+$apple2-material-primary: mat.define-palette($apple2-theme-primary-colors, 500);
+$apple2-material-accent: mat.define-palette($apple2-theme-accent-colors, 500);
+$apple2-material-warn: mat.define-palette($apple2-theme-warn-colors, 500);
+
+$apple2-material-theme: mat.define-dark-theme(( // Black background, green text
+  color: (
+    primary: $apple2-material-primary,
+    accent: $apple2-material-accent,
+    warn: $apple2-material-warn,
+  ),
+  typography: mat.define-typography-config(),
+  density: 0,
+));
+
+// 8. Glass Theme
+$glass-theme-primary-colors: (
+  500: #007AFF, // Solid version of --button-primary-bg-color (Semi-transparent blue)
+  contrast: (
+    500: #ffffff, // from --button-primary-text-color
+  )
+);
+$glass-theme-accent-colors: (
+  500: #6c757d, // Solid version of --button-secondary-bg-color (Semi-transparent grey)
+  contrast: (
+    500: #ffffff, // from --button-secondary-text-color
+  )
+);
+$glass-theme-warn-colors: (
+  500: #CC0033, // from --modal-error-text-color (Clear Red)
+  contrast: (
+    500: #ffffff,
+  )
+);
+$glass-material-primary: mat.define-palette($glass-theme-primary-colors, 500);
+$glass-material-accent: mat.define-palette($glass-theme-accent-colors, 500);
+$glass-material-warn: mat.define-palette($glass-theme-warn-colors, 500);
+
+$glass-material-theme: mat.define-light-theme(( // Light overall background
+  color: (
+    primary: $glass-material-primary,
+    accent: $glass-material-accent,
+    warn: $glass-material-warn,
+  ),
+  typography: mat.define-typography-config(),
+  density: 0,
+));
+
+// 9. Night Vision Theme
+$night-vision-theme-primary-colors: (
+  500: #DD0000, // from --button-primary-bg-color (Bright Red)
+  contrast: (
+    500: #000000, // from --button-primary-text-color
+  )
+);
+$night-vision-theme-accent-colors: (
+  500: #550000, // from --button-secondary-bg-color (Dark Red)
+  contrast: (
+    500: #FF0000, // from --button-secondary-text-color (Red text on dark red)
+  )
+);
+$night-vision-theme-warn-colors: (
+  500: #FF6666, // from --modal-error-text-color (Lighter Red)
+  contrast: (
+    500: #000000,
+  )
+);
+$night-vision-material-primary: mat.define-palette($night-vision-theme-primary-colors, 500);
+$night-vision-material-accent: mat.define-palette($night-vision-theme-accent-colors, 500);
+$night-vision-material-warn: mat.define-palette($night-vision-theme-warn-colors, 500);
+
+$night-vision-material-theme: mat.define-dark-theme(( // Black background, red text
+  color: (
+    primary: $night-vision-material-primary,
+    accent: $night-vision-material-accent,
+    warn: $night-vision-material-warn,
+  ),
+  typography: mat.define-typography-config(),
+  density: 0,
+));
+
+// Apply the themes under their respective body classes
+.light-theme {
+  @include mat.all-component-themes($light-material-theme);
+}
+.dark-theme {
+  @include mat.all-component-themes($dark-material-theme);
+}
+.lcars-theme {
+  @include mat.all-component-themes($lcars-material-theme);
+}
+.steampunk-theme {
+  @include mat.all-component-themes($steampunk-material-theme);
+}
+.extra-dark-theme {
+  @include mat.all-component-themes($extra-dark-material-theme);
+}
+.metal-theme {
+  @include mat.all-component-themes($metal-material-theme);
+}
+.apple-2-theme {
+  @include mat.all-component-themes($apple2-material-theme);
+}
+.glass-theme {
+  @include mat.all-component-themes($glass-material-theme);
+}
+.night-vision-theme {
+  @include mat.all-component-themes($night-vision-material-theme);
+}
