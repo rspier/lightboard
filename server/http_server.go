@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strings"
 	"sync"
+	"time"
 )
 
 const (
@@ -68,8 +69,8 @@ type HTTPServer struct {
 type ChannelState struct {
 	LastIntensity    *float64 // Use pointer to distinguish between 0 and not set
 	LastColor        *string  // Use pointer to distinguish between empty string and not set
-	LastOnOffState   *string  // Use pointer to distinguish between "0" and not set
-	lastIntensityStr string   // Store string representation for direct comparison
+	LastOnOffState   *string  // Use pointer to distinguish between "0" and not set (will always be "1" after first set)
+	LastUpdateTimestamp time.Time // Timestamp of the last successful update for this channel
 }
 
 // IncomingDataPoint represents a single data point from the HTTP JSON array
@@ -172,178 +173,148 @@ func (hs *HTTPServer) handleDataRequest(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	var processingErrors []string // Slice for config/data validation errors (before goroutines)
-	var publishErrors []string    // Slice for MQTT publish errors (collected from goroutines)
-	var mu sync.Mutex             // Mutex to protect concurrent appends to publishErrors
-	var wg sync.WaitGroup
+	requestTimestamp := time.Now()
+	var processingErrors []string // For setup errors (missing mapping, bad value)
+	var publishErrors []string    // For MQTT publish errors
+	processedDataPoints := 0      // Count of data points that were not discarded and attempted processing
 
-	successfulProcessingAttempts := 0 // Count of DPs that started processing in a goroutine
+	oneString := "1" // Constant for OnOffState "1"
 
 	for _, dp := range dataPoints {
-		wg.Add(1)
-		go func(dataPoint IncomingDataPoint) {
-			defer wg.Done()
+		hs.channelMapLock.RLock()
+		mapping, ok := hs.channelMap[dp.ChannelNumber]
+		hs.channelMapLock.RUnlock()
 
-			localPublishErrors := []string{} // Errors specific to this goroutine's publish attempts
+		if !ok {
+			errMsg := fmt.Sprintf("No topic mapping found for channelNumber: %d", dp.ChannelNumber)
+			hs.stderrLog.Println(errMsg)
+			processingErrors = append(processingErrors, errMsg)
+			continue // Skip this data point
+		}
 
-			hs.channelMapLock.RLock()
-			mapping, ok := hs.channelMap[dataPoint.ChannelNumber]
-			hs.channelMapLock.RUnlock()
+		valueFloat, err := dp.Value.Float64()
+		if err != nil {
+			errMsg := fmt.Sprintf("Invalid value for channelNumber %d: %v", dp.ChannelNumber, err)
+			hs.stderrLog.Println(errMsg)
+			processingErrors = append(processingErrors, errMsg)
+			continue // Skip this data point
+		}
 
-			if !ok {
-				errMsg := fmt.Sprintf("No topic mapping found for channelNumber: %d", dataPoint.ChannelNumber)
-				hs.stderrLog.Println(errMsg)
-				// This error happens before MQTT publishing, so it's a processing error.
-				// We need a way to collect these if they happen inside a goroutine,
-				// or validate them before starting goroutines.
-				// For now, let's assume this validation is quick and can remain outside,
-				// or we collect them into a shared slice with a mutex.
-				// Let's move pre-flight checks (channel mapping, value parsing) outside the goroutine.
-				// For this iteration, let's keep it simple and collect all errors via mutex.
-				mu.Lock()
-				processingErrors = append(processingErrors, errMsg)
-				mu.Unlock()
-				return
-			}
+		// --- All processing for a data point is now under a single lock acquisition ---
+		hs.channelStatesLock.Lock()
 
-			valueFloat, err := dataPoint.Value.Float64()
-			if err != nil {
-				errMsg := fmt.Sprintf("Invalid value for channelNumber %d: %v", dataPoint.ChannelNumber, err)
-				hs.stderrLog.Println(errMsg)
-				mu.Lock()
-				processingErrors = append(processingErrors, errMsg)
-				mu.Unlock()
-				return
-			}
+		state, stateExists := hs.channelStates[dp.ChannelNumber]
+		if !stateExists {
+			state = &ChannelState{}
+			hs.channelStates[dp.ChannelNumber] = state
+		}
 
-			// --- State-aware Publishing (inside goroutine) ---
-			hs.channelStatesLock.Lock() // Lock before reading or modifying channel state for this specific channel
-
-			state, stateExists := hs.channelStates[dataPoint.ChannelNumber]
-			if !stateExists {
-				state = &ChannelState{}
-				hs.channelStates[dataPoint.ChannelNumber] = state
-			}
-
-			// 1. Process Intensity
-			currentIntensityStr := fmt.Sprintf("%f", valueFloat)
-			intensityChanged := state.LastIntensity == nil || *state.LastIntensity != valueFloat
-			if intensityChanged {
-				if pubErr := hs.mqttClient.Publish(mapping.IntensityTopic, currentIntensityStr); pubErr != nil {
-					errMsg := fmt.Sprintf("Failed to publish intensity to MQTT topic '%s' for channelNumber %d: %v", mapping.IntensityTopic, dataPoint.ChannelNumber, pubErr)
-					hs.stderrLog.Println(errMsg)
-					localPublishErrors = append(localPublishErrors, errMsg)
-				} else {
-					oldIntensityVal := "nil"
-					if state.LastIntensity != nil {
-						oldIntensityVal = fmt.Sprintf("%f", *state.LastIntensity)
-					}
-					hs.stderrLog.Printf("CH%d: Intensity changed (%s -> %f), published to %s", dataPoint.ChannelNumber, oldIntensityVal, valueFloat, mapping.IntensityTopic)
-					valCopy := valueFloat
-					state.LastIntensity = &valCopy
-					state.lastIntensityStr = currentIntensityStr
-				}
-			} else {
-				hs.stderrLog.Printf("CH%d: Intensity unchanged (%f), not publishing.", dataPoint.ChannelNumber, valueFloat)
-			}
-
-			// 2. Process Color
-			colorChanged := state.LastColor == nil || *state.LastColor != dataPoint.Color
-			if colorChanged {
-				if pubErr := hs.mqttClient.Publish(mapping.ColorTopic, dataPoint.Color); pubErr != nil {
-					errMsg := fmt.Sprintf("Failed to publish color to MQTT topic '%s' for channelNumber %d: %v", mapping.ColorTopic, dataPoint.ChannelNumber, pubErr)
-					hs.stderrLog.Println(errMsg)
-					localPublishErrors = append(localPublishErrors, errMsg)
-				} else {
-					oldColorVal := "nil"
-					if state.LastColor != nil {
-						oldColorVal = *state.LastColor
-					}
-					hs.stderrLog.Printf("CH%d: Color changed (%s -> %s), published to %s", dataPoint.ChannelNumber, oldColorVal, dataPoint.Color, mapping.ColorTopic)
-					colorCopy := dataPoint.Color
-					state.LastColor = &colorCopy
-				}
-			} else {
-				hs.stderrLog.Printf("CH%d: Color unchanged (%s), not publishing.", dataPoint.ChannelNumber, dataPoint.Color)
-			}
-
-			// 3. Process On/Off state
-			newOnOffState := "0"
-			if valueFloat > 0 {
-				newOnOffState = "1"
-			}
-			onOffStateChanged := state.LastOnOffState == nil || *state.LastOnOffState != newOnOffState
-			if onOffStateChanged {
-				if pubErr := hs.mqttClient.Publish(mapping.OnOffTopic, newOnOffState); pubErr != nil {
-					errMsg := fmt.Sprintf("Failed to publish on/off state to MQTT topic '%s' for channelNumber %d: %v", mapping.OnOffTopic, dataPoint.ChannelNumber, pubErr)
-					hs.stderrLog.Println(errMsg)
-					localPublishErrors = append(localPublishErrors, errMsg)
-				} else {
-					oldOnOffVal := "nil"
-					if state.LastOnOffState != nil {
-						oldOnOffVal = *state.LastOnOffState
-					}
-					hs.stderrLog.Printf("CH%d: On/Off state changed (%s -> %s), published to %s", dataPoint.ChannelNumber, oldOnOffVal, newOnOffState, mapping.OnOffTopic)
-					onOffCopy := newOnOffState
-					state.LastOnOffState = &onOffCopy
-				}
-			} else {
-				hs.stderrLog.Printf("CH%d: On/Off state unchanged (%s), not publishing.", dataPoint.ChannelNumber, newOnOffState)
-			}
-
+		// Timestamp Check for out-of-order requests
+		if !state.LastUpdateTimestamp.IsZero() && requestTimestamp.Before(state.LastUpdateTimestamp) {
+			hs.stderrLog.Printf("CH%d: Discarding out-of-order data point. Request ts %v, last update ts %v",
+				dp.ChannelNumber, requestTimestamp, state.LastUpdateTimestamp)
 			hs.channelStatesLock.Unlock()
-			// -------------------------------------------------
+			continue // Silently discard and move to the next data point
+		}
 
-			// Log current state to stdoutLog AFTER state lock is released
-			// This ensures we log the state that was just potentially updated.
-			// We need to read the state again, or pass the relevant parts out of the critical section.
-			// For simplicity, let's re-acquire the lock for a brief read for stdout logging.
-			// A more optimized way might be to copy the relevant state parts (valueFloat, dataPoint.Color, newOnOffState)
-			// before unlocking and use those for stdout logging.
-			// Let's try the optimized way: capture the final state values for logging.
+		processedDataPoints++
 
-			finalIntensityForLog := valueFloat
-			finalColorForLog := dataPoint.Color
-			finalOnOffStateForLog := newOnOffState // This was determined before lock for OnOff
-
-			// Log to stdout
-			// Example: "CH 101 | Intensity: 75.50 | Color: [■■] #FF0000 | State: On"
-			// Using a simple block for color for now.
-			displayColor := formatColorForTerminal(finalColorForLog)
-			onOffDisplay := "Off"
-			if finalOnOffStateForLog == "1" {
-				onOffDisplay = "On"
-			}
-			hs.stdoutLog.Printf("CH %3d | Intensity: %6.2f | Color: %s %s | State: %s",
-				dataPoint.ChannelNumber,
-				finalIntensityForLog,
-				displayColor, // The colored block
-				finalColorForLog, // The hex string
-				onOffDisplay,
-			)
-
-
-			if len(localPublishErrors) > 0 {
-				mu.Lock()
-				publishErrors = append(publishErrors, localPublishErrors...)
-				mu.Unlock()
+		// 1. Process On/Off state (Always "1")
+		// Publish "1" only if it wasn't "1" before or is new.
+		if state.LastOnOffState == nil || *state.LastOnOffState != oneString {
+			if pubErr := hs.mqttClient.Publish(mapping.OnOffTopic, oneString); pubErr != nil {
+				errMsg := fmt.Sprintf("Failed to publish OnOff state to MQTT topic '%s' for CH%d: %v", mapping.OnOffTopic, dp.ChannelNumber, pubErr)
+				hs.stderrLog.Println(errMsg)
+				publishErrors = append(publishErrors, errMsg)
 			} else {
-				// Only count as "successful" if this goroutine had no publish errors for its DP
-				mu.Lock()
-				successfulProcessingAttempts++ // This counts DPs for which publishing was attempted and had no errors.
-				mu.Unlock()
+				oldState := "nil"
+				if state.LastOnOffState != nil {
+					oldState = *state.LastOnOffState
+				}
+				hs.stderrLog.Printf("CH%d: OnOff state set to '1' (was %s), published to %s", dp.ChannelNumber, oldState, mapping.OnOffTopic)
+				state.LastOnOffState = &oneString
+				// stateModifiedInThisRequest was here
 			}
+		} else {
+			// Even if not published, ensure internal state is "1" if this is a valid, newer request
+			if state.LastOnOffState == nil { // Should not happen if already "1", but defensive
+				state.LastOnOffState = &oneString
+				// stateModifiedInThisRequest = true; // Not strictly a modification if it was already implicitly 1
+			}
+			hs.stderrLog.Printf("CH%d: OnOff state already '1', not publishing.", dp.ChannelNumber)
+		}
 
-		}(dp) // Pass dp by value to avoid loop variable capture issues
-	}
 
-	wg.Wait() // Wait for all goroutines to complete
+		// 2. Process Intensity
+		currentIntensityStr := fmt.Sprintf("%f", valueFloat)
+		intensityChanged := state.LastIntensity == nil || *state.LastIntensity != valueFloat
+		if intensityChanged {
+			if pubErr := hs.mqttClient.Publish(mapping.IntensityTopic, currentIntensityStr); pubErr != nil {
+				errMsg := fmt.Sprintf("Failed to publish intensity to MQTT topic '%s' for CH%d: %v", mapping.IntensityTopic, dp.ChannelNumber, pubErr)
+				hs.stderrLog.Println(errMsg)
+				publishErrors = append(publishErrors, errMsg)
+			} else {
+				oldVal := "nil"
+				if state.LastIntensity != nil {
+					oldVal = fmt.Sprintf("%f", *state.LastIntensity)
+				}
+				hs.stderrLog.Printf("CH%d: Intensity changed (%s -> %f), published to %s", dp.ChannelNumber, oldVal, valueFloat, mapping.IntensityTopic)
+				valCopy := valueFloat
+				state.LastIntensity = &valCopy
+				// stateModifiedInThisRequest was here
+			}
+		} else {
+			hs.stderrLog.Printf("CH%d: Intensity unchanged (%f), not publishing.", dp.ChannelNumber, valueFloat)
+		}
+
+		// 3. Process Color
+		colorChanged := state.LastColor == nil || *state.LastColor != dp.Color
+		if colorChanged {
+			if pubErr := hs.mqttClient.Publish(mapping.ColorTopic, dp.Color); pubErr != nil {
+				errMsg := fmt.Sprintf("Failed to publish color to MQTT topic '%s' for CH%d: %v", mapping.ColorTopic, dp.ChannelNumber, pubErr)
+				hs.stderrLog.Println(errMsg)
+				publishErrors = append(publishErrors, errMsg)
+			} else {
+				oldVal := "nil"
+				if state.LastColor != nil {
+					oldVal = *state.LastColor
+				}
+				hs.stderrLog.Printf("CH%d: Color changed (%s -> %s), published to %s", dp.ChannelNumber, oldVal, dp.Color, mapping.ColorTopic)
+				colorCopy := dp.Color
+				state.LastColor = &colorCopy
+				// stateModifiedInThisRequest was here
+			}
+		} else {
+			hs.stderrLog.Printf("CH%d: Color unchanged (%s), not publishing.", dp.ChannelNumber, dp.Color)
+		}
+
+		// Update timestamp if the channel's data was processed (not discarded as out-of-order)
+		// and potentially modified state (or was a valid new value that matched existing).
+		// The fact that we passed the timestamp check means this request is valid for this channel's timeline.
+		state.LastUpdateTimestamp = requestTimestamp
+		// We can also use stateModifiedInThisRequest if we only want to update timestamp on actual change.
+		// But plan says: "If any part of the state ... was updated ... or would have been published ... update LastUpdateTimestamp"
+		// This means any valid, non-discarded request for a channel updates its timestamp.
+
+		hs.channelStatesLock.Unlock()
+
+		// Log current state to stdoutLog
+		// Values used for logging are the incoming dp values as they represent the new "current" state.
+		displayColor := formatColorForTerminal(dp.Color)
+		// OnOff is always "On" for display now if processed
+		hs.stdoutLog.Printf("CH %3d | Intensity: %6.2f | Color: %s %s | State: On | LastUpdate: %s",
+			dp.ChannelNumber,
+			valueFloat,
+			displayColor,
+			dp.Color,
+			requestTimestamp.Format(time.RFC3339Nano),
+		)
+	} // End of loop over dataPoints
 
 	// Consolidate errors for the response
-	// Note: successfulMessages is now successfulProcessingAttempts
 	if len(processingErrors) > 0 || len(publishErrors) > 0 {
 		allErrors := append(processingErrors, publishErrors...)
-		hs.stderrLog.Printf("%d data points processed (attempted). Encountered errors: %v", len(dataPoints), allErrors)
+		hs.stderrLog.Printf("%d data points processed. Encountered errors: %v", processedDataPoints, allErrors)
 		http.Error(w, fmt.Sprintf("Completed with errors: %v", allErrors), http.StatusMultiStatus) // 207 Multi-Status
 		return
 	}
@@ -356,5 +327,5 @@ func (hs *HTTPServer) handleDataRequest(w http.ResponseWriter, r *http.Request) 
 	// }
 
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "Successfully processed %d data points.\n", successfulProcessingAttempts)
+	fmt.Fprintf(w, "Successfully processed %d data points.\n", processedDataPoints)
 }

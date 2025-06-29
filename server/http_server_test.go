@@ -11,6 +11,7 @@ import (
 	"os"
 	"sync"
 	"testing"
+	"time"
 )
 
 // MockMQTTClient is a mock implementation of the MQTTClient for testing
@@ -140,7 +141,7 @@ func TestHandleDataRequest(t *testing.T) {
 			expectedMessages: []ExpectedMessage{
 				{Topic: "ch1/intensity", Payload: "0.000000"},
 				{Topic: "ch1/color", Payload: "#00FF00"},
-				{Topic: "ch1/onoff", Payload: "0"},
+				{Topic: "ch1/onoff", Payload: "1"}, // Changed from "0" to "1"
 			},
 			expectedTotalPublishes: 3,
 			expectedResponseHeaders: map[string]string{"Access-Control-Allow-Origin": "*"},
@@ -159,7 +160,7 @@ func TestHandleDataRequest(t *testing.T) {
 				{Topic: "ch1/onoff", Payload: "1"},
 				{Topic: "ch2/intensity", Payload: "0.000000"},
 				{Topic: "ch2/color", Payload: "#0000FF"},
-				{Topic: "ch2/onoff", Payload: "0"},
+				{Topic: "ch2/onoff", Payload: "1"}, // Changed from "0" to "1"
 			},
 			expectedTotalPublishes: 6,
 			expectedResponseHeaders: map[string]string{"Access-Control-Allow-Origin": "*"},
@@ -411,30 +412,151 @@ func TestHandleDataRequest_StatefulBehavior(t *testing.T) {
 		})
 	})
 
-	// 5. Change intensity (on->off): Expect 2 messages (intensity, onoff)
+	// 5. Change intensity (on->off): Expect 1 message (intensity only, OnOff stays "1" and is not re-sent)
 	t.Run("Change intensity on->off", func(t *testing.T) {
 		// State after last step: Intensity 50, Color #00FF00, OnOff 1
 		resp := makeRequest([]IncomingDataPoint{{ChannelNumber: 1, Value: json.Number("0"), Color: "#00FF00"}})
 		if resp.StatusCode != http.StatusOK {
 			t.Errorf("Expected status OK, got %d", resp.StatusCode)
 		}
-		checkMessages(2, map[string]string{
+		checkMessages(1, map[string]string{ // Total 1 message
 			"ch1/intensity": "0.000000",
-			"ch1/onoff":     "0",
+			// ch1/onoff is not sent as it's already "1" internally and target is "1"
 		})
 	})
 
-	// 6. Change intensity (off->on) and color: Expect 3 messages
-	t.Run("Change intensity off->on and color", func(t *testing.T) {
-		// State after last step: Intensity 0, Color #00FF00, OnOff 0
+	// 6. Change intensity (from 0 to 25 -> effective on-state) and color: Expect 2 messages (intensity, color). OnOff stays "1".
+	t.Run("Change intensity (0 -> 25) and color", func(t *testing.T) {
+		// State after last step: Intensity 0, Color #00FF00, OnOff 1 (internally)
 		resp := makeRequest([]IncomingDataPoint{{ChannelNumber: 1, Value: json.Number("25"), Color: "#0000FF"}})
 		if resp.StatusCode != http.StatusOK {
 			t.Errorf("Expected status OK, got %d", resp.StatusCode)
 		}
-		checkMessages(3, map[string]string{
+		checkMessages(2, map[string]string{ // Total 2 messages
 			"ch1/intensity": "25.000000",
 			"ch1/color":     "#0000FF",
-			"ch1/onoff":     "1",
+			// ch1/onoff is not sent as it's already "1" internally
 		})
+	})
+}
+
+func TestHandleDataRequest_TimestampOrder(t *testing.T) {
+	testMappings := []ChannelMapping{
+		{ChannelNumber: 1, IntensityTopic: "ch1/intensity", ColorTopic: "ch1/color", OnOffTopic: "ch1/onoff"},
+	}
+	cfg := &Config{ChannelMappings: testMappings}
+	mockMQTT := &MockMQTTClient{}
+	testStdout := log.New(io.Discard, "", 0) // Keep output clean for this test
+	testStderr := log.New(io.Discard, "", 0)
+	httpServer := NewHTTPServer(cfg, mockMQTT, testStdout, testStderr)
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/post", corsMiddleware(httpServer.handleDataRequest))
+	testServer := httptest.NewServer(mux)
+	defer testServer.Close()
+
+	makeRequest := func(payload []IncomingDataPoint) *http.Response {
+		payloadBytes, _ := json.Marshal(payload)
+		req, _ := http.NewRequest(http.MethodPost, testServer.URL+"/post", bytes.NewBuffer(payloadBytes))
+		req.Header.Set("Content-Type", "application/json")
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			t.Fatalf("Failed to send request: %v", err)
+		}
+		return resp
+	}
+
+	checkMessagesAndClear := func(expectedCount int, description string) {
+		t.Helper()
+		mockMQTT.publishLock.Lock()
+		defer mockMQTT.publishLock.Unlock()
+		actualCount := 0
+		for _, payloads := range mockMQTT.PublishedMessages {
+			actualCount += len(payloads)
+		}
+		if actualCount != expectedCount {
+			t.Errorf("%s: Expected %d messages, got %d. Messages: %v", description, expectedCount, actualCount, mockMQTT.PublishedMessages)
+		}
+		mockMQTT.PublishedMessages = make(map[string][]string) // Reset
+	}
+
+	// --- Test Timestamp Logic ---
+	channelNum := 1
+	initialData := []IncomingDataPoint{{ChannelNumber: channelNum, Value: json.Number("10"), Color: "#111111"}}
+
+	// 1. Initial request - should process, establishes initial timestamp
+	t.Run("Initial request establishes timestamp", func(t *testing.T) {
+		resp := makeRequest(initialData)
+		if resp.StatusCode != http.StatusOK {
+			t.Errorf("Expected status OK, got %d", resp.StatusCode)
+		}
+		checkMessagesAndClear(3, "Initial request") // Intensity, Color, OnOff ("1")
+
+		httpServer.channelStatesLock.RLock()
+		if httpServer.channelStates[channelNum].LastUpdateTimestamp.IsZero() {
+			t.Errorf("LastUpdateTimestamp was not set after initial request")
+		}
+		httpServer.channelStatesLock.RUnlock()
+	})
+
+	// Store this first timestamp
+	httpServer.channelStatesLock.RLock()
+	firstTimestamp := httpServer.channelStates[channelNum].LastUpdateTimestamp
+	httpServer.channelStatesLock.RUnlock()
+
+
+	// 2. Out-of-order request - should be discarded
+	t.Run("Out-of-order request is discarded", func(t *testing.T) {
+		// Manually set the stored LastUpdateTimestamp to be *after* the firstTimestamp.
+		// Any new request's server-generated timestamp will naturally be after firstTimestamp,
+		// so to simulate an *older* incoming request, we make the stored one even newer.
+		httpServer.channelStatesLock.Lock()
+		futureTime := time.Now().Add(1 * time.Hour) // Clearly in the future relative to next request
+		httpServer.channelStates[channelNum].LastUpdateTimestamp = futureTime
+		httpServer.channelStatesLock.Unlock()
+
+		// This request's server-generated timestamp will be ~Now, which is < futureTime.
+		resp := makeRequest([]IncomingDataPoint{{ChannelNumber: channelNum, Value: json.Number("20"), Color: "#222222"}})
+		if resp.StatusCode != http.StatusOK { // Expect OK as discard is silent
+			t.Errorf("Expected status OK, got %d", resp.StatusCode)
+		}
+		checkMessagesAndClear(0, "Out-of-order request")
+
+		// Verify LastUpdateTimestamp did NOT change from futureTime
+		httpServer.channelStatesLock.RLock()
+		if !httpServer.channelStates[channelNum].LastUpdateTimestamp.Equal(futureTime) {
+			t.Errorf("LastUpdateTimestamp changed after a discarded request, expected %v, got %v", futureTime, httpServer.channelStates[channelNum].LastUpdateTimestamp)
+		}
+		httpServer.channelStatesLock.RUnlock()
+	})
+
+	// 3. In-order request (newer than stored) - should process
+	t.Run("In-order request is processed", func(t *testing.T) {
+		// Reset LastUpdateTimestamp to the first successful timestamp to ensure next request is newer.
+		httpServer.channelStatesLock.Lock()
+		httpServer.channelStates[channelNum].LastUpdateTimestamp = firstTimestamp
+		httpServer.channelStatesLock.Unlock()
+
+		// Brief pause to ensure time.Now() for the request is measurably after firstTimestamp
+		// This is a bit fragile but often works for local tests.
+		// A more robust way would be to inject a time source into the server.
+		time.Sleep(5 * time.Millisecond)
+
+
+		// This request's server-generated timestamp should be after firstTimestamp.
+		// It changes intensity and color. OnOff is already "1".
+		resp := makeRequest([]IncomingDataPoint{{ChannelNumber: channelNum, Value: json.Number("30"), Color: "#333333"}})
+		if resp.StatusCode != http.StatusOK {
+			t.Errorf("Expected status OK, got %d", resp.StatusCode)
+		}
+		checkMessagesAndClear(2, "In-order request") // Intensity, Color
+
+		// Verify LastUpdateTimestamp DID change and is newer than firstTimestamp
+		httpServer.channelStatesLock.RLock()
+		newTimestamp := httpServer.channelStates[channelNum].LastUpdateTimestamp
+		if newTimestamp.IsZero() || !newTimestamp.After(firstTimestamp) {
+			t.Errorf("LastUpdateTimestamp expected to be after %v, got %v", firstTimestamp, newTimestamp)
+		}
+		httpServer.channelStatesLock.RUnlock()
 	})
 }

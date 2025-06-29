@@ -6,10 +6,12 @@ This Go application acts as a bridge, receiving HTTP POST requests with JSON pay
 
 - Receives JSON data via HTTP POST to the `/post` endpoint.
 - Expects `channelNumber` (integer) in the JSON payload to identify channels.
-- Publishes intensity, color, and on/off state to separate, configurable MQTT topics for each channel. **Note:** Messages are only sent if the respective value (intensity, color, or on/off state) has changed since the last update for that channel.
+- Publishes intensity, color, and on/off state to separate, configurable MQTT topics for each channel.
+  - **Note on Message Sending:** Messages are only sent if the respective value (intensity or color) has changed since the last update for that channel. The on/off state is set to "1" (On) and published once when the channel is first processed or if its state was previously unknown; thereafter, the on/off MQTT message is not re-sent for that channel.
+- **In-Order Processing:** The server processes data for each channel strictly in order based on the time it receives HTTP requests. Each request is timestamped upon arrival. Data for a specific channel from a request will be silently discarded if a request with a newer timestamp for that same channel has already been processed.
 - Configurable MQTT broker and HTTP listener settings (including port).
-- Incoming data points within a single HTTP request are processed asynchronously.
-- Displays the current state of processed channels (intensity, color, on/off) to standard output, with colors translated for terminal display (using ANSI TrueColor).
+- Incoming data points within a single HTTP request are processed **sequentially**. (Changed from asynchronously)
+- Displays the current state of processed channels (intensity, color, on/off state, and last update timestamp) to standard output, with colors translated for terminal display (using ANSI TrueColor).
 - All other diagnostic and error logging is directed to standard error.
 - Graceful shutdown.
 - Docker support for containerized deployment.
@@ -19,11 +21,11 @@ This Go application acts as a bridge, receiving HTTP POST requests with JSON pay
 When channel data is processed, the server prints the current state of each channel to standard output. This provides a live view of the lightboard's state as understood by the server.
 
 Format:
-`CH <ChannelNo> | Intensity: <Value> | Color: <ColorBlock> <HexColorString> | State: <On/Off>`
+`CH <ChannelNo> | Intensity: <Value> | Color: <ColorBlock> <HexColorString> | State: On | LastUpdate: <Timestamp>`
 
 Example:
-`CH  42 | Intensity: 127.50 | Color: ██ #7F3F00 | State: On`
-(The `██` represents a small block displayed in the actual color specified by the hex code, using ANSI TrueColor escape sequences in capable terminals.)
+`CH  42 | Intensity: 127.50 | Color: ██ #7F3F00 | State: On | LastUpdate: 2023-10-27T10:30:05.123456789Z`
+(The `██` represents a small block displayed in the actual color specified by the hex code, using ANSI TrueColor escape sequences in capable terminals. Timestamp is in RFC3339Nano format.)
 
 ## Configuration
 
@@ -111,19 +113,9 @@ For each valid data point received via HTTP, the server determines if the intens
     -   **Payload:** The `color` string from the JSON (e.g., `"#FF0000"`).
 3.  **On/Off State:** (Sent if changed)
     -   **Topic:** Defined by `onOffTopic`.
-    -   **Payload:** `"1"` if the `value > 0`, otherwise `"0"`.
+    -   **Payload:** Always `"1"`. This message is sent only once when the channel is first processed or if its state was previously unknown/different, effectively ensuring the channel is turned on. It is not sent on subsequent updates for the same channel if the state is already known to be "1".
 
-If a channel is seen for the first time, all three aspects are considered "changed" and will be published.
-
-1.  **Intensity:**
-    -   **Topic:** Defined by `intensityTopic` in the channel's mapping.
-    -   **Payload:** The `value` from the JSON, formatted as a string (e.g., `"75.500000"`).
-2.  **Color:**
-    -   **Topic:** Defined by `colorTopic`.
-    -   **Payload:** The `color` string from the JSON (e.g., `"#FF0000"`).
-3.  **On/Off State:**
-    -   **Topic:** Defined by `onOffTopic`.
-    -   **Payload:** `"1"` if the `value > 0`, otherwise `"0"`.
+If a channel is seen for the first time (i.e., the server has no prior state for it), messages for intensity, color, and the initial on/off state ("1") will be published. For subsequent valid (in-order) requests for an existing channel, only changed intensity or color values will trigger their respective MQTT messages. The on/off message will not be re-sent if the channel's state is already "1".
 
 ## Building and Running
 
