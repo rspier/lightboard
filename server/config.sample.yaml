@@ -1,0 +1,34 @@
+mqttBroker: "tcp://localhost:1883" # Example: "tcp://iot.eclipse.org:1883"
+httpListenAddr: ":8080" # Address and port for the HTTP server to listen on. Change 8080 to customize.
+
+channelMappings:
+  - channelNumber: 1
+    intensityTopic: "lightboard/channel/1/intensity"
+    colorTopic: "lightboard/channel/1/color"
+    onOffTopic: "lightboard/channel/1/onoff"
+  - channelNumber: 2
+    intensityTopic: "lightboard/channel/2/intensity"
+    colorTopic: "lightboard/channel/2/color"
+    onOffTopic: "lightboard/channel/2/onoff"
+  - channelNumber: 3
+    intensityTopic: "dmx/universe/1/channel/10/intensity" # Example with a different topic structure
+    colorTopic: "dmx/universe/1/channel/10/color"
+    onOffTopic: "dmx/universe/1/channel/10/onoff"
+  # Add more mappings as needed for other channel numbers
+
+# Optional: MQTT client settings
+mqttClientId: "lightboard-http-bridge-v2"
+mqttUsername: "" # Optional username for MQTT broker
+mqttPassword: "" # Optional password for MQTT broker
+# mqttKeepAliveSeconds: 60
+# mqttPingTimeoutSeconds: 5
+# mqttConnectTimeoutSeconds: 10
+# mqttAutoReconnect: true
+# mqttMaxReconnectIntervalSeconds: 60
+# mqttCleanSession: true
+# qos: 0 # Default QoS for publishing messages (0, 1, or 2) - Note: not currently implemented in config.go
+# mqttWill:
+#   topic: "lightboard/http-bridge/status"
+#   payload: "offline"
+#   qos: 1
+#   retained: true
