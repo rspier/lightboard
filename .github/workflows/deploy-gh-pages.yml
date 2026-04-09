@@ -46,8 +46,9 @@ jobs:
       - name: Build application
         # Working directory is already ./lightboard
         # The base-href should match the repository name if deploying to gh-pages like <user>.github.io/<repo>/
-        # Assuming the repository name will be 'lightboard'
-        run: npm run build -- --configuration production --base-href /lightboard/
+        # Assuming the repository name will be 'lightboard', set it to /lightboard/
+        # If using a custom domain, set it to /
+        run: npm run build -- --configuration production --base-href /
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v4
